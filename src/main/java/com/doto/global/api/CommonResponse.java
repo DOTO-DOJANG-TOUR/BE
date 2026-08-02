@@ -14,11 +14,11 @@ public record CommonResponse<T>(
 ) {
 
     public static <T> CommonResponse<T> success(T result) {
-        return new CommonResponse<>(true, "SUCCESS", "요청에 성공했습니다.", result);
+        return success(CommonSuccessCode.OK, result);
     }
 
-    public static <T> CommonResponse<T> success(String code, String message, T result) {
-        return new CommonResponse<>(true, code, message, result);
+    public static <T> CommonResponse<T> success(SuccessCode successCode, T result) {
+        return new CommonResponse<>(true, successCode.getCode(), successCode.getMessage(), result);
     }
 
     public static CommonResponse<Void> error(ErrorCode errorCode) {

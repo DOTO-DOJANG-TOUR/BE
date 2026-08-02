@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.doto.global.error.CommonErrorCode;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 
 class CommonResponseTest {
 
@@ -16,8 +17,18 @@ class CommonResponseTest {
             CommonResponse<String> response = CommonResponse.success("result");
 
             assertThat(response.success()).isTrue();
-            assertThat(response.code()).isEqualTo("SUCCESS");
+            assertThat(response.code()).isEqualTo(CommonSuccessCode.OK.getCode());
+            assertThat(response.message()).isEqualTo(CommonSuccessCode.OK.getMessage());
             assertThat(response.result()).isEqualTo("result");
+        }
+
+        @Test
+        void 생성_응답은_CREATED_성공_코드를_사용한다() {
+            CommonResponse<String> response = CommonResponse.success(CommonSuccessCode.CREATED, "result");
+
+            assertThat(CommonSuccessCode.CREATED.getStatus()).isEqualTo(HttpStatus.CREATED);
+            assertThat(response.code()).isEqualTo("SUCCESS-201");
+            assertThat(response.message()).isEqualTo("리소스가 생성되었습니다.");
         }
 
         @Test

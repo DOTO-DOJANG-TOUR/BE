@@ -158,12 +158,14 @@ public interface PlaceApi {
 - JSON 응답 body는 `CommonResponse<T>`로 통일합니다. bare `Response`는 의미가 너무 넓고 Servlet·HTTP 라이브러리 타입과 구분하기 어렵고, `ApiResponse`는 Swagger의 동명 어노테이션 타입과 충돌하므로 사용하지 않습니다.
 - Controller와 API 인터페이스는 `ResponseEntity<CommonResponse<T>>`를 반환합니다.
 - `CommonResponse`는 JSON 계약만 담당하고 HTTP status와 header는 `ResponseEntity`가 담당합니다.
+- 성공 응답의 HTTP status, code와 message는 `SuccessCode`에 모아 관리합니다. 공통 200은 `CommonSuccessCode.OK`, 생성 201은 `CommonSuccessCode.CREATED`를 사용합니다.
 - Service는 DTO 또는 유즈케이스 결과만 반환하며 `CommonResponse`와 `ResponseEntity`에 의존하지 않습니다.
 - `200 OK`도 Controller 반환 타입의 일관성을 위해 `ResponseEntity.ok(...)`로 명시합니다.
 - 생성은 `201 Created`, 응답 body가 정말 필요 없는 삭제는 `204 No Content`를 사용합니다. `204`에는 `CommonResponse` body를 넣지 않습니다.
 - 도메인별 `{Domain}ErrorCode` enum이 `ErrorCode`를 구현합니다.
 - 도메인별 `{Domain}Exception`이 추상 `DomainException`을 상속합니다. Service와 Entity는 범용 예외를 직접 만들지 않습니다.
 - `GlobalExceptionHandler`가 `DomainException`을 받아 ErrorCode의 HTTP status와 `CommonResponse`로 변환합니다.
+- 공통 성공 코드는 `SUCCESS-{HTTP_STATUS}` 형식을 사용합니다.
 - 에러 코드는 `{DOMAIN}-{HTTP_STATUS}-{SEQUENCE}` 형식을 사용합니다.
 - 내부 예외 메시지와 stack trace는 응답에 노출하지 않습니다.
 - `401 Unauthorized`와 `403 Forbidden`, `404 Not Found`, `409 Conflict`를 의미에 맞게 구분합니다.
@@ -175,8 +177,8 @@ public final class PlaceException extends DomainException {
     }
 }
 
-return ResponseEntity.status(HttpStatus.CREATED)
-        .body(CommonResponse.success(PlaceResponseDTO.from(place)));
+return ResponseEntity.status(CommonSuccessCode.CREATED.getStatus())
+        .body(CommonResponse.success(CommonSuccessCode.CREATED, PlaceResponseDTO.from(place)));
 ```
 
 ## 전용 Validator

@@ -207,6 +207,7 @@ JaCoCo 리포트는 테스트 실행 후 아래 경로에 생성됩니다.
 ## 🧩 핵심 설계 원칙
 
 - API 응답 body는 `CommonResponse<T>`, HTTP status와 header는 `ResponseEntity`가 담당합니다.
+- 성공 응답의 HTTP status, code와 message는 `SuccessCode`로 관리합니다.
 - DTO 이름은 `SignUpRequestDTO`, `PlaceResponseDTO`처럼 대문자 `DTO` 접미사를 사용합니다. `Dto` 표기는 사용하지 않습니다.
 - 도메인별 Service 구조는 UseCase 패턴과 CQRS 패턴 중 하나를 선택하며 두 패턴을 중첩하지 않습니다. `ServiceImpl` 네이밍은 사용하지 않습니다.
 - 도메인별 `{Domain}ErrorCode`와 `{Domain}Exception`을 만들고 `@RestControllerAdvice`에서 처리합니다.
