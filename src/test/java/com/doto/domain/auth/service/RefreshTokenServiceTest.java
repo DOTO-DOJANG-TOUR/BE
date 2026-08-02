@@ -3,6 +3,7 @@ package com.doto.domain.auth.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class RefreshTokenServiceTest {
@@ -64,17 +66,19 @@ class RefreshTokenServiceTest {
     class 재발급용_검증 {
 
         @Test
-        void 사용_가능한_토큰이면_검증_후_즉시_폐기한다() {
+        void 사용_가능한_토큰이면_원자적으로_검증_후_즉시_폐기한다() {
             String rawToken = "raw-token";
             RefreshToken token =
                     RefreshToken.issue(user, OpaqueTokenGenerator.hash(rawToken), Instant.now().plusSeconds(60));
+            ReflectionTestUtils.setField(token, "id", 1L);
             when(refreshTokenRepository.findByTokenHash(OpaqueTokenGenerator.hash(rawToken)))
                     .thenReturn(Optional.of(token));
+            when(refreshTokenRepository.revokeIfUsable(eq(1L), any(Instant.class))).thenReturn(1);
 
             RefreshToken result = refreshTokenService.validateAndRevoke(rawToken);
 
             assertThat(result).isSameAs(token);
-            assertThat(token.isUsable()).isFalse();
+            verify(refreshTokenRepository).revokeIfUsable(eq(1L), any(Instant.class));
         }
 
         @Test
@@ -85,15 +89,19 @@ class RefreshTokenServiceTest {
                     .isInstanceOf(AuthException.class)
                     .extracting("errorCode")
                     .isEqualTo(AuthErrorCode.INVALID_REFRESH_TOKEN);
+
+            verify(refreshTokenRepository, never()).revokeIfUsable(any(), any());
         }
 
         @Test
-        void 만료된_토큰이면_예외를_던진다() {
-            String rawToken = "expired-token";
+        void 원자적_폐기가_0행이면_만료됐거나_이미_폐기된_것으로_보고_예외를_던진다() {
+            String rawToken = "expired-or-revoked-token";
             RefreshToken token =
-                    RefreshToken.issue(user, OpaqueTokenGenerator.hash(rawToken), Instant.now().minusSeconds(1));
+                    RefreshToken.issue(user, OpaqueTokenGenerator.hash(rawToken), Instant.now().plusSeconds(60));
+            ReflectionTestUtils.setField(token, "id", 1L);
             when(refreshTokenRepository.findByTokenHash(OpaqueTokenGenerator.hash(rawToken)))
                     .thenReturn(Optional.of(token));
+            when(refreshTokenRepository.revokeIfUsable(eq(1L), any(Instant.class))).thenReturn(0);
 
             assertThatThrownBy(() -> refreshTokenService.validateAndRevoke(rawToken))
                     .isInstanceOf(AuthException.class)
@@ -102,13 +110,20 @@ class RefreshTokenServiceTest {
         }
 
         @Test
-        void 이미_폐기된_토큰이면_예외를_던진다() {
-            String rawToken = "revoked-token";
+        void 동시에_같은_토큰으로_재발급을_시도하면_한_쪽만_성공한다() {
+            String rawToken = "raced-token";
             RefreshToken token =
                     RefreshToken.issue(user, OpaqueTokenGenerator.hash(rawToken), Instant.now().plusSeconds(60));
-            token.revoke();
+            ReflectionTestUtils.setField(token, "id", 1L);
             when(refreshTokenRepository.findByTokenHash(OpaqueTokenGenerator.hash(rawToken)))
                     .thenReturn(Optional.of(token));
+            // 원자적 UPDATE이므로 동시에 두 트랜잭션이 요청해도 DB에서 실제로는 하나만 1행을 갱신한다.
+            // 여기서는 두 번째 호출이 0행을 갱신하는 경쟁 상황을 모킹으로 재현한다.
+            when(refreshTokenRepository.revokeIfUsable(eq(1L), any(Instant.class)))
+                    .thenReturn(1)
+                    .thenReturn(0);
+
+            refreshTokenService.validateAndRevoke(rawToken);
 
             assertThatThrownBy(() -> refreshTokenService.validateAndRevoke(rawToken))
                     .isInstanceOf(AuthException.class)

@@ -166,5 +166,19 @@ class UserServiceTest {
                     .extracting("errorCode")
                     .isEqualTo(UserErrorCode.USER_NOT_FOUND);
         }
+
+        @Test
+        void 소셜_로그인_전용_계정이_비밀번호_변경을_시도하면_예외를_던진다() {
+            User user = userWithId(1L);
+            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            when(generalAuthAccountRepository.findByUser_Id(1L)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() ->
+                    userService.updateMyInfo(1L, new UserUpdateRequestDTO(null, "current-pw", "new-pw"))
+            )
+                    .isInstanceOf(UserException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(UserErrorCode.NO_PASSWORD_ACCOUNT);
+        }
     }
 }

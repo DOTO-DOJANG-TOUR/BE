@@ -68,6 +68,28 @@ class JwtAuthenticationFilterTest {
     }
 
     @Nested
+    class 비활성_사용자 {
+
+        @Test
+        void 토큰은_유효해도_계정이_비활성화됐으면_인증_정보를_채우지_않는다() throws Exception {
+            User user = User.register("홍길동");
+            ReflectionTestUtils.setField(user, "id", 1L);
+            user.deactivate();
+            String token = jwtTokenProvider.createAccessToken(1L);
+            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+            MockHttpServletRequest request = new MockHttpServletRequest();
+            request.addHeader("Authorization", "Bearer " + token);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            MockFilterChain chain = new MockFilterChain();
+
+            filter.doFilter(request, response, chain);
+
+            assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        }
+    }
+
+    @Nested
     class 토큰이_없거나_유효하지_않음 {
 
         @Test

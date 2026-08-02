@@ -2,6 +2,9 @@ package com.doto.domain.auth.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -81,6 +84,17 @@ class SignInServiceTest {
                     .isInstanceOf(AuthException.class)
                     .extracting("errorCode")
                     .isEqualTo(AuthErrorCode.INVALID_CREDENTIALS);
+        }
+
+        @Test
+        void 계정이_없어도_타이밍_공격_방지를_위해_비밀번호_비교를_수행한다() {
+            SignInRequestDTO request = new SignInRequestDTO("none@example.com", "raw-password");
+            when(generalAuthAccountRepository.findByEmail("none@example.com")).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> signInService.signIn(request))
+                    .isInstanceOf(AuthException.class);
+
+            verify(passwordEncoder).matches(eq("raw-password"), anyString());
         }
 
         @Test

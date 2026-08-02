@@ -41,6 +41,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void authenticate(User user) {
         CustomUserDetails principal = new CustomUserDetails(user);
+        // 토큰이 유효해도 그 사이 계정이 비활성화됐을 수 있다(JWT는 발급 시점 기준으로 서명되기 때문에
+        // 서버가 즉시 무효화할 수 없다). 여기서 상태를 확인하지 않으면 INACTIVE 계정이 만료 전까지
+        // 계속 인증된 것으로 취급된다.
+        if (!principal.isEnabled()) {
+            return;
+        }
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 principal,
                 null,
