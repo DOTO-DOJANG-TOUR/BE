@@ -1,0 +1,92 @@
+name: Issue Metadata
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+concurrency:
+  group: issue-metadata-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  assign-and-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign author and sync labels
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body ?? '';
+            const previousBody = context.payload.changes?.body?.from ?? '';
+            const bodyChanged = Boolean(context.payload.changes?.body);
+
+            const readField = (source, heading) => {
+              const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const match = source.match(new RegExp(`###\\s+${escaped}\\s*\\n+([^\\n]+)`));
+              return match?.[1]?.trim();
+            };
+
+            const syncLabelGroup = async (selectedLabel, matcher) => {
+              const currentLabels = issue.labels.map(label =>
+                typeof label === 'string' ? label : label.name
+              );
+              const labelsToRemove = currentLabels.filter(
+                label => matcher.test(label) && label !== selectedLabel
+              );
+
+              for (const label of labelsToRemove) {
+                await github.rest.issues.removeLabel({
+                  ...context.repo,
+                  issue_number: issue.number,
+                  name: label,
+                });
+              }
+
+              if (selectedLabel && !currentLabels.includes(selectedLabel)) {
+                await github.rest.issues.addLabels({
+                  ...context.repo,
+                  issue_number: issue.number,
+                  labels: [selectedLabel],
+                });
+              }
+            };
+
+            if (context.payload.action === 'opened') {
+              try {
+                await github.rest.issues.addAssignees({
+                  ...context.repo,
+                  issue_number: issue.number,
+                  assignees: [issue.user.login],
+                });
+              } catch (error) {
+                core.warning(`작성자 자동 할당을 건너뜁니다: ${error.message}`);
+              }
+            }
+
+            const due = readField(body, '📅 완료 목표');
+            const previousDue = readField(previousBody, '📅 완료 목표');
+            if (context.payload.action === 'opened' || (bodyChanged && due !== previousDue)) {
+              await syncLabelGroup(/^D-\d+$/.test(due) ? due : null, /^D-\d+$/);
+            }
+
+            const importanceLabels = {
+              Critical: '🔴Critical',
+              High: '🟠 High',
+              Medium: '🟡 Medium',
+              Low: '🟢 Low',
+            };
+            const importance = readField(body, '🚨 중요도');
+            const previousImportance = readField(previousBody, '🚨 중요도');
+            if (
+              context.payload.action === 'opened' ||
+              (bodyChanged && importance !== previousImportance)
+            ) {
+              await syncLabelGroup(
+                importanceLabels[importance] ?? null,
+                /^(🔴Critical|🟠 High|🟡 Medium|🟢 Low)$/
+              );
+            }

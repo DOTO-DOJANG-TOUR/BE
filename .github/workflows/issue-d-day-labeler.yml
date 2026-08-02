@@ -1,0 +1,64 @@
+name: Issue D-day Labeler
+
+on:
+  schedule:
+    - cron: "0 15 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+concurrency:
+  group: issue-d-day-labeler
+  cancel-in-progress: false
+
+jobs:
+  update-d-day-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Count down open issues
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo,
+              state: 'open',
+              per_page: 100,
+            });
+
+            for (const issue of issues) {
+              if (issue.pull_request) {
+                continue;
+              }
+
+              const labels = issue.labels.map(label =>
+                typeof label === 'string' ? label : label.name
+              );
+              const currentLabels = labels.filter(label => /^D-\d+$/.test(label));
+              if (currentLabels.length === 0) {
+                continue;
+              }
+
+              const remainingDays = Math.min(
+                ...currentLabels.map(label => Number(label.slice(2)))
+              );
+              const next = `D-${Math.max(remainingDays - 1, 0)}`;
+
+              for (const current of currentLabels) {
+                if (current !== next) {
+                  await github.rest.issues.removeLabel({
+                    ...context.repo,
+                    issue_number: issue.number,
+                    name: current,
+                  });
+                }
+              }
+
+              if (!currentLabels.includes(next)) {
+                await github.rest.issues.addLabels({
+                  ...context.repo,
+                  issue_number: issue.number,
+                  labels: [next],
+                });
+              }
+            }
