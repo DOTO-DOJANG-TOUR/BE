@@ -37,3 +37,6 @@ doto:
   cache:
     maximum-size: ${CACHE_MAXIMUM_SIZE:1000}
     expire-after-write: ${CACHE_EXPIRE_AFTER_WRITE:10m}
+
+jwt:
+  expiration-seconds: ${JWT_EXPIRATION_SECONDS:86400}
