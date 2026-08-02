@@ -1,6 +1,7 @@
 package com.doto.domain.auth.controller;
 
 import com.doto.domain.auth.dto.AuthResponseDTO;
+import com.doto.domain.auth.dto.RefreshRequestDTO;
 import com.doto.domain.auth.dto.SignInRequestDTO;
 import com.doto.domain.auth.dto.SignUpRequestDTO;
 import com.doto.domain.auth.service.AuthUseCase;
@@ -27,6 +28,18 @@ public class AuthController implements AuthApi {
     public ResponseEntity<CommonResponse<AuthResponseDTO>> signIn(SignInRequestDTO request) {
         AuthResponseDTO result = authUseCase.signIn(request);
         return ResponseEntity.ok(CommonResponse.success(result));
+    }
+
+    @Override
+    public ResponseEntity<CommonResponse<AuthResponseDTO>> refresh(RefreshRequestDTO request) {
+        AuthResponseDTO result = authUseCase.refresh(request);
+        return ResponseEntity.ok(CommonResponse.success(result));
+    }
+
+    @Override
+    public ResponseEntity<Void> signOut(RefreshRequestDTO request) {
+        authUseCase.signOut(request);
+        return ResponseEntity.noContent().build();
     }
 
 }

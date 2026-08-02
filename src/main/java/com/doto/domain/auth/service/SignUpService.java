@@ -2,7 +2,6 @@ package com.doto.domain.auth.service;
 
 import com.doto.domain.auth.dto.AuthResponseDTO;
 import com.doto.domain.auth.dto.SignUpRequestDTO;
-import com.doto.domain.auth.dto.TokenDTO;
 import com.doto.domain.auth.exception.AuthErrorCode;
 import com.doto.domain.auth.exception.AuthException;
 import com.doto.domain.user.entity.GeneralAuthAccount;
@@ -24,6 +23,7 @@ public class SignUpService {
     private final GeneralAuthAccountRepository generalAuthAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthResponseDTO signUp(SignUpRequestDTO request) {
         if (generalAuthAccountRepository.existsByEmail(request.email())) {
@@ -38,9 +38,9 @@ public class SignUpService {
         );
 
         String accessToken = jwtTokenProvider.createAccessToken(user.getId());
-        TokenDTO token = TokenDTO.of(accessToken, jwtTokenProvider.getExpirationSeconds());
+        String refreshToken = refreshTokenService.issue(user);
 
-        return AuthResponseDTO.of(user, token);
+        return AuthResponseDTO.of(user, accessToken, refreshToken);
     }
 
 }

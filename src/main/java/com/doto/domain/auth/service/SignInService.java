@@ -2,7 +2,6 @@ package com.doto.domain.auth.service;
 
 import com.doto.domain.auth.dto.AuthResponseDTO;
 import com.doto.domain.auth.dto.SignInRequestDTO;
-import com.doto.domain.auth.dto.TokenDTO;
 import com.doto.domain.auth.exception.AuthErrorCode;
 import com.doto.domain.auth.exception.AuthException;
 import com.doto.domain.user.entity.GeneralAuthAccount;
@@ -16,13 +15,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 @RequiredArgsConstructor
 public class SignInService {
 
     private final GeneralAuthAccountRepository generalAuthAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthResponseDTO signIn(SignInRequestDTO request) {
         GeneralAuthAccount account = generalAuthAccountRepository.findByEmail(request.email())
@@ -38,9 +38,9 @@ public class SignInService {
         }
 
         String accessToken = jwtTokenProvider.createAccessToken(user.getId());
-        TokenDTO token = TokenDTO.of(accessToken, jwtTokenProvider.getExpirationSeconds());
+        String refreshToken = refreshTokenService.issue(user);
 
-        return AuthResponseDTO.of(user, token);
+        return AuthResponseDTO.of(user, accessToken, refreshToken);
     }
 
 }

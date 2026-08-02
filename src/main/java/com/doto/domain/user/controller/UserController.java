@@ -27,7 +27,7 @@ public class UserController implements UserApi {
             CustomUserDetails userDetails,
             UserUpdateRequestDTO request
     ) {
-        userService.updateNickname(userDetails.getUserId(), request);
+        userService.updateMyInfo(userDetails.getUserId(), request);
         return ResponseEntity.ok(
                 CommonResponse.success(userService.getMyInfo(userDetails.getUserId()))
         );

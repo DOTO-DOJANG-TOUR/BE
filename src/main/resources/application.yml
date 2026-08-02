@@ -40,3 +40,4 @@ doto:
 
 jwt:
   expiration-seconds: ${JWT_EXPIRATION_SECONDS:86400}
+  refresh-expiration-seconds: ${JWT_REFRESH_EXPIRATION_SECONDS:1209600}
