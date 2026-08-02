@@ -2,10 +2,7 @@
 
 > 도장 투어 서비스 **DOTO**의 백엔드 저장소입니다.<br />
 > Java 21과 Spring Boot를 기반으로 API와 도메인 로직, PostgreSQL 데이터를 관리합니다.
-
-[![CI](https://github.com/DOTO-DOJANG-TOUR/BE/actions/workflows/ci.yml/badge.svg)](https://github.com/DOTO-DOJANG-TOUR/BE/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/DOTO-DOJANG-TOUR/BE/graph/badge.svg)](https://codecov.io/gh/DOTO-DOJANG-TOUR/BE)
-
+> 
 ---
 
 ## 🛠️ Tech Stack
