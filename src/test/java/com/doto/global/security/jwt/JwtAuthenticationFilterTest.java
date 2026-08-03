@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.doto.domain.user.entity.User;
 import com.doto.domain.user.repository.UserRepository;
+import com.doto.global.config.JwtProperties;
 import com.doto.global.security.CustomUserDetails;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;

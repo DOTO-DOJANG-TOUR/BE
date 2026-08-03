@@ -1,5 +1,6 @@
 package com.doto.global.security.jwt;
 
+import com.doto.global.config.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

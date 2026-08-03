@@ -1,4 +1,4 @@
-package com.doto.global.security.jwt;
+package com.doto.global.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

@@ -2,6 +2,7 @@ package com.doto.global.security.jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.doto.global.config.JwtProperties;
 import io.jsonwebtoken.Jwts;
 import javax.crypto.SecretKey;
 import org.junit.jupiter.api.Nested;

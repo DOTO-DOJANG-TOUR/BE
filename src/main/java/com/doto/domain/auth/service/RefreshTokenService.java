@@ -6,7 +6,7 @@ import com.doto.domain.user.entity.RefreshToken;
 import com.doto.domain.user.entity.User;
 import com.doto.domain.user.repository.RefreshTokenRepository;
 import com.doto.global.security.HashTokenUtil;
-import com.doto.global.security.jwt.JwtProperties;
+import com.doto.global.config.JwtProperties;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
