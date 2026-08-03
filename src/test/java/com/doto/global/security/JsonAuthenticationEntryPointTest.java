@@ -3,16 +3,17 @@ package com.doto.global.security;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.doto.domain.auth.exception.AuthErrorCode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.BadCredentialsException;
+import tools.jackson.databind.json.JsonMapper;
 
 class JsonAuthenticationEntryPointTest {
 
-    private final JsonAuthenticationEntryPoint entryPoint = new JsonAuthenticationEntryPoint(new ObjectMapper());
+    private final JsonAuthenticationEntryPoint entryPoint =
+            new JsonAuthenticationEntryPoint(JsonMapper.builder().build());
 
     @Test
     void 인증되지_않은_요청은_CommonResponse_형식의_401_JSON을_반환한다() throws Exception {

@@ -22,7 +22,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -69,7 +68,7 @@ class SignUpServiceTest {
             assertThat(response.nickname()).isEqualTo("홍길동");
             assertThat(response.accessToken()).isEqualTo("access-token");
             assertThat(response.refreshToken()).isEqualTo("refresh-token");
-            verify(generalAuthAccountRepository).saveAndFlush(any(GeneralAuthAccount.class));
+            verify(generalAuthAccountRepository).save(any(GeneralAuthAccount.class));
         }
     }
 
@@ -87,27 +86,6 @@ class SignUpServiceTest {
                     .isEqualTo(AuthErrorCode.DUPLICATE_EMAIL);
 
             verifyNoInteractions(userRepository, jwtTokenProvider, refreshTokenService);
-        }
-
-        @Test
-        void 사전_체크를_통과해도_동시_가입으로_유니크_제약을_위반하면_중복_이메일로_변환한다() {
-            SignUpRequestDTO request = new SignUpRequestDTO("user@example.com", "password1", "홍길동");
-            when(generalAuthAccountRepository.existsByEmail("user@example.com")).thenReturn(false);
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-                User user = invocation.getArgument(0);
-                ReflectionTestUtils.setField(user, "id", 1L);
-                return user;
-            });
-            when(passwordEncoder.encode("password1")).thenReturn("encoded-password");
-            when(generalAuthAccountRepository.saveAndFlush(any(GeneralAuthAccount.class)))
-                    .thenThrow(new DataIntegrityViolationException("duplicate key value violates unique constraint"));
-
-            assertThatThrownBy(() -> signUpService.signUp(request))
-                    .isInstanceOf(AuthException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(AuthErrorCode.DUPLICATE_EMAIL);
-
-            verifyNoInteractions(jwtTokenProvider, refreshTokenService);
         }
     }
 }

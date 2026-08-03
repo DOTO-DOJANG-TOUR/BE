@@ -1,16 +1,20 @@
 package com.doto.domain.auth.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.doto.domain.auth.dto.AuthResponseDTO;
 import com.doto.domain.auth.exception.AuthErrorCode;
 import com.doto.domain.auth.exception.AuthException;
 import com.doto.domain.auth.service.AuthUseCase;
+import com.doto.global.api.CommonResponse;
+import com.doto.global.api.CommonSuccessCode;
 import com.doto.global.error.GlobalExceptionHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,6 +25,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+/**
+ * 응답 본문은 {@code jsonPath}로 필드를 하나씩 확인하는 대신, 기대하는 {@link CommonResponse}를 직접
+ * 만들어 직렬화한 뒤 {@code content().json(...)}(lenient 모드)으로 비교한다. DTO에 필드가 추가돼도
+ * 기대 객체 생성 코드만 따라가면 되고, 테스트에서 필드를 하나씩 추가로 검증할 필요가 없다.
+ */
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
@@ -28,6 +37,7 @@ class AuthControllerTest {
     private AuthUseCase authUseCase;
 
     private MockMvc mockMvc;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
@@ -50,9 +60,9 @@ class AuthControllerTest {
                                     {"email":"user@example.com","password":"password1","nickname":"홍길동"}
                                     """))
                     .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.isSuccess").value(true))
-                    .andExpect(jsonPath("$.result.accessToken").value("access-token"))
-                    .andExpect(jsonPath("$.result.refreshToken").value("refresh-token"));
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.success(CommonSuccessCode.CREATED, response)
+                    )));
         }
 
         @Test
@@ -75,7 +85,9 @@ class AuthControllerTest {
                                     {"email":"user@example.com","password":"password1","nickname":"홍길동"}
                                     """))
                     .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.code").value(AuthErrorCode.DUPLICATE_EMAIL.getCode()));
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.error(AuthErrorCode.DUPLICATE_EMAIL)
+                    )));
         }
     }
 
@@ -93,7 +105,9 @@ class AuthControllerTest {
                                     {"email":"user@example.com","password":"password1"}
                                     """))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.result.accessToken").value("access-token"));
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.success(response)
+                    )));
         }
 
         @Test
@@ -106,7 +120,9 @@ class AuthControllerTest {
                                     {"email":"user@example.com","password":"wrong"}
                                     """))
                     .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.code").value(AuthErrorCode.INVALID_CREDENTIALS.getCode()));
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.error(AuthErrorCode.INVALID_CREDENTIALS)
+                    )));
         }
     }
 
@@ -124,7 +140,9 @@ class AuthControllerTest {
                                     {"refreshToken":"raw-refresh-token"}
                                     """))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.result.accessToken").value("new-access"));
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.success(response)
+                    )));
         }
 
         @Test
@@ -137,7 +155,9 @@ class AuthControllerTest {
                                     {"refreshToken":"invalid"}
                                     """))
                     .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.code").value(AuthErrorCode.INVALID_REFRESH_TOKEN.getCode()));
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.error(AuthErrorCode.INVALID_REFRESH_TOKEN)
+                    )));
         }
     }
 
@@ -152,6 +172,22 @@ class AuthControllerTest {
                                     {"refreshToken":"raw-refresh-token"}
                                     """))
                     .andExpect(status().isNoContent());
+        }
+
+        @Test
+        void 유효하지_않은_토큰이면_401을_반환한다() throws Exception {
+            doThrow(new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN))
+                    .when(authUseCase).signOut(any());
+
+            mockMvc.perform(post("/api/v1/auth/sign-out")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"refreshToken":"invalid"}
+                                    """))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.error(AuthErrorCode.INVALID_REFRESH_TOKEN)
+                    )));
         }
     }
 }
