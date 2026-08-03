@@ -52,6 +52,7 @@ public class SocialAuthAccount extends BaseTimeEntity {
     @Column(name = "email", length = 190)
     private String email;
 
+    //내부 빌더 지우면 안됨
     @Builder(access = AccessLevel.PRIVATE)
     private SocialAuthAccount(
             User user,
