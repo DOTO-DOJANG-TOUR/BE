@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -51,6 +52,7 @@ public class SocialAuthAccount extends BaseTimeEntity {
     @Column(name = "email", length = 190)
     private String email;
 
+    @Builder(access = AccessLevel.PRIVATE)
     private SocialAuthAccount(
             User user,
             SocialProvider provider,
@@ -72,7 +74,13 @@ public class SocialAuthAccount extends BaseTimeEntity {
             String externalId,
             String email
     ) {
-        return new SocialAuthAccount(user, provider, issuer, externalId, email);
+        return SocialAuthAccount.builder()
+                .user(user)
+                .provider(provider)
+                .issuer(issuer)
+                .externalId(externalId)
+                .email(email)
+                .build();
     }
 
 }
