@@ -209,7 +209,7 @@ public @interface ValidDateRange {
 - 테이블명은 복수형을 사용합니다.
 - `User`, `Place`처럼 API에서 직접 식별되고 다른 도메인에서 오래 참조하는 핵심 Aggregate Root는 `BaseTsidEntity`를 상속해 TSID를 사용합니다.
 - 단순 매핑, 이력, 로그처럼 외부 식별자가 필요 없는 보조 Entity에는 TSID를 강제하지 않습니다. PostgreSQL `IDENTITY` 또는 도메인에 맞는 복합키를 사용합니다.
-- TSID 컬럼은 PostgreSQL `BIGINT`로 만들고 `IDENTITY`, sequence, 별도 default를 지정하지 않습니다. ID는 JPA `@PrePersist`에서 생성합니다.
+- TSID 컬럼은 PostgreSQL `BIGINT`로 만들고 `IDENTITY`, sequence, 별도 default를 지정하지 않습니다. ID는 Hypersistence Utils의 `@Tsid` 식별자 생성기로 INSERT 이전에 발급합니다.
 - TSID는 API 요청·응답에서 `String`으로 표현합니다. JavaScript의 안전한 정수 범위를 넘을 수 있으므로 JSON number로 반환하지 않습니다.
 - TSID의 시간 정렬 특성은 조회·정렬 최적화에만 활용하며 생성 시각이나 보안 토큰으로 사용하지 않습니다. 생성 시각은 `createdAt`으로 관리합니다.
 - 연관관계는 단방향과 지연 로딩을 기본으로 합니다.
