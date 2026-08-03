@@ -5,7 +5,7 @@ import com.doto.domain.auth.exception.AuthException;
 import com.doto.domain.user.entity.RefreshToken;
 import com.doto.domain.user.entity.User;
 import com.doto.domain.user.repository.RefreshTokenRepository;
-import com.doto.global.security.OpaqueTokenGenerator;
+import com.doto.global.security.HashTokenUtil;
 import com.doto.global.security.jwt.JwtProperties;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +22,8 @@ public class RefreshTokenService {
     private final JwtProperties jwtProperties;
 
     public String issue(User user) {
-        String rawToken = OpaqueTokenGenerator.generate();
-        String tokenHash = OpaqueTokenGenerator.hash(rawToken);
+        String rawToken = HashTokenUtil.generate();
+        String tokenHash = HashTokenUtil.hash(rawToken);
         Instant expiresAt = Instant.now().plusSeconds(jwtProperties.refreshExpirationSeconds());
 
         refreshTokenRepository.save(RefreshToken.issue(user, tokenHash, expiresAt));
@@ -40,7 +40,7 @@ public class RefreshTokenService {
      * 영향받은 행이 없으면(이미 폐기됐거나 만료됨) 예외를 던진다.
      */
     public RefreshToken validateAndRevoke(String rawToken) {
-        RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(OpaqueTokenGenerator.hash(rawToken))
+        RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(HashTokenUtil.hash(rawToken))
                 .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN));
 
         int revokedRows = refreshTokenRepository.revokeIfUsable(refreshToken.getId(), Instant.now());
@@ -53,7 +53,7 @@ public class RefreshTokenService {
 
     /** 로그아웃용 폐기. 토큰이 이미 없거나 만료됐어도 예외 없이 조용히 끝난다(멱등). */
     public void revoke(String rawToken) {
-        refreshTokenRepository.findByTokenHash(OpaqueTokenGenerator.hash(rawToken))
+        refreshTokenRepository.findByTokenHash(HashTokenUtil.hash(rawToken))
                 .ifPresent(RefreshToken::revoke);
     }
 

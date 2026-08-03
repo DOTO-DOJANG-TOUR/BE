@@ -7,12 +7,12 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 /** Refresh Token처럼 서버에 해시로 저장하고 원문은 클라이언트만 갖는 opaque 토큰을 생성한다 */
-public final class OpaqueTokenGenerator {
+public final class HashTokenUtil {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final int TOKEN_BYTE_LENGTH = 48;
 
-    private OpaqueTokenGenerator() {
+    private HashTokenUtil() {
     }
 
     public static String generate() {

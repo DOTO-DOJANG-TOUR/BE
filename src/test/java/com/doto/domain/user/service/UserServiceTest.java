@@ -2,8 +2,6 @@ package com.doto.domain.user.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.doto.domain.user.dto.UserResponseDTO;
@@ -21,7 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,9 +29,6 @@ class UserServiceTest {
 
     @Mock
     private GeneralAuthAccountRepository generalAuthAccountRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserService userService;
@@ -92,10 +86,9 @@ class UserServiceTest {
             User user = userWithId(1L);
             when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-            userService.updateMyInfo(1L, new UserUpdateRequestDTO("김철수", null, null));
+            userService.updateMyInfo(1L, new UserUpdateRequestDTO("김철수"));
 
             assertThat(user.getNickname()).isEqualTo("김철수");
-            verify(generalAuthAccountRepository, never()).findByUser_Id(1L);
         }
 
         @Test
@@ -103,56 +96,9 @@ class UserServiceTest {
             User user = userWithId(1L);
             when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-            userService.updateMyInfo(1L, new UserUpdateRequestDTO(null, null, null));
+            userService.updateMyInfo(1L, new UserUpdateRequestDTO(null));
 
             assertThat(user.getNickname()).isEqualTo("홍길동");
-        }
-
-        @Test
-        void 현재_비밀번호가_맞으면_비밀번호가_바뀐다() {
-            User user = userWithId(1L);
-            GeneralAuthAccount account = GeneralAuthAccount.create(user, "user@example.com", "encoded-old");
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-            when(generalAuthAccountRepository.findByUser_Id(1L)).thenReturn(Optional.of(account));
-            when(passwordEncoder.matches("current-pw", "encoded-old")).thenReturn(true);
-            when(passwordEncoder.encode("new-pw")).thenReturn("encoded-new");
-
-            userService.updateMyInfo(1L, new UserUpdateRequestDTO(null, "current-pw", "new-pw"));
-
-            assertThat(account.getPasswordHash()).isEqualTo("encoded-new");
-        }
-
-        @Test
-        void 현재_비밀번호가_틀리면_예외를_던진다() {
-            User user = userWithId(1L);
-            GeneralAuthAccount account = GeneralAuthAccount.create(user, "user@example.com", "encoded-old");
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-            when(generalAuthAccountRepository.findByUser_Id(1L)).thenReturn(Optional.of(account));
-            when(passwordEncoder.matches("wrong-pw", "encoded-old")).thenReturn(false);
-
-            assertThatThrownBy(() ->
-                    userService.updateMyInfo(1L, new UserUpdateRequestDTO(null, "wrong-pw", "new-pw"))
-            )
-                    .isInstanceOf(UserException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(UserErrorCode.INVALID_CURRENT_PASSWORD);
-
-            assertThat(account.getPasswordHash()).isEqualTo("encoded-old");
-        }
-
-        @Test
-        void 현재_비밀번호_없이_새_비밀번호만_보내면_예외를_던진다() {
-            User user = userWithId(1L);
-            GeneralAuthAccount account = GeneralAuthAccount.create(user, "user@example.com", "encoded-old");
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-            when(generalAuthAccountRepository.findByUser_Id(1L)).thenReturn(Optional.of(account));
-
-            assertThatThrownBy(() ->
-                    userService.updateMyInfo(1L, new UserUpdateRequestDTO(null, null, "new-pw"))
-            )
-                    .isInstanceOf(UserException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(UserErrorCode.INVALID_CURRENT_PASSWORD);
         }
 
         @Test
@@ -160,25 +106,11 @@ class UserServiceTest {
             when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() ->
-                    userService.updateMyInfo(1L, new UserUpdateRequestDTO("김철수", null, null))
+                    userService.updateMyInfo(1L, new UserUpdateRequestDTO("김철수"))
             )
                     .isInstanceOf(UserException.class)
                     .extracting("errorCode")
                     .isEqualTo(UserErrorCode.USER_NOT_FOUND);
-        }
-
-        @Test
-        void 소셜_로그인_전용_계정이_비밀번호_변경을_시도하면_예외를_던진다() {
-            User user = userWithId(1L);
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-            when(generalAuthAccountRepository.findByUser_Id(1L)).thenReturn(Optional.empty());
-
-            assertThatThrownBy(() ->
-                    userService.updateMyInfo(1L, new UserUpdateRequestDTO(null, "current-pw", "new-pw"))
-            )
-                    .isInstanceOf(UserException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(UserErrorCode.NO_PASSWORD_ACCOUNT);
         }
     }
 }

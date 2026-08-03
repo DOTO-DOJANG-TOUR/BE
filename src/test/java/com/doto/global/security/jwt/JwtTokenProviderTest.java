@@ -2,9 +2,12 @@ package com.doto.global.security.jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.jsonwebtoken.Jwts;
+import javax.crypto.SecretKey;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 class JwtTokenProviderTest {
 
@@ -49,6 +52,18 @@ class JwtTokenProviderTest {
                     new JwtProperties("other-jwt-secret-key-must-be-long-enough-32b", 3600, 1209600)
             );
             String token = otherProvider.createAccessToken(1L);
+
+            assertThat(jwtTokenProvider.validateToken(token)).isFalse();
+        }
+
+        @Test
+        void 타입_claim이_access가_아니면_서명이_유효해도_거부된다() {
+            SecretKey key = (SecretKey) ReflectionTestUtils.getField(jwtTokenProvider, "key");
+            String token = Jwts.builder()
+                    .subject("1")
+                    .claim("type", "refresh")
+                    .signWith(key)
+                    .compact();
 
             assertThat(jwtTokenProvider.validateToken(token)).isFalse();
         }

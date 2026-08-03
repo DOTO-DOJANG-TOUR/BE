@@ -13,7 +13,7 @@ import com.doto.domain.auth.exception.AuthException;
 import com.doto.domain.user.entity.RefreshToken;
 import com.doto.domain.user.entity.User;
 import com.doto.domain.user.repository.RefreshTokenRepository;
-import com.doto.global.security.OpaqueTokenGenerator;
+import com.doto.global.security.HashTokenUtil;
 import com.doto.global.security.jwt.JwtProperties;
 import java.time.Instant;
 import java.util.Optional;
@@ -56,7 +56,7 @@ class RefreshTokenServiceTest {
             verify(refreshTokenRepository).save(captor.capture());
             RefreshToken saved = captor.getValue();
             assertThat(rawToken).isNotBlank();
-            assertThat(saved.getTokenHash()).isEqualTo(OpaqueTokenGenerator.hash(rawToken));
+            assertThat(saved.getTokenHash()).isEqualTo(HashTokenUtil.hash(rawToken));
             assertThat(saved.getTokenHash()).isNotEqualTo(rawToken);
             assertThat(saved.getUser()).isEqualTo(user);
         }
@@ -69,9 +69,9 @@ class RefreshTokenServiceTest {
         void 사용_가능한_토큰이면_원자적으로_검증_후_즉시_폐기한다() {
             String rawToken = "raw-token";
             RefreshToken token =
-                    RefreshToken.issue(user, OpaqueTokenGenerator.hash(rawToken), Instant.now().plusSeconds(60));
+                    RefreshToken.issue(user, HashTokenUtil.hash(rawToken), Instant.now().plusSeconds(60));
             ReflectionTestUtils.setField(token, "id", 1L);
-            when(refreshTokenRepository.findByTokenHash(OpaqueTokenGenerator.hash(rawToken)))
+            when(refreshTokenRepository.findByTokenHash(HashTokenUtil.hash(rawToken)))
                     .thenReturn(Optional.of(token));
             when(refreshTokenRepository.revokeIfUsable(eq(1L), any(Instant.class))).thenReturn(1);
 
@@ -97,9 +97,9 @@ class RefreshTokenServiceTest {
         void 원자적_폐기가_0행이면_만료됐거나_이미_폐기된_것으로_보고_예외를_던진다() {
             String rawToken = "expired-or-revoked-token";
             RefreshToken token =
-                    RefreshToken.issue(user, OpaqueTokenGenerator.hash(rawToken), Instant.now().plusSeconds(60));
+                    RefreshToken.issue(user, HashTokenUtil.hash(rawToken), Instant.now().plusSeconds(60));
             ReflectionTestUtils.setField(token, "id", 1L);
-            when(refreshTokenRepository.findByTokenHash(OpaqueTokenGenerator.hash(rawToken)))
+            when(refreshTokenRepository.findByTokenHash(HashTokenUtil.hash(rawToken)))
                     .thenReturn(Optional.of(token));
             when(refreshTokenRepository.revokeIfUsable(eq(1L), any(Instant.class))).thenReturn(0);
 
@@ -113,9 +113,9 @@ class RefreshTokenServiceTest {
         void 동시에_같은_토큰으로_재발급을_시도하면_한_쪽만_성공한다() {
             String rawToken = "raced-token";
             RefreshToken token =
-                    RefreshToken.issue(user, OpaqueTokenGenerator.hash(rawToken), Instant.now().plusSeconds(60));
+                    RefreshToken.issue(user, HashTokenUtil.hash(rawToken), Instant.now().plusSeconds(60));
             ReflectionTestUtils.setField(token, "id", 1L);
-            when(refreshTokenRepository.findByTokenHash(OpaqueTokenGenerator.hash(rawToken)))
+            when(refreshTokenRepository.findByTokenHash(HashTokenUtil.hash(rawToken)))
                     .thenReturn(Optional.of(token));
             // 원자적 UPDATE이므로 동시에 두 트랜잭션이 요청해도 DB에서 실제로는 하나만 1행을 갱신한다.
             // 여기서는 두 번째 호출이 0행을 갱신하는 경쟁 상황을 모킹으로 재현한다.
@@ -139,8 +139,8 @@ class RefreshTokenServiceTest {
         void 존재하는_토큰은_폐기된다() {
             String rawToken = "raw-token";
             RefreshToken token =
-                    RefreshToken.issue(user, OpaqueTokenGenerator.hash(rawToken), Instant.now().plusSeconds(60));
-            when(refreshTokenRepository.findByTokenHash(OpaqueTokenGenerator.hash(rawToken)))
+                    RefreshToken.issue(user, HashTokenUtil.hash(rawToken), Instant.now().plusSeconds(60));
+            when(refreshTokenRepository.findByTokenHash(HashTokenUtil.hash(rawToken)))
                     .thenReturn(Optional.of(token));
 
             refreshTokenService.revoke(rawToken);
