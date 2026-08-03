@@ -7,42 +7,25 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.doto.global.config.TestcontainersConfig;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
 /** 회원가입 → 로그인 → 재발급 → 로그아웃 전체 흐름을 실제 DB(Flyway 스키마)와 Security 필터 체인까지 통과시켜 검증한다 */
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(TestcontainersConfig.class)
 class AuthFlowIntegrationTest {
-
-    private static final DockerImageName POSTGRES_IMAGE = DockerImageName.parse("postgres:17-alpine");
-
-    @Container
-    static final PostgreSQLContainer postgres = new PostgreSQLContainer(POSTGRES_IMAGE)
-            .withDatabaseName("doto_test")
-            .withUsername("doto")
-            .withPassword("doto");
-
-    @DynamicPropertySource
-    static void databaseProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
 
     @Autowired
     private MockMvc mockMvc;
