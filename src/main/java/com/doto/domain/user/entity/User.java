@@ -1,11 +1,12 @@
 package com.doto.domain.user.entity;
 
-import com.doto.global.common.BaseTsidEntity;
-import jakarta.persistence.AttributeOverride;
+import com.doto.global.common.BaseTimeEntity;
+import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,10 +14,14 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "users")
-@AttributeOverride(name = "id", column = @Column(name = "user_id"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User extends BaseTsidEntity {
+public class User extends BaseTimeEntity {
+
+    @Id
+    @Tsid
+    @Column(name = "user_id")
+    private Long id;
 
     @Column(name = "nickname", nullable = false, length = 30)
     private String nickname;
