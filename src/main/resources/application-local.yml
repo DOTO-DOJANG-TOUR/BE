@@ -7,6 +7,9 @@ spring:
     username: ${DB_USERNAME:doto}
     password: ${DB_PASSWORD:doto}
 
+jwt:
+  secret: ${JWT_SECRET:local-only-do-not-use-in-production-min-32-bytes-secret}
+
 management:
   endpoints:
     web:
