@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.doto.domain.user.entity.User;
-import com.doto.domain.user.repository.UserRepository;
+import com.doto.domain.member.entity.Member;
+import com.doto.domain.member.repository.MemberRepository;
 import com.doto.global.config.JwtProperties;
-import com.doto.global.security.CustomUserDetails;
+import com.doto.global.security.CustomMemberDetails;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +27,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 class JwtAuthenticationFilterTest {
 
     @Mock
-    private UserRepository userRepository;
+    private MemberRepository memberRepository;
 
     private JwtTokenProvider jwtTokenProvider;
     private JwtAuthenticationFilter filter;
@@ -37,7 +37,7 @@ class JwtAuthenticationFilterTest {
         jwtTokenProvider = new JwtTokenProvider(
                 new JwtProperties("test-jwt-secret-key-must-be-long-enough-32bytes", 3600, 1209600)
         );
-        filter = new JwtAuthenticationFilter(jwtTokenProvider, userRepository);
+        filter = new JwtAuthenticationFilter(jwtTokenProvider, memberRepository);
     }
 
     @AfterEach
@@ -50,10 +50,10 @@ class JwtAuthenticationFilterTest {
 
         @Test
         void 인증_정보를_SecurityContext에_채운다() throws Exception {
-            User user = User.register("홍길동");
-            ReflectionTestUtils.setField(user, "id", 1L);
+            Member member = Member.register("홍길동");
+            ReflectionTestUtils.setField(member, "id", 1L);
             String token = jwtTokenProvider.createAccessToken(1L);
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
             MockHttpServletRequest request = new MockHttpServletRequest();
             request.addHeader("Authorization", "Bearer " + token);
@@ -64,7 +64,7 @@ class JwtAuthenticationFilterTest {
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             assertThat(authentication).isNotNull();
-            assertThat(((CustomUserDetails) authentication.getPrincipal()).getUserId()).isEqualTo(1L);
+            assertThat(((CustomMemberDetails) authentication.getPrincipal()).getMemberId()).isEqualTo(1L);
         }
     }
 
@@ -73,11 +73,11 @@ class JwtAuthenticationFilterTest {
 
         @Test
         void 토큰은_유효해도_계정이_비활성화됐으면_인증_정보를_채우지_않는다() throws Exception {
-            User user = User.register("홍길동");
-            ReflectionTestUtils.setField(user, "id", 1L);
-            user.deactivate();
+            Member member = Member.register("홍길동");
+            ReflectionTestUtils.setField(member, "id", 1L);
+            member.deactivate();
             String token = jwtTokenProvider.createAccessToken(1L);
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
             MockHttpServletRequest request = new MockHttpServletRequest();
             request.addHeader("Authorization", "Bearer " + token);
@@ -102,7 +102,7 @@ class JwtAuthenticationFilterTest {
             filter.doFilter(request, response, chain);
 
             assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
-            verifyNoInteractions(userRepository);
+            verifyNoInteractions(memberRepository);
         }
 
         @Test

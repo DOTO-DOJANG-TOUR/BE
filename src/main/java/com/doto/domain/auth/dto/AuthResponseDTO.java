@@ -1,11 +1,11 @@
 package com.doto.domain.auth.dto;
 
-import com.doto.domain.user.entity.User;
+import com.doto.domain.member.entity.Member;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record AuthResponseDTO(
         @Schema(description = "사용자 ID")
-        String userId,
+        String memberId,
 
         @Schema(description = "닉네임", example = "홍길동")
         String nickname,
@@ -17,10 +17,10 @@ public record AuthResponseDTO(
         String refreshToken
 ) {
 
-    public static AuthResponseDTO of(User user, String accessToken, String refreshToken) {
+    public static AuthResponseDTO of(Member member, String accessToken, String refreshToken) {
         return new AuthResponseDTO(
-                String.valueOf(user.getId()),
-                user.getNickname(),
+                String.valueOf(member.getId()),
+                member.getNickname(),
                 accessToken,
                 refreshToken
         );

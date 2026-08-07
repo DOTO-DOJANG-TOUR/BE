@@ -31,12 +31,12 @@ public class JwtTokenProvider {
         this.expirationSeconds = jwtProperties.expirationSeconds();
     }
 
-    public String createAccessToken(Long userId) {
+    public String createAccessToken(Long memberId) {
         Instant now = Instant.now();
         Instant expiry = now.plusSeconds(expirationSeconds);
 
         return Jwts.builder()
-                .subject(String.valueOf(userId))
+                .subject(String.valueOf(memberId))
                 .claim(CLAIM_TOKEN_TYPE, TOKEN_TYPE_ACCESS)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiry))
@@ -48,7 +48,7 @@ public class JwtTokenProvider {
         return expirationSeconds;
     }
 
-    public Long getUserId(String token) {
+    public Long getMemberId(String token) {
         return Long.valueOf(parseClaims(token).getSubject());
     }
 

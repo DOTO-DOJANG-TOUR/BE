@@ -8,8 +8,8 @@ import com.doto.domain.auth.dto.AuthResponseDTO;
 import com.doto.domain.auth.dto.RefreshRequestDTO;
 import com.doto.domain.auth.exception.AuthErrorCode;
 import com.doto.domain.auth.exception.AuthException;
-import com.doto.domain.user.entity.RefreshToken;
-import com.doto.domain.user.entity.User;
+import com.doto.domain.member.entity.RefreshToken;
+import com.doto.domain.member.entity.Member;
 import com.doto.global.security.jwt.JwtTokenProvider;
 import java.time.Instant;
 import org.junit.jupiter.api.Nested;
@@ -32,10 +32,10 @@ class RefreshServiceTest {
     @InjectMocks
     private RefreshService refreshService;
 
-    private User activeUser() {
-        User user = User.register("홍길동");
-        ReflectionTestUtils.setField(user, "id", 1L);
-        return user;
+    private Member activeMember() {
+        Member member = Member.register("홍길동");
+        ReflectionTestUtils.setField(member, "id", 1L);
+        return member;
     }
 
     @Nested
@@ -43,13 +43,13 @@ class RefreshServiceTest {
 
         @Test
         void 유효한_토큰이면_새_토큰_쌍을_발급한다() {
-            User user = activeUser();
-            RefreshToken token = RefreshToken.issue(user, "hash", Instant.now().plusSeconds(60));
+            Member member = activeMember();
+            RefreshToken token = RefreshToken.issue(member, "hash", Instant.now().plusSeconds(60));
             RefreshRequestDTO request = new RefreshRequestDTO("raw-refresh-token");
 
             when(refreshTokenService.validateAndRevoke("raw-refresh-token")).thenReturn(token);
             when(jwtTokenProvider.createAccessToken(1L)).thenReturn("new-access-token");
-            when(refreshTokenService.issue(user)).thenReturn("new-refresh-token");
+            when(refreshTokenService.issue(member)).thenReturn("new-refresh-token");
 
             AuthResponseDTO response = refreshService.refresh(request);
 
@@ -75,9 +75,9 @@ class RefreshServiceTest {
 
         @Test
         void 비활성화된_계정이면_예외를_던진다() {
-            User user = activeUser();
-            user.deactivate();
-            RefreshToken token = RefreshToken.issue(user, "hash", Instant.now().plusSeconds(60));
+            Member member = activeMember();
+            member.deactivate();
+            RefreshToken token = RefreshToken.issue(member, "hash", Instant.now().plusSeconds(60));
             RefreshRequestDTO request = new RefreshRequestDTO("raw-refresh-token");
 
             when(refreshTokenService.validateAndRevoke("raw-refresh-token")).thenReturn(token);
