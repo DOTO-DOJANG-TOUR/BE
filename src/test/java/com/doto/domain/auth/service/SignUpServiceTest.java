@@ -64,7 +64,7 @@ class SignUpServiceTest {
 
             AuthResponseDTO response = signUpService.signUp(request);
 
-            assertThat(response.memberId()).isEqualTo("1");
+            assertThat(response.userId()).isEqualTo("1");
             assertThat(response.nickname()).isEqualTo("홍길동");
             assertThat(response.accessToken()).isEqualTo("access-token");
             assertThat(response.refreshToken()).isEqualTo("refresh-token");

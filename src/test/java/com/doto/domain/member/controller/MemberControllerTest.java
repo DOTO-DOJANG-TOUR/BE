@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.doto.domain.member.dto.MemberResponseDTO;
+import com.doto.domain.member.dto.UserResponseDTO;
 import com.doto.domain.member.entity.Member;
 import com.doto.domain.member.service.MemberService;
 import com.doto.global.error.GlobalExceptionHandler;
@@ -66,7 +66,7 @@ class MemberControllerTest {
         @Test
         void 인증된_사용자면_200과_내_정보를_반환한다() throws Exception {
             authenticateAs(1L);
-            MemberResponseDTO response = new MemberResponseDTO(
+            UserResponseDTO response = new UserResponseDTO(
                     "1", "member@example.com", "홍길동", "ACTIVE", Instant.parse("2026-08-02T00:00:00Z")
             );
             when(memberService.getMyInfo(1L)).thenReturn(response);
@@ -90,7 +90,7 @@ class MemberControllerTest {
         @Test
         void 닉네임을_보내면_수정_후_최신_정보를_반환한다() throws Exception {
             authenticateAs(1L);
-            MemberResponseDTO response = new MemberResponseDTO(
+            UserResponseDTO response = new UserResponseDTO(
                     "1", "member@example.com", "김철수", "ACTIVE", Instant.parse("2026-08-02T00:00:00Z")
             );
             when(memberService.getMyInfo(1L)).thenReturn(response);

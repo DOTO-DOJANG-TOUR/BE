@@ -1,7 +1,7 @@
 package com.doto.domain.member.controller;
 
-import com.doto.domain.member.dto.MemberResponseDTO;
-import com.doto.domain.member.dto.MemberUpdateRequestDTO;
+import com.doto.domain.member.dto.UserResponseDTO;
+import com.doto.domain.member.dto.UserUpdateRequestDTO;
 import com.doto.domain.member.service.MemberService;
 import com.doto.global.api.CommonResponse;
 import com.doto.global.security.CustomMemberDetails;
@@ -16,16 +16,16 @@ public class MemberController implements MemberApi {
     private final MemberService memberService;
 
     @Override
-    public ResponseEntity<CommonResponse<MemberResponseDTO>> getMyInfo(CustomMemberDetails memberDetails) {
+    public ResponseEntity<CommonResponse<UserResponseDTO>> getMyInfo(CustomMemberDetails memberDetails) {
         return ResponseEntity.ok(
                 CommonResponse.success(memberService.getMyInfo(memberDetails.getMemberId()))
         );
     }
 
     @Override
-    public ResponseEntity<CommonResponse<MemberResponseDTO>> updateMyInfo(
+    public ResponseEntity<CommonResponse<UserResponseDTO>> updateMyInfo(
             CustomMemberDetails memberDetails,
-            MemberUpdateRequestDTO request
+            UserUpdateRequestDTO request
     ) {
         memberService.updateMyInfo(memberDetails.getMemberId(), request);
         return ResponseEntity.ok(

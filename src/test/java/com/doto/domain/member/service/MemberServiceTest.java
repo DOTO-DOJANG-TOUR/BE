@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
-import com.doto.domain.member.dto.MemberResponseDTO;
-import com.doto.domain.member.dto.MemberUpdateRequestDTO;
+import com.doto.domain.member.dto.UserResponseDTO;
+import com.doto.domain.member.dto.UserUpdateRequestDTO;
 import com.doto.domain.member.entity.GeneralAuthAccount;
 import com.doto.domain.member.entity.Member;
 import com.doto.domain.member.exception.MemberErrorCode;
@@ -49,9 +49,9 @@ class MemberServiceTest {
             when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
             when(generalAuthAccountRepository.findByMember_Id(1L)).thenReturn(Optional.of(account));
 
-            MemberResponseDTO response = memberService.getMyInfo(1L);
+            UserResponseDTO response = memberService.getMyInfo(1L);
 
-            assertThat(response.memberId()).isEqualTo("1");
+            assertThat(response.userId()).isEqualTo("1");
             assertThat(response.email()).isEqualTo("member@example.com");
             assertThat(response.nickname()).isEqualTo("홍길동");
         }
@@ -62,7 +62,7 @@ class MemberServiceTest {
             when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
             when(generalAuthAccountRepository.findByMember_Id(1L)).thenReturn(Optional.empty());
 
-            MemberResponseDTO response = memberService.getMyInfo(1L);
+            UserResponseDTO response = memberService.getMyInfo(1L);
 
             assertThat(response.email()).isNull();
         }
@@ -86,7 +86,7 @@ class MemberServiceTest {
             Member member = memberWithId(1L);
             when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
-            memberService.updateMyInfo(1L, new MemberUpdateRequestDTO("김철수"));
+            memberService.updateMyInfo(1L, new UserUpdateRequestDTO("김철수"));
 
             assertThat(member.getNickname()).isEqualTo("김철수");
         }
@@ -96,7 +96,7 @@ class MemberServiceTest {
             Member member = memberWithId(1L);
             when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
-            memberService.updateMyInfo(1L, new MemberUpdateRequestDTO(null));
+            memberService.updateMyInfo(1L, new UserUpdateRequestDTO(null));
 
             assertThat(member.getNickname()).isEqualTo("홍길동");
         }
@@ -106,7 +106,7 @@ class MemberServiceTest {
             when(memberRepository.findById(1L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() ->
-                    memberService.updateMyInfo(1L, new MemberUpdateRequestDTO("김철수"))
+                    memberService.updateMyInfo(1L, new UserUpdateRequestDTO("김철수"))
             )
                     .isInstanceOf(MemberException.class)
                     .extracting("errorCode")

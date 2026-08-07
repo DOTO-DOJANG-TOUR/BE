@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public record AuthResponseDTO(
         @Schema(description = "사용자 ID")
-        String memberId,
+        String userId,
 
         @Schema(description = "닉네임", example = "홍길동")
         String nickname,

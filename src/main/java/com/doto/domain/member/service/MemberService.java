@@ -1,7 +1,7 @@
 package com.doto.domain.member.service;
 
-import com.doto.domain.member.dto.MemberResponseDTO;
-import com.doto.domain.member.dto.MemberUpdateRequestDTO;
+import com.doto.domain.member.dto.UserResponseDTO;
+import com.doto.domain.member.dto.UserUpdateRequestDTO;
 import com.doto.domain.member.entity.Member;
 import com.doto.domain.member.exception.MemberErrorCode;
 import com.doto.domain.member.exception.MemberException;
@@ -20,7 +20,7 @@ public class MemberService {
     private final GeneralAuthAccountRepository generalAuthAccountRepository;
 
     @Transactional(readOnly = true)
-    public MemberResponseDTO getMyInfo(Long memberId) {
+    public UserResponseDTO getMyInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
@@ -28,11 +28,11 @@ public class MemberService {
                 .map(account -> account.getEmail())
                 .orElse(null);
 
-        return MemberResponseDTO.from(member, email);
+        return UserResponseDTO.from(member, email);
     }
 
     @Transactional
-    public void updateMyInfo(Long memberId, MemberUpdateRequestDTO request) {
+    public void updateMyInfo(Long memberId, UserUpdateRequestDTO request) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 

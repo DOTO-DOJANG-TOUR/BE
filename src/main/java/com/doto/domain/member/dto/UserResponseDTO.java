@@ -4,11 +4,11 @@ import com.doto.domain.member.entity.Member;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 
-public record MemberResponseDTO(
+public record UserResponseDTO(
         @Schema(description = "사용자 ID")
-        String memberId,
+        String userId,
 
-        @Schema(description = "이메일", example = "member@example.com")
+        @Schema(description = "이메일", example = "user@example.com")
         String email,
 
         @Schema(description = "닉네임", example = "홍길동")
@@ -21,8 +21,8 @@ public record MemberResponseDTO(
         Instant createdAt
 ) {
 
-    public static MemberResponseDTO from(Member member, String email) {
-        return new MemberResponseDTO(
+    public static UserResponseDTO from(Member member, String email) {
+        return new UserResponseDTO(
                 String.valueOf(member.getId()),
                 email,
                 member.getNickname(),

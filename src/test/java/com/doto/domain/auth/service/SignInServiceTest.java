@@ -66,7 +66,7 @@ class SignInServiceTest {
 
             AuthResponseDTO response = signInService.signIn(request);
 
-            assertThat(response.memberId()).isEqualTo("1");
+            assertThat(response.userId()).isEqualTo("1");
             assertThat(response.accessToken()).isEqualTo("access-token");
             assertThat(response.refreshToken()).isEqualTo("refresh-token");
         }

@@ -1,7 +1,7 @@
 package com.doto.domain.member.controller;
 
-import com.doto.domain.member.dto.MemberResponseDTO;
-import com.doto.domain.member.dto.MemberUpdateRequestDTO;
+import com.doto.domain.member.dto.UserResponseDTO;
+import com.doto.domain.member.dto.UserUpdateRequestDTO;
 import com.doto.domain.member.exception.MemberErrorCode;
 import com.doto.global.api.CommonResponse;
 import com.doto.global.config.SwaggerConfig;
@@ -27,7 +27,7 @@ public interface MemberApi {
     @ApiResponse(responseCode = "200", description = "내 정보 조회 성공")
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     @GetMapping("/api/v1/members/me")
-    ResponseEntity<CommonResponse<MemberResponseDTO>> getMyInfo(
+    ResponseEntity<CommonResponse<UserResponseDTO>> getMyInfo(
             @Parameter(hidden = true) @CurrentMember CustomMemberDetails memberDetails
     );
 
@@ -43,9 +43,9 @@ public interface MemberApi {
     @ApiResponse(responseCode = "200", description = "내 정보 수정 성공")
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     @PatchMapping("/api/v1/members/me")
-    ResponseEntity<CommonResponse<MemberResponseDTO>> updateMyInfo(
+    ResponseEntity<CommonResponse<UserResponseDTO>> updateMyInfo(
             @Parameter(hidden = true) @CurrentMember CustomMemberDetails memberDetails,
-            @Valid @RequestBody MemberUpdateRequestDTO request
+            @Valid @RequestBody UserUpdateRequestDTO request
     );
 
 }
