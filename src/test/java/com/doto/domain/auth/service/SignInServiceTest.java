@@ -12,9 +12,9 @@ import com.doto.domain.auth.dto.AuthResponseDTO;
 import com.doto.domain.auth.dto.SignInRequestDTO;
 import com.doto.domain.auth.exception.AuthErrorCode;
 import com.doto.domain.auth.exception.AuthException;
-import com.doto.domain.user.entity.GeneralAuthAccount;
-import com.doto.domain.user.entity.User;
-import com.doto.domain.user.repository.GeneralAuthAccountRepository;
+import com.doto.domain.member.entity.GeneralAuthAccount;
+import com.doto.domain.member.entity.Member;
+import com.doto.domain.member.repository.GeneralAuthAccountRepository;
 import com.doto.global.security.jwt.JwtTokenProvider;
 import java.util.Optional;
 import org.junit.jupiter.api.Nested;
@@ -44,10 +44,10 @@ class SignInServiceTest {
     @InjectMocks
     private SignInService signInService;
 
-    private User activeUser() {
-        User user = User.register("홍길동");
-        ReflectionTestUtils.setField(user, "id", 1L);
-        return user;
+    private Member activeMember() {
+        Member member = Member.register("홍길동");
+        ReflectionTestUtils.setField(member, "id", 1L);
+        return member;
     }
 
     @Nested
@@ -55,14 +55,14 @@ class SignInServiceTest {
 
         @Test
         void 이메일과_비밀번호가_맞으면_로그인에_성공한다() {
-            User user = activeUser();
-            GeneralAuthAccount account = GeneralAuthAccount.create(user, "user@example.com", "encoded");
-            SignInRequestDTO request = new SignInRequestDTO("user@example.com", "raw-password");
+            Member member = activeMember();
+            GeneralAuthAccount account = GeneralAuthAccount.create(member, "member@example.com", "encoded");
+            SignInRequestDTO request = new SignInRequestDTO("member@example.com", "raw-password");
 
-            when(generalAuthAccountRepository.findByEmail("user@example.com")).thenReturn(Optional.of(account));
+            when(generalAuthAccountRepository.findByEmail("member@example.com")).thenReturn(Optional.of(account));
             when(passwordEncoder.matches("raw-password", "encoded")).thenReturn(true);
             when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
-            when(refreshTokenService.issue(user)).thenReturn("refresh-token");
+            when(refreshTokenService.issue(member)).thenReturn("refresh-token");
 
             AuthResponseDTO response = signInService.signIn(request);
 
@@ -99,11 +99,11 @@ class SignInServiceTest {
 
         @Test
         void 비밀번호가_틀리면_예외를_던진다() {
-            User user = activeUser();
-            GeneralAuthAccount account = GeneralAuthAccount.create(user, "user@example.com", "encoded");
-            SignInRequestDTO request = new SignInRequestDTO("user@example.com", "wrong-password");
+            Member member = activeMember();
+            GeneralAuthAccount account = GeneralAuthAccount.create(member, "member@example.com", "encoded");
+            SignInRequestDTO request = new SignInRequestDTO("member@example.com", "wrong-password");
 
-            when(generalAuthAccountRepository.findByEmail("user@example.com")).thenReturn(Optional.of(account));
+            when(generalAuthAccountRepository.findByEmail("member@example.com")).thenReturn(Optional.of(account));
             when(passwordEncoder.matches("wrong-password", "encoded")).thenReturn(false);
 
             assertThatThrownBy(() -> signInService.signIn(request))
@@ -116,12 +116,12 @@ class SignInServiceTest {
 
         @Test
         void 비활성화된_계정이면_예외를_던진다() {
-            User user = activeUser();
-            user.deactivate();
-            GeneralAuthAccount account = GeneralAuthAccount.create(user, "user@example.com", "encoded");
-            SignInRequestDTO request = new SignInRequestDTO("user@example.com", "raw-password");
+            Member member = activeMember();
+            member.deactivate();
+            GeneralAuthAccount account = GeneralAuthAccount.create(member, "member@example.com", "encoded");
+            SignInRequestDTO request = new SignInRequestDTO("member@example.com", "raw-password");
 
-            when(generalAuthAccountRepository.findByEmail("user@example.com")).thenReturn(Optional.of(account));
+            when(generalAuthAccountRepository.findByEmail("member@example.com")).thenReturn(Optional.of(account));
             when(passwordEncoder.matches("raw-password", "encoded")).thenReturn(true);
 
             assertThatThrownBy(() -> signInService.signIn(request))

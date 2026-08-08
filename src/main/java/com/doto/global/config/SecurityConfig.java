@@ -1,5 +1,6 @@
 package com.doto.global.config;
 
+import com.doto.domain.member.entity.Authority;
 import com.doto.global.security.JsonAuthenticationEntryPoint;
 import com.doto.global.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasAuthority(Authority.ADMIN_ACCESS.name())
                         .anyRequest().authenticated())
                 .exceptionHandling(exception ->
                         exception.authenticationEntryPoint(jsonAuthenticationEntryPoint))

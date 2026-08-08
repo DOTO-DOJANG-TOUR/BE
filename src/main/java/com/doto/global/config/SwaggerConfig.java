@@ -3,7 +3,7 @@ package com.doto.global.config;
 import com.doto.global.api.CommonResponse;
 import com.doto.global.error.CommonErrorCode;
 import com.doto.global.error.ErrorCode;
-import com.doto.global.security.CurrentUser;
+import com.doto.global.security.CurrentMember;
 import com.doto.global.swagger.ApiErrorCodeExamples;
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverters;
@@ -37,9 +37,9 @@ public class SwaggerConfig {
     private static final String COMMON_RESPONSE_SCHEMA = "CommonResponse";
 
     static {
-        // @CurrentUser로 주입되는 인증 정보는 SecurityContext에서 직접 채워지므로
+        // @CurrentMember로 주입되는 인증 정보는 SecurityContext에서 직접 채워지므로
         // 요청 파라미터로 노출하지 않는다.
-        SpringDocUtils.getConfig().addAnnotationsToIgnore(CurrentUser.class);
+        SpringDocUtils.getConfig().addAnnotationsToIgnore(CurrentMember.class);
     }
 
     @Bean

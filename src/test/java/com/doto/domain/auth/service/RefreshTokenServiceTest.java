@@ -10,9 +10,9 @@ import static org.mockito.Mockito.when;
 
 import com.doto.domain.auth.exception.AuthErrorCode;
 import com.doto.domain.auth.exception.AuthException;
-import com.doto.domain.user.entity.RefreshToken;
-import com.doto.domain.user.entity.User;
-import com.doto.domain.user.repository.RefreshTokenRepository;
+import com.doto.domain.member.entity.RefreshToken;
+import com.doto.domain.member.entity.Member;
+import com.doto.domain.member.repository.RefreshTokenRepository;
 import com.doto.global.security.HashTokenUtil;
 import com.doto.global.config.JwtProperties;
 import java.time.Instant;
@@ -35,7 +35,7 @@ class RefreshTokenServiceTest {
     private final JwtProperties jwtProperties =
             new JwtProperties("test-jwt-secret-key-must-be-long-enough-32bytes", 3600, 1209600);
 
-    private final User user = User.register("홍길동");
+    private final Member member = Member.register("홍길동");
 
     private RefreshTokenService refreshTokenService;
 
@@ -51,14 +51,14 @@ class RefreshTokenServiceTest {
         void 원문_토큰을_반환하고_해시만_저장한다() {
             ArgumentCaptor<RefreshToken> captor = ArgumentCaptor.forClass(RefreshToken.class);
 
-            String rawToken = refreshTokenService.issue(user);
+            String rawToken = refreshTokenService.issue(member);
 
             verify(refreshTokenRepository).save(captor.capture());
             RefreshToken saved = captor.getValue();
             assertThat(rawToken).isNotBlank();
             assertThat(saved.getTokenHash()).isEqualTo(HashTokenUtil.hash(rawToken));
             assertThat(saved.getTokenHash()).isNotEqualTo(rawToken);
-            assertThat(saved.getUser()).isEqualTo(user);
+            assertThat(saved.getMember()).isEqualTo(member);
         }
     }
 
@@ -69,7 +69,7 @@ class RefreshTokenServiceTest {
         void 사용_가능한_토큰이면_원자적으로_검증_후_즉시_폐기한다() {
             String rawToken = "raw-token";
             RefreshToken token =
-                    RefreshToken.issue(user, HashTokenUtil.hash(rawToken), Instant.now().plusSeconds(60));
+                    RefreshToken.issue(member, HashTokenUtil.hash(rawToken), Instant.now().plusSeconds(60));
             ReflectionTestUtils.setField(token, "id", 1L);
             when(refreshTokenRepository.findByTokenHash(HashTokenUtil.hash(rawToken)))
                     .thenReturn(Optional.of(token));
@@ -97,7 +97,7 @@ class RefreshTokenServiceTest {
         void 원자적_폐기가_0행이면_만료됐거나_이미_폐기된_것으로_보고_예외를_던진다() {
             String rawToken = "expired-or-revoked-token";
             RefreshToken token =
-                    RefreshToken.issue(user, HashTokenUtil.hash(rawToken), Instant.now().plusSeconds(60));
+                    RefreshToken.issue(member, HashTokenUtil.hash(rawToken), Instant.now().plusSeconds(60));
             ReflectionTestUtils.setField(token, "id", 1L);
             when(refreshTokenRepository.findByTokenHash(HashTokenUtil.hash(rawToken)))
                     .thenReturn(Optional.of(token));
@@ -113,7 +113,7 @@ class RefreshTokenServiceTest {
         void 동시에_같은_토큰으로_재발급을_시도하면_한_쪽만_성공한다() {
             String rawToken = "raced-token";
             RefreshToken token =
-                    RefreshToken.issue(user, HashTokenUtil.hash(rawToken), Instant.now().plusSeconds(60));
+                    RefreshToken.issue(member, HashTokenUtil.hash(rawToken), Instant.now().plusSeconds(60));
             ReflectionTestUtils.setField(token, "id", 1L);
             when(refreshTokenRepository.findByTokenHash(HashTokenUtil.hash(rawToken)))
                     .thenReturn(Optional.of(token));
@@ -139,7 +139,7 @@ class RefreshTokenServiceTest {
         void 존재하는_토큰은_폐기된다() {
             String rawToken = "raw-token";
             RefreshToken token =
-                    RefreshToken.issue(user, HashTokenUtil.hash(rawToken), Instant.now().plusSeconds(60));
+                    RefreshToken.issue(member, HashTokenUtil.hash(rawToken), Instant.now().plusSeconds(60));
             when(refreshTokenRepository.findByTokenHash(HashTokenUtil.hash(rawToken)))
                     .thenReturn(Optional.of(token));
 

@@ -2,9 +2,9 @@ package com.doto.domain.auth.service;
 
 import com.doto.domain.auth.exception.AuthErrorCode;
 import com.doto.domain.auth.exception.AuthException;
-import com.doto.domain.user.entity.RefreshToken;
-import com.doto.domain.user.entity.User;
-import com.doto.domain.user.repository.RefreshTokenRepository;
+import com.doto.domain.member.entity.RefreshToken;
+import com.doto.domain.member.entity.Member;
+import com.doto.domain.member.repository.RefreshTokenRepository;
 import com.doto.global.security.HashTokenUtil;
 import com.doto.global.config.JwtProperties;
 import java.time.Instant;
@@ -21,12 +21,12 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProperties jwtProperties;
 
-    public String issue(User user) {
+    public String issue(Member member) {
         String rawToken = HashTokenUtil.generate();
         String tokenHash = HashTokenUtil.hash(rawToken);
         Instant expiresAt = Instant.now().plusSeconds(jwtProperties.refreshExpirationSeconds());
 
-        refreshTokenRepository.save(RefreshToken.issue(user, tokenHash, expiresAt));
+        refreshTokenRepository.save(RefreshToken.issue(member, tokenHash, expiresAt));
 
         return rawToken;
     }

@@ -11,10 +11,10 @@ import com.doto.domain.auth.dto.AuthResponseDTO;
 import com.doto.domain.auth.dto.SignUpRequestDTO;
 import com.doto.domain.auth.exception.AuthErrorCode;
 import com.doto.domain.auth.exception.AuthException;
-import com.doto.domain.user.entity.GeneralAuthAccount;
-import com.doto.domain.user.entity.User;
-import com.doto.domain.user.repository.GeneralAuthAccountRepository;
-import com.doto.domain.user.repository.UserRepository;
+import com.doto.domain.member.entity.GeneralAuthAccount;
+import com.doto.domain.member.entity.Member;
+import com.doto.domain.member.repository.GeneralAuthAccountRepository;
+import com.doto.domain.member.repository.MemberRepository;
 import com.doto.global.security.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 class SignUpServiceTest {
 
     @Mock
-    private UserRepository userRepository;
+    private MemberRepository memberRepository;
 
     @Mock
     private GeneralAuthAccountRepository generalAuthAccountRepository;
@@ -51,16 +51,16 @@ class SignUpServiceTest {
 
         @Test
         void 이메일이_중복되지_않으면_회원가입에_성공한다() {
-            SignUpRequestDTO request = new SignUpRequestDTO("user@example.com", "password1", "홍길동");
-            when(generalAuthAccountRepository.existsByEmail("user@example.com")).thenReturn(false);
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-                User user = invocation.getArgument(0);
-                ReflectionTestUtils.setField(user, "id", 1L);
-                return user;
+            SignUpRequestDTO request = new SignUpRequestDTO("member@example.com", "password1", "홍길동");
+            when(generalAuthAccountRepository.existsByEmail("member@example.com")).thenReturn(false);
+            when(memberRepository.save(any(Member.class))).thenAnswer(invocation -> {
+                Member member = invocation.getArgument(0);
+                ReflectionTestUtils.setField(member, "id", 1L);
+                return member;
             });
             when(passwordEncoder.encode("password1")).thenReturn("encoded-password");
             when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
-            when(refreshTokenService.issue(any(User.class))).thenReturn("refresh-token");
+            when(refreshTokenService.issue(any(Member.class))).thenReturn("refresh-token");
 
             AuthResponseDTO response = signUpService.signUp(request);
 
@@ -77,15 +77,15 @@ class SignUpServiceTest {
 
         @Test
         void 이메일이_이미_있으면_예외를_던지고_이후_과정은_진행하지_않는다() {
-            SignUpRequestDTO request = new SignUpRequestDTO("user@example.com", "password1", "홍길동");
-            when(generalAuthAccountRepository.existsByEmail("user@example.com")).thenReturn(true);
+            SignUpRequestDTO request = new SignUpRequestDTO("member@example.com", "password1", "홍길동");
+            when(generalAuthAccountRepository.existsByEmail("member@example.com")).thenReturn(true);
 
             assertThatThrownBy(() -> signUpService.signUp(request))
                     .isInstanceOf(AuthException.class)
                     .extracting("errorCode")
                     .isEqualTo(AuthErrorCode.DUPLICATE_EMAIL);
 
-            verifyNoInteractions(userRepository, jwtTokenProvider, refreshTokenService);
+            verifyNoInteractions(memberRepository, jwtTokenProvider, refreshTokenService);
         }
     }
 }

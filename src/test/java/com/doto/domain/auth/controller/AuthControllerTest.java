@@ -57,7 +57,7 @@ class AuthControllerTest {
             mockMvc.perform(post("/api/v1/auth/sign-up")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
-                                    {"email":"user@example.com","password":"password1","nickname":"홍길동"}
+                                    {"email":"member@example.com","password":"password1","nickname":"홍길동"}
                                     """))
                     .andExpect(status().isCreated())
                     .andExpect(content().json(objectMapper.writeValueAsString(
@@ -82,7 +82,7 @@ class AuthControllerTest {
             mockMvc.perform(post("/api/v1/auth/sign-up")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
-                                    {"email":"user@example.com","password":"password1","nickname":"홍길동"}
+                                    {"email":"member@example.com","password":"password1","nickname":"홍길동"}
                                     """))
                     .andExpect(status().isConflict())
                     .andExpect(content().json(objectMapper.writeValueAsString(
@@ -102,7 +102,7 @@ class AuthControllerTest {
             mockMvc.perform(post("/api/v1/auth/sign-in")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
-                                    {"email":"user@example.com","password":"password1"}
+                                    {"email":"member@example.com","password":"password1"}
                                     """))
                     .andExpect(status().isOk())
                     .andExpect(content().json(objectMapper.writeValueAsString(
@@ -117,7 +117,7 @@ class AuthControllerTest {
             mockMvc.perform(post("/api/v1/auth/sign-in")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
-                                    {"email":"user@example.com","password":"wrong"}
+                                    {"email":"member@example.com","password":"wrong"}
                                     """))
                     .andExpect(status().isUnauthorized())
                     .andExpect(content().json(objectMapper.writeValueAsString(

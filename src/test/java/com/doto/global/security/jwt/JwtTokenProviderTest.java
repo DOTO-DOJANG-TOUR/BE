@@ -23,7 +23,7 @@ class JwtTokenProviderTest {
         void 발급한_토큰에서_사용자_ID를_다시_꺼낼_수_있다() {
             String token = jwtTokenProvider.createAccessToken(123456789L);
 
-            assertThat(jwtTokenProvider.getUserId(token)).isEqualTo(123456789L);
+            assertThat(jwtTokenProvider.getMemberId(token)).isEqualTo(123456789L);
         }
 
         @Test

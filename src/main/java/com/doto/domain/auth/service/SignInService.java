@@ -4,10 +4,10 @@ import com.doto.domain.auth.dto.AuthResponseDTO;
 import com.doto.domain.auth.dto.SignInRequestDTO;
 import com.doto.domain.auth.exception.AuthErrorCode;
 import com.doto.domain.auth.exception.AuthException;
-import com.doto.domain.user.entity.GeneralAuthAccount;
-import com.doto.domain.user.entity.User;
-import com.doto.domain.user.entity.UserStatus;
-import com.doto.domain.user.repository.GeneralAuthAccountRepository;
+import com.doto.domain.member.entity.GeneralAuthAccount;
+import com.doto.domain.member.entity.Member;
+import com.doto.domain.member.entity.MemberStatus;
+import com.doto.domain.member.repository.GeneralAuthAccountRepository;
 import com.doto.global.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,15 +42,15 @@ public class SignInService {
             throw new AuthException(AuthErrorCode.INVALID_CREDENTIALS);
         }
 
-        User user = account.getUser();
-        if (user.getStatus() != UserStatus.ACTIVE) {
+        Member member = account.getMember();
+        if (member.getStatus() != MemberStatus.ACTIVE) {
             throw new AuthException(AuthErrorCode.INACTIVE_ACCOUNT);
         }
 
-        String accessToken = jwtTokenProvider.createAccessToken(user.getId());
-        String refreshToken = refreshTokenService.issue(user);
+        String accessToken = jwtTokenProvider.createAccessToken(member.getId());
+        String refreshToken = refreshTokenService.issue(member);
 
-        return AuthResponseDTO.of(user, accessToken, refreshToken);
+        return AuthResponseDTO.of(member, accessToken, refreshToken);
     }
 
 }

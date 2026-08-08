@@ -35,7 +35,7 @@ class AuthUseCaseTest {
 
     @Test
     void 회원가입은_SignUpService에_위임한다() {
-        SignUpRequestDTO request = new SignUpRequestDTO("user@example.com", "password1", "홍길동");
+        SignUpRequestDTO request = new SignUpRequestDTO("member@example.com", "password1", "홍길동");
         AuthResponseDTO expected = new AuthResponseDTO("1", "홍길동", "access", "refresh");
         when(signUpService.signUp(request)).thenReturn(expected);
 
@@ -46,7 +46,7 @@ class AuthUseCaseTest {
 
     @Test
     void 로그인은_SignInService에_위임한다() {
-        SignInRequestDTO request = new SignInRequestDTO("user@example.com", "password1");
+        SignInRequestDTO request = new SignInRequestDTO("member@example.com", "password1");
         AuthResponseDTO expected = new AuthResponseDTO("1", "홍길동", "access", "refresh");
         when(signInService.signIn(request)).thenReturn(expected);
 

@@ -34,7 +34,7 @@ class AuthFlowIntegrationTest {
 
     @Test
     void 회원가입_로그인_재발급_로그아웃_전체_흐름이_정상적으로_동작한다() throws Exception {
-        String email = "flow-user@example.com";
+        String email = "flow-member@example.com";
         String password = "stringst";
 
         String signUpBody = objectMapper.writeValueAsString(new SignUpRequest(email, password, "홍길동"));
@@ -59,12 +59,12 @@ class AuthFlowIntegrationTest {
         String accessToken = readResultField(signInResult, "accessToken");
         String refreshToken = readResultField(signInResult, "refreshToken");
 
-        mockMvc.perform(get("/api/v1/users/me")
+        mockMvc.perform(get("/api/v1/members/me")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.nickname").value("홍길동"));
 
-        mockMvc.perform(patch("/api/v1/users/me")
+        mockMvc.perform(patch("/api/v1/members/me")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"nickname\": \"수정된닉네임\"}"))
@@ -107,13 +107,13 @@ class AuthFlowIntegrationTest {
 
     @Test
     void 인증_없이_내_정보_조회를_시도하면_401이_난다() throws Exception {
-        mockMvc.perform(get("/api/v1/users/me"))
+        mockMvc.perform(get("/api/v1/members/me"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void 이미_가입된_이메일로_회원가입하면_409가_난다() throws Exception {
-        String email = "duplicate-user@example.com";
+        String email = "duplicate-member@example.com";
         String signUpBody = objectMapper.writeValueAsString(new SignUpRequest(email, "stringst", "중복유저"));
 
         mockMvc.perform(post("/api/v1/auth/sign-up")
@@ -130,7 +130,7 @@ class AuthFlowIntegrationTest {
 
     @Test
     void 잘못된_비밀번호로_로그인하면_401이_난다() throws Exception {
-        String email = "wrong-password-user@example.com";
+        String email = "wrong-password-member@example.com";
         String signUpBody = objectMapper.writeValueAsString(new SignUpRequest(email, "stringst", "테스트유저"));
 
         mockMvc.perform(post("/api/v1/auth/sign-up")
