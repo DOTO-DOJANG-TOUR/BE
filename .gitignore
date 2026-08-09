@@ -7,3 +7,4 @@ out/
 .env
 *.log
 !gradle/wrapper/gradle-wrapper.jar
+src/main/resources/application-secret.properties
