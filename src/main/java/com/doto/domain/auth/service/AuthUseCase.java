@@ -26,8 +26,12 @@ public class AuthUseCase {
         return signInService.signIn(request);
     }
 
-    public AuthResponseDTO socialSignIn(SocialSignInRequestDTO request) {
-        return socialSignInService.signIn(request);
+    public AuthResponseDTO kakaoSignIn(SocialSignInRequestDTO request) {
+        return socialSignInService.kakaoSignIn(request);
+    }
+
+    public AuthResponseDTO googleSignIn(SocialSignInRequestDTO request) {
+        return socialSignInService.googleSignIn(request);
     }
 
     public AuthResponseDTO refresh(RefreshRequestDTO request) {

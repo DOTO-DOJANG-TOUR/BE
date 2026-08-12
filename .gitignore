@@ -5,6 +5,11 @@ out/
 *.iml
 .DS_Store
 .env
+.env.*
+application-secret.properties
+*.pem
+*.p12
+*.jks
 *.log
 !gradle/wrapper/gradle-wrapper.jar
 src/main/resources/application-secret.properties
