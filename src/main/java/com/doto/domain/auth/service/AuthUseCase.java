@@ -4,6 +4,7 @@ import com.doto.domain.auth.dto.AuthResponseDTO;
 import com.doto.domain.auth.dto.RefreshRequestDTO;
 import com.doto.domain.auth.dto.SignInRequestDTO;
 import com.doto.domain.auth.dto.SignUpRequestDTO;
+import com.doto.domain.auth.dto.SocialSignInRequestDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ public class AuthUseCase {
     private final SignInService signInService;
     private final RefreshService refreshService;
     private final SignOutService signOutService;
+    private final SocialSignInService socialSignInService;
 
     public AuthResponseDTO signUp(SignUpRequestDTO request) {
         return signUpService.signUp(request);
@@ -22,6 +24,14 @@ public class AuthUseCase {
 
     public AuthResponseDTO signIn(SignInRequestDTO request) {
         return signInService.signIn(request);
+    }
+
+    public AuthResponseDTO kakaoSignIn(SocialSignInRequestDTO request) {
+        return socialSignInService.kakaoSignIn(request);
+    }
+
+    public AuthResponseDTO googleSignIn(SocialSignInRequestDTO request) {
+        return socialSignInService.googleSignIn(request);
     }
 
     public AuthResponseDTO refresh(RefreshRequestDTO request) {

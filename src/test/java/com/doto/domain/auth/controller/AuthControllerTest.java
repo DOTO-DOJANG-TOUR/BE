@@ -127,6 +127,86 @@ class AuthControllerTest {
     }
 
     @Nested
+    class 카카오_로그인 {
+
+        @Test
+        void 성공하면_200과_토큰을_반환한다() throws Exception {
+            AuthResponseDTO response = new AuthResponseDTO("1", "홍길동", "access-token", "refresh-token");
+            when(authUseCase.kakaoSignIn(any())).thenReturn(response);
+
+            mockMvc.perform(post("/api/v1/auth/kakao")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"idToken":"kakao-id-token"}
+                                    """))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.success(response)
+                    )));
+        }
+
+        @Test
+        void ID_토큰이_유효하지_않으면_401을_반환한다() throws Exception {
+            when(authUseCase.kakaoSignIn(any())).thenThrow(new AuthException(AuthErrorCode.INVALID_ID_TOKEN));
+
+            mockMvc.perform(post("/api/v1/auth/kakao")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"idToken":"bad-token"}
+                                    """))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.error(AuthErrorCode.INVALID_ID_TOKEN)
+                    )));
+        }
+
+        @Test
+        void ID_토큰이_비어있으면_400을_반환한다() throws Exception {
+            mockMvc.perform(post("/api/v1/auth/kakao")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"idToken":""}
+                                    """))
+                    .andExpect(status().isBadRequest());
+        }
+    }
+
+    @Nested
+    class 구글_로그인 {
+
+        @Test
+        void 성공하면_200과_토큰을_반환한다() throws Exception {
+            AuthResponseDTO response = new AuthResponseDTO("1", "Jane", "access-token", "refresh-token");
+            when(authUseCase.googleSignIn(any())).thenReturn(response);
+
+            mockMvc.perform(post("/api/v1/auth/google")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"idToken":"google-id-token"}
+                                    """))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.success(response)
+                    )));
+        }
+
+        @Test
+        void ID_토큰이_유효하지_않으면_401을_반환한다() throws Exception {
+            when(authUseCase.googleSignIn(any())).thenThrow(new AuthException(AuthErrorCode.INVALID_ID_TOKEN));
+
+            mockMvc.perform(post("/api/v1/auth/google")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"idToken":"bad-token"}
+                                    """))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.error(AuthErrorCode.INVALID_ID_TOKEN)
+                    )));
+        }
+    }
+
+    @Nested
     class 재발급 {
 
         @Test

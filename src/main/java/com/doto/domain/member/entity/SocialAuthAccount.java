@@ -84,4 +84,9 @@ public class SocialAuthAccount extends BaseTimeEntity {
                 .build();
     }
 
+    /** 재로그인 시 제공자로부터 받은 최신 이메일로 갱신한다 */
+    public void updateEmail(String email) {
+        this.email = email;
+    }
+
 }

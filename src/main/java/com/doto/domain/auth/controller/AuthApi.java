@@ -4,6 +4,7 @@ import com.doto.domain.auth.dto.AuthResponseDTO;
 import com.doto.domain.auth.dto.RefreshRequestDTO;
 import com.doto.domain.auth.dto.SignInRequestDTO;
 import com.doto.domain.auth.dto.SignUpRequestDTO;
+import com.doto.domain.auth.dto.SocialSignInRequestDTO;
 import com.doto.domain.auth.exception.AuthErrorCode;
 import com.doto.global.api.CommonResponse;
 import com.doto.global.swagger.ApiErrorCodeExamples;
@@ -28,6 +29,35 @@ public interface AuthApi {
     @ApiResponse(responseCode = "200", description = "로그인 성공")
     @PostMapping("/api/v1/auth/sign-in")
     ResponseEntity<CommonResponse<AuthResponseDTO>> signIn(@Valid @RequestBody SignInRequestDTO request);
+
+    @Operation(
+            summary = "카카오 소셜 로그인",
+            description = """
+                    카카오 로그인으로 발급받은 ID 토큰(OIDC)을 검증해 로그인 또는 회원가입을 처리합니다.
+
+                    - 클라이언트는 카카오 로그인 요청 시 scope에 "openid"를 포함해야 ID 토큰을 발급받을 수 있습니다.
+                    - 처음 로그인하는 사용자는 자동으로 회원가입 처리되며, 응답 형식은 sign-in과 동일합니다.
+                    - ID 토큰의 서명, 발급자(iss), 대상(aud), 만료(exp) 검증에 실패하면 \
+                    401 AUTH-401-004(유효하지 않은 소셜 로그인 ID 토큰입니다)가 납니다.
+                    """
+    )
+    @ApiResponse(responseCode = "200", description = "로그인/회원가입 성공")
+    @PostMapping("/api/v1/auth/kakao")
+    ResponseEntity<CommonResponse<AuthResponseDTO>> kakaoSignIn(@Valid @RequestBody SocialSignInRequestDTO request);
+
+    @Operation(
+            summary = "구글 소셜 로그인",
+            description = """
+                    구글 로그인으로 발급받은 ID 토큰(OIDC)을 검증해 로그인 또는 회원가입을 처리합니다.
+
+                    - 처음 로그인하는 사용자는 자동으로 회원가입 처리되며, 응답 형식은 sign-in과 동일합니다.
+                    - ID 토큰의 서명, 발급자(iss), 대상(aud), 만료(exp) 검증에 실패하면 \
+                    401 AUTH-401-004(유효하지 않은 소셜 로그인 ID 토큰입니다)가 납니다.
+                    """
+    )
+    @ApiResponse(responseCode = "200", description = "로그인/회원가입 성공")
+    @PostMapping("/api/v1/auth/google")
+    ResponseEntity<CommonResponse<AuthResponseDTO>> googleSignIn(@Valid @RequestBody SocialSignInRequestDTO request);
 
     @Operation(
             summary = "액세스 토큰 재발급",
