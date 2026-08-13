@@ -38,7 +38,7 @@ public interface AuthApi {
                     - 클라이언트는 카카오 로그인 요청 시 scope에 "openid"를 포함해야 ID 토큰을 발급받을 수 있습니다.
                     - 처음 로그인하는 사용자는 자동으로 회원가입 처리되며, 응답 형식은 sign-in과 동일합니다.
                     - ID 토큰의 서명, 발급자(iss), 대상(aud), 만료(exp) 검증에 실패하면 \
-                    401 AUTH-401-004(유효하지 않은 소셜 로그인 ID 토큰입니다)가 납니다.
+                    401 AUTH-401-004(유효하지 않은 소셜 로그인 토큰입니다)가 납니다.
                     """
     )
     @ApiResponse(responseCode = "200", description = "로그인/회원가입 성공")
@@ -52,7 +52,7 @@ public interface AuthApi {
 
                     - 처음 로그인하는 사용자는 자동으로 회원가입 처리되며, 응답 형식은 sign-in과 동일합니다.
                     - ID 토큰의 서명, 발급자(iss), 대상(aud), 만료(exp) 검증에 실패하면 \
-                    401 AUTH-401-004(유효하지 않은 소셜 로그인 ID 토큰입니다)가 납니다.
+                    401 AUTH-401-004(유효하지 않은 소셜 로그인 토큰입니다)가 납니다.
                     """
     )
     @ApiResponse(responseCode = "200", description = "로그인/회원가입 성공")

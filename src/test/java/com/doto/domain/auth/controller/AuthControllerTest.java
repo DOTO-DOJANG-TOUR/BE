@@ -147,7 +147,7 @@ class AuthControllerTest {
 
         @Test
         void ID_토큰이_유효하지_않으면_401을_반환한다() throws Exception {
-            when(authUseCase.kakaoSignIn(any())).thenThrow(new AuthException(AuthErrorCode.INVALID_ID_TOKEN));
+            when(authUseCase.kakaoSignIn(any())).thenThrow(new AuthException(AuthErrorCode.INVALID_SOCIAL_TOKEN));
 
             mockMvc.perform(post("/api/v1/auth/kakao")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -156,7 +156,7 @@ class AuthControllerTest {
                                     """))
                     .andExpect(status().isUnauthorized())
                     .andExpect(content().json(objectMapper.writeValueAsString(
-                            CommonResponse.error(AuthErrorCode.INVALID_ID_TOKEN)
+                            CommonResponse.error(AuthErrorCode.INVALID_SOCIAL_TOKEN)
                     )));
         }
 
@@ -192,7 +192,7 @@ class AuthControllerTest {
 
         @Test
         void ID_토큰이_유효하지_않으면_401을_반환한다() throws Exception {
-            when(authUseCase.googleSignIn(any())).thenThrow(new AuthException(AuthErrorCode.INVALID_ID_TOKEN));
+            when(authUseCase.googleSignIn(any())).thenThrow(new AuthException(AuthErrorCode.INVALID_SOCIAL_TOKEN));
 
             mockMvc.perform(post("/api/v1/auth/google")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -201,7 +201,7 @@ class AuthControllerTest {
                                     """))
                     .andExpect(status().isUnauthorized())
                     .andExpect(content().json(objectMapper.writeValueAsString(
-                            CommonResponse.error(AuthErrorCode.INVALID_ID_TOKEN)
+                            CommonResponse.error(AuthErrorCode.INVALID_SOCIAL_TOKEN)
                     )));
         }
     }

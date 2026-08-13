@@ -30,4 +30,18 @@ class SocialAuthAccountRepositoryTest extends AbstractRepositoryTest {
         assertThat(socialAuthAccountRepository.existsByProviderAndExternalId(SocialProvider.GOOGLE, "external-1"))
                 .isFalse();
     }
+
+    @Test
+    void memberId로_계정을_찾는다() {
+        Member member = memberRepository.save(Member.register("홍길동"));
+        socialAuthAccountRepository.save(
+                SocialAuthAccount.create(member, SocialProvider.KAKAO, "issuer", "external-1", "member@example.com")
+        );
+
+        assertThat(socialAuthAccountRepository.findByMember_Id(member.getId()))
+                .isPresent()
+                .get()
+                .extracting(SocialAuthAccount::getEmail)
+                .isEqualTo("member@example.com");
+    }
 }

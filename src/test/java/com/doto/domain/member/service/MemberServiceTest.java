@@ -8,10 +8,13 @@ import com.doto.domain.member.dto.UserResponseDTO;
 import com.doto.domain.member.dto.UserUpdateRequestDTO;
 import com.doto.domain.member.entity.GeneralAuthAccount;
 import com.doto.domain.member.entity.Member;
+import com.doto.domain.member.entity.SocialAuthAccount;
+import com.doto.domain.member.entity.SocialProvider;
 import com.doto.domain.member.exception.MemberErrorCode;
 import com.doto.domain.member.exception.MemberException;
 import com.doto.domain.member.repository.GeneralAuthAccountRepository;
 import com.doto.domain.member.repository.MemberRepository;
+import com.doto.domain.member.repository.SocialAuthAccountRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,6 +32,9 @@ class MemberServiceTest {
 
     @Mock
     private GeneralAuthAccountRepository generalAuthAccountRepository;
+
+    @Mock
+    private SocialAuthAccountRepository socialAuthAccountRepository;
 
     @InjectMocks
     private MemberService memberService;
@@ -57,10 +63,26 @@ class MemberServiceTest {
         }
 
         @Test
-        void 일반_로그인_계정이_없으면_이메일은_null이다() {
+        void 일반_계정이_없고_소셜_계정만_있으면_소셜_계정의_이메일을_반환한다() {
+            Member member = memberWithId(1L);
+            SocialAuthAccount socialAccount = SocialAuthAccount.create(
+                    member, SocialProvider.KAKAO, "https://kauth.kakao.com", "kakao-1", "social@kakao.com"
+            );
+            when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
+            when(generalAuthAccountRepository.findByMember_Id(1L)).thenReturn(Optional.empty());
+            when(socialAuthAccountRepository.findByMember_Id(1L)).thenReturn(Optional.of(socialAccount));
+
+            UserResponseDTO response = memberService.getMyInfo(1L);
+
+            assertThat(response.email()).isEqualTo("social@kakao.com");
+        }
+
+        @Test
+        void 일반_계정도_소셜_계정도_없으면_이메일은_null이다() {
             Member member = memberWithId(1L);
             when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
             when(generalAuthAccountRepository.findByMember_Id(1L)).thenReturn(Optional.empty());
+            when(socialAuthAccountRepository.findByMember_Id(1L)).thenReturn(Optional.empty());
 
             UserResponseDTO response = memberService.getMyInfo(1L);
 

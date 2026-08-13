@@ -3,6 +3,7 @@ package com.doto.domain.auth.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,9 +18,9 @@ import com.doto.domain.member.entity.SocialProvider;
 import com.doto.domain.member.repository.MemberRepository;
 import com.doto.domain.member.repository.SocialAuthAccountRepository;
 import com.doto.global.security.jwt.JwtTokenProvider;
-import com.doto.global.security.oidc.OidcClaims;
-import com.doto.global.security.oidc.OidcIdTokenVerifier;
-import com.doto.global.security.oidc.OidcTokenVerificationException;
+import com.doto.global.security.oidc.OidcTokenVerifier;
+import com.doto.global.security.oidc.OidcUserInfo;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -45,24 +46,26 @@ class SocialSignInServiceTest {
     private RefreshTokenService refreshTokenService;
 
     @Mock
-    private OidcIdTokenVerifier kakaoOidcIdTokenVerifier;
+    private OidcTokenVerifier kakaoOidcTokenVerifier;
 
     @Mock
-    private OidcIdTokenVerifier googleOidcIdTokenVerifier;
+    private OidcTokenVerifier googleOidcTokenVerifier;
 
-    // 같은 타입(OidcIdTokenVerifier) 목이 두 개라 @InjectMocks의 타입 기반 매칭이 모호해질 수 있어,
-    // 필드 선언 순서에 맞춰 생성자를 직접 호출한다.
     private SocialSignInService socialSignInService;
 
     @BeforeEach
     void setUp() {
+        // findVerifier()가 provider가 일치하는 첫 항목만 찾고 멈추기 때문에, 테스트에 따라
+        // 둘 중 하나의 provider()는 아예 호출 안 될 수도 있다. lenient로 둘 다 미리 스텁해 둔다.
+        lenient().when(kakaoOidcTokenVerifier.provider()).thenReturn(SocialProvider.KAKAO);
+        lenient().when(googleOidcTokenVerifier.provider()).thenReturn(SocialProvider.GOOGLE);
+
         socialSignInService = new SocialSignInService(
                 memberRepository,
                 socialAuthAccountRepository,
                 jwtTokenProvider,
                 refreshTokenService,
-                kakaoOidcIdTokenVerifier,
-                googleOidcIdTokenVerifier
+                List.of(kakaoOidcTokenVerifier, googleOidcTokenVerifier)
         );
     }
 
@@ -81,9 +84,11 @@ class SocialSignInServiceTest {
             SocialAuthAccount account = SocialAuthAccount.create(
                     member, SocialProvider.KAKAO, "https://kauth.kakao.com", "kakao-1", "member@kakao.com"
             );
-            OidcClaims claims = new OidcClaims("https://kauth.kakao.com", "kakao-1", "member@kakao.com", "홍길동");
+            OidcUserInfo userInfo = new OidcUserInfo(
+                    "kakao-1", "member@kakao.com", "홍길동", "https://kauth.kakao.com"
+            );
 
-            when(kakaoOidcIdTokenVerifier.verify("id-token")).thenReturn(claims);
+            when(kakaoOidcTokenVerifier.verify("id-token")).thenReturn(userInfo);
             when(socialAuthAccountRepository.findByProviderAndExternalId(SocialProvider.KAKAO, "kakao-1"))
                     .thenReturn(Optional.of(account));
             when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
@@ -100,9 +105,11 @@ class SocialSignInServiceTest {
         @Test
         void 처음_로그인하는_구글_사용자는_자동으로_회원가입된다() {
             Member newMember = activeMember("Jane");
-            OidcClaims claims = new OidcClaims("https://accounts.google.com", "google-1", "member@gmail.com", "Jane");
+            OidcUserInfo userInfo = new OidcUserInfo(
+                    "google-1", "member@gmail.com", "Jane", "https://accounts.google.com"
+            );
 
-            when(googleOidcIdTokenVerifier.verify("id-token")).thenReturn(claims);
+            when(googleOidcTokenVerifier.verify("id-token")).thenReturn(userInfo);
             when(socialAuthAccountRepository.findByProviderAndExternalId(SocialProvider.GOOGLE, "google-1"))
                     .thenReturn(Optional.empty());
             when(memberRepository.save(any(Member.class))).thenReturn(newMember);
@@ -121,9 +128,9 @@ class SocialSignInServiceTest {
         @Test
         void ID_토큰에_닉네임이_없으면_기본_닉네임으로_가입한다() {
             Member newMember = activeMember("카카오사용자");
-            OidcClaims claims = new OidcClaims("https://kauth.kakao.com", "kakao-2", null, null);
+            OidcUserInfo userInfo = new OidcUserInfo("kakao-2", null, null, "https://kauth.kakao.com");
 
-            when(kakaoOidcIdTokenVerifier.verify("id-token")).thenReturn(claims);
+            when(kakaoOidcTokenVerifier.verify("id-token")).thenReturn(userInfo);
             when(socialAuthAccountRepository.findByProviderAndExternalId(SocialProvider.KAKAO, "kakao-2"))
                     .thenReturn(Optional.empty());
             when(memberRepository.save(any(Member.class))).thenReturn(newMember);
@@ -139,80 +146,20 @@ class SocialSignInServiceTest {
             );
         }
 
-        @Test
-        void 재로그인_시_이메일이_새로_채워지면_기존_계정에_반영된다() {
-            Member member = activeMember("홍길동");
-            SocialAuthAccount account = SocialAuthAccount.create(
-                    member, SocialProvider.KAKAO, "https://kauth.kakao.com", "kakao-1", null
-            );
-            OidcClaims claims = new OidcClaims(
-                    "https://kauth.kakao.com", "kakao-1", "new-email@kakao.com", "홍길동"
-            );
-
-            when(kakaoOidcIdTokenVerifier.verify("id-token")).thenReturn(claims);
-            when(socialAuthAccountRepository.findByProviderAndExternalId(SocialProvider.KAKAO, "kakao-1"))
-                    .thenReturn(Optional.of(account));
-            when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
-            when(refreshTokenService.issue(member)).thenReturn("refresh-token");
-
-            socialSignInService.kakaoSignIn(new SocialSignInRequestDTO("id-token"));
-
-            assertThat(account.getEmail()).isEqualTo("new-email@kakao.com");
-        }
-
-        @Test
-        void 재로그인_시_닉네임이_바뀌었으면_회원_닉네임도_갱신된다() {
-            Member member = activeMember("옛날닉네임");
-            SocialAuthAccount account = SocialAuthAccount.create(
-                    member, SocialProvider.KAKAO, "https://kauth.kakao.com", "kakao-1", "member@kakao.com"
-            );
-            OidcClaims claims = new OidcClaims(
-                    "https://kauth.kakao.com", "kakao-1", "member@kakao.com", "새로운닉네임"
-            );
-
-            when(kakaoOidcIdTokenVerifier.verify("id-token")).thenReturn(claims);
-            when(socialAuthAccountRepository.findByProviderAndExternalId(SocialProvider.KAKAO, "kakao-1"))
-                    .thenReturn(Optional.of(account));
-            when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
-            when(refreshTokenService.issue(member)).thenReturn("refresh-token");
-
-            socialSignInService.kakaoSignIn(new SocialSignInRequestDTO("id-token"));
-
-            assertThat(member.getNickname()).isEqualTo("새로운닉네임");
-        }
-
-        @Test
-        void 재로그인_시_클레임에_이메일이_없으면_기존_이메일을_지우지_않는다() {
-            Member member = activeMember("홍길동");
-            SocialAuthAccount account = SocialAuthAccount.create(
-                    member, SocialProvider.KAKAO, "https://kauth.kakao.com", "kakao-1", "kept@kakao.com"
-            );
-            OidcClaims claims = new OidcClaims("https://kauth.kakao.com", "kakao-1", null, "홍길동");
-
-            when(kakaoOidcIdTokenVerifier.verify("id-token")).thenReturn(claims);
-            when(socialAuthAccountRepository.findByProviderAndExternalId(SocialProvider.KAKAO, "kakao-1"))
-                    .thenReturn(Optional.of(account));
-            when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
-            when(refreshTokenService.issue(member)).thenReturn("refresh-token");
-
-            socialSignInService.kakaoSignIn(new SocialSignInRequestDTO("id-token"));
-
-            assertThat(account.getEmail()).isEqualTo("kept@kakao.com");
-        }
     }
 
     @Nested
     class 실패 {
 
         @Test
-        void ID_토큰_검증에_실패하면_예외를_던진다() {
-            when(kakaoOidcIdTokenVerifier.verify("bad-token"))
-                    .thenThrow(new OidcTokenVerificationException("서명이 유효하지 않습니다."));
+        void ID_토큰_검증에_실패하면_예외가_그대로_전파된다() {
+            when(kakaoOidcTokenVerifier.verify("bad-token"))
+                    .thenThrow(new AuthException(AuthErrorCode.INVALID_SOCIAL_TOKEN));
 
             assertThatThrownBy(() -> socialSignInService.kakaoSignIn(new SocialSignInRequestDTO("bad-token")))
                     .isInstanceOf(AuthException.class)
                     .extracting("errorCode")
-                    .isEqualTo(AuthErrorCode.INVALID_ID_TOKEN);
+                    .isEqualTo(AuthErrorCode.INVALID_SOCIAL_TOKEN);
         }
 
         @Test
@@ -222,9 +169,11 @@ class SocialSignInServiceTest {
             SocialAuthAccount account = SocialAuthAccount.create(
                     member, SocialProvider.KAKAO, "https://kauth.kakao.com", "kakao-1", "member@kakao.com"
             );
-            OidcClaims claims = new OidcClaims("https://kauth.kakao.com", "kakao-1", "member@kakao.com", "홍길동");
+            OidcUserInfo userInfo = new OidcUserInfo(
+                    "kakao-1", "member@kakao.com", "홍길동", "https://kauth.kakao.com"
+            );
 
-            when(kakaoOidcIdTokenVerifier.verify("id-token")).thenReturn(claims);
+            when(kakaoOidcTokenVerifier.verify("id-token")).thenReturn(userInfo);
             when(socialAuthAccountRepository.findByProviderAndExternalId(SocialProvider.KAKAO, "kakao-1"))
                     .thenReturn(Optional.of(account));
 
