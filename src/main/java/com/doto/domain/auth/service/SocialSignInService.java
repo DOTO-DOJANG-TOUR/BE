@@ -94,7 +94,11 @@ public class SocialSignInService {
     }
 
     private String truncateNickname(String nickname) {
-        return nickname.length() > NICKNAME_MAX_LENGTH ? nickname.substring(0, NICKNAME_MAX_LENGTH) : nickname;
+        if (nickname.codePointCount(0, nickname.length()) <= NICKNAME_MAX_LENGTH) {
+            return nickname;
+        }
+        int cutIndex = nickname.offsetByCodePoints(0, NICKNAME_MAX_LENGTH);
+        return nickname.substring(0, cutIndex);
     }
 
 }

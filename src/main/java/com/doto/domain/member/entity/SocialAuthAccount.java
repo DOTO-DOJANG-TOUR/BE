@@ -21,10 +21,16 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(
         name = "social_auth_accounts",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_social_auth_accounts_provider_external_id",
-                columnNames = {"provider", "external_id"}
-        )
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_social_auth_accounts_provider_external_id",
+                        columnNames = {"provider", "external_id"}
+                ),
+                @UniqueConstraint(
+                        name = "uk_social_auth_accounts_member_id",
+                        columnNames = {"member_id"}
+                )
+        }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
