@@ -26,12 +26,8 @@ public class AuthUseCase { //하나의 usecase에 여러개의 service를 두어
         return signInService.signIn(request);
     }
 
-    public AuthResponseDTO kakaoSignIn(SocialSignInRequestDTO request) {
-        return socialSignInService.kakaoSignIn(request);
-    }
-
-    public AuthResponseDTO googleSignIn(SocialSignInRequestDTO request) {
-        return socialSignInService.googleSignIn(request);
+    public AuthResponseDTO socialSignIn(SocialSignInRequestDTO request) {
+        return socialSignInService.signIn(request);
     }
 
     public AuthResponseDTO refresh(RefreshRequestDTO request) {

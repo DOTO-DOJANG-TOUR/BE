@@ -93,7 +93,7 @@ class SocialSignInServiceTest {
             when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
             when(refreshTokenService.issue(member)).thenReturn("refresh-token");
 
-            AuthResponseDTO response = socialSignInService.kakaoSignIn(new SocialSignInRequestDTO("id-token"));
+            AuthResponseDTO response = socialSignInService.signIn(new SocialSignInRequestDTO(SocialProvider.KAKAO, "id-token"));
 
             assertThat(response.userId()).isEqualTo("1");
             assertThat(response.accessToken()).isEqualTo("access-token");
@@ -117,7 +117,7 @@ class SocialSignInServiceTest {
             when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
             when(refreshTokenService.issue(newMember)).thenReturn("refresh-token");
 
-            AuthResponseDTO response = socialSignInService.googleSignIn(new SocialSignInRequestDTO("id-token"));
+            AuthResponseDTO response = socialSignInService.signIn(new SocialSignInRequestDTO(SocialProvider.GOOGLE, "id-token"));
 
             assertThat(response.userId()).isEqualTo("1");
             verify(memberRepository).save(any(Member.class));
@@ -138,7 +138,7 @@ class SocialSignInServiceTest {
             when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
             when(refreshTokenService.issue(newMember)).thenReturn("refresh-token");
 
-            socialSignInService.kakaoSignIn(new SocialSignInRequestDTO("id-token"));
+            socialSignInService.signIn(new SocialSignInRequestDTO(SocialProvider.KAKAO, "id-token"));
 
             verify(memberRepository).save(
                     org.mockito.ArgumentMatchers.argThat(member -> member.getNickname().equals("카카오사용자"))
@@ -155,7 +155,7 @@ class SocialSignInServiceTest {
             when(kakaoOidcTokenVerifier.verify("bad-token"))
                     .thenThrow(new AuthException(AuthErrorCode.INVALID_SOCIAL_TOKEN));
 
-            assertThatThrownBy(() -> socialSignInService.kakaoSignIn(new SocialSignInRequestDTO("bad-token")))
+            assertThatThrownBy(() -> socialSignInService.signIn(new SocialSignInRequestDTO(SocialProvider.KAKAO, "bad-token")))
                     .isInstanceOf(AuthException.class)
                     .extracting("errorCode")
                     .isEqualTo(AuthErrorCode.INVALID_SOCIAL_TOKEN);
@@ -176,7 +176,7 @@ class SocialSignInServiceTest {
             when(socialAuthAccountRepository.findByProviderAndExternalId(SocialProvider.KAKAO, "kakao-1"))
                     .thenReturn(Optional.of(account));
 
-            assertThatThrownBy(() -> socialSignInService.kakaoSignIn(new SocialSignInRequestDTO("id-token")))
+            assertThatThrownBy(() -> socialSignInService.signIn(new SocialSignInRequestDTO(SocialProvider.KAKAO, "id-token")))
                     .isInstanceOf(AuthException.class)
                     .extracting("errorCode")
                     .isEqualTo(AuthErrorCode.INACTIVE_ACCOUNT);

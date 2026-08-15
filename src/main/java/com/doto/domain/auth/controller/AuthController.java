@@ -32,14 +32,8 @@ public class AuthController implements AuthApi {
     }
 
     @Override
-    public ResponseEntity<CommonResponse<AuthResponseDTO>> kakaoSignIn(SocialSignInRequestDTO request) {
-        AuthResponseDTO result = authUseCase.kakaoSignIn(request);
-        return ResponseEntity.ok(CommonResponse.success(result));
-    }
-
-    @Override
-    public ResponseEntity<CommonResponse<AuthResponseDTO>> googleSignIn(SocialSignInRequestDTO request) {
-        AuthResponseDTO result = authUseCase.googleSignIn(request);
+    public ResponseEntity<CommonResponse<AuthResponseDTO>> socialSignIn(SocialSignInRequestDTO request) {
+        AuthResponseDTO result = authUseCase.socialSignIn(request);
         return ResponseEntity.ok(CommonResponse.success(result));
     }
 

@@ -31,28 +31,16 @@ public interface AuthApi {
     ResponseEntity<CommonResponse<AuthResponseDTO>> signIn(@Valid @RequestBody SignInRequestDTO request);
 
     @Operation(
-            summary = "카카오 소셜 로그인",
+            summary = "소셜 로그인",
             description = """
-                    카카오 로그인으로 발급받은 ID 토큰(OIDC)을 검증해 로그인 또는 회원가입을 처리합니다.
-                    - 클라이언트에서 카카오 로그인 요청 시 scope에 "openid, email, profile"를 포함해 ID 토큰을 발급받아야 합니다.
+                    카카오/구글 로그인으로 발급받은 ID 토큰(OIDC)을 검증해 로그인 또는 회원가입을 처리합니다.
+                    - 클라이언트에서 소셜 로그인 요청 시 scope에 "openid, email, profile"를 포함해 ID 토큰을 발급받아야 합니다.
                     - 처음 로그인하는 사용자는 자동으로 회원가입 처리됩니다.
                     """
     )
     @ApiResponse(responseCode = "200", description = "로그인/회원가입 성공")
-    @PostMapping("/api/v1/auth/kakao")
-    ResponseEntity<CommonResponse<AuthResponseDTO>> kakaoSignIn(@Valid @RequestBody SocialSignInRequestDTO request);
-
-    @Operation(
-            summary = "구글 소셜 로그인",
-            description = """
-                    구글 로그인으로 발급받은 ID 토큰(OIDC)을 검증해 로그인 또는 회원가입을 처리합니다.
-                    - 클라이언트에서 구글 로그인 요청 시 scope에 "openid, email, profile"를 포함해 ID 토큰을 발급받아야 합니다.
-                    - 처음 로그인하는 사용자는 자동으로 회원가입 처리됩니다.
-                    """
-    )
-    @ApiResponse(responseCode = "200", description = "로그인/회원가입 성공")
-    @PostMapping("/api/v1/auth/google")
-    ResponseEntity<CommonResponse<AuthResponseDTO>> googleSignIn(@Valid @RequestBody SocialSignInRequestDTO request);
+    @PostMapping("/api/v1/auth/social")
+    ResponseEntity<CommonResponse<AuthResponseDTO>> socialSignIn(@Valid @RequestBody SocialSignInRequestDTO request);
 
     @Operation(
             summary = "액세스 토큰 재발급",

@@ -32,17 +32,11 @@ public class SocialSignInService {
     private final RefreshTokenService refreshTokenService;
     private final List<OidcTokenVerifier> oidcTokenVerifiers;
 
-    public AuthResponseDTO kakaoSignIn(SocialSignInRequestDTO request) {
-        return signIn(SocialProvider.KAKAO, request.idToken());
-    }
+    public AuthResponseDTO signIn(SocialSignInRequestDTO request) {
+        SocialProvider provider = request.provider();
 
-    public AuthResponseDTO googleSignIn(SocialSignInRequestDTO request) {
-        return signIn(SocialProvider.GOOGLE, request.idToken());
-    }
-
-    private AuthResponseDTO signIn(SocialProvider provider, String idToken) {
         // id 토큰 검증
-        OidcUserInfo userInfo = findVerifier(provider).verify(idToken);
+        OidcUserInfo userInfo = findVerifier(provider).verify(request.idToken());
 
         // 계정 찾기
         SocialAuthAccount account = socialAuthAccountRepository

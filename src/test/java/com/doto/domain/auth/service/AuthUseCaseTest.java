@@ -9,6 +9,7 @@ import com.doto.domain.auth.dto.RefreshRequestDTO;
 import com.doto.domain.auth.dto.SignInRequestDTO;
 import com.doto.domain.auth.dto.SignUpRequestDTO;
 import com.doto.domain.auth.dto.SocialSignInRequestDTO;
+import com.doto.domain.member.entity.SocialProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -60,23 +61,12 @@ class AuthUseCaseTest {
     }
 
     @Test
-    void 카카오_로그인은_SocialSignInService에_위임한다() {
-        SocialSignInRequestDTO request = new SocialSignInRequestDTO("kakao-id-token");
+    void 소셜_로그인은_SocialSignInService에_위임한다() {
+        SocialSignInRequestDTO request = new SocialSignInRequestDTO(SocialProvider.KAKAO, "kakao-id-token");
         AuthResponseDTO expected = new AuthResponseDTO("1", "홍길동", "access", "refresh");
-        when(socialSignInService.kakaoSignIn(request)).thenReturn(expected);
+        when(socialSignInService.signIn(request)).thenReturn(expected);
 
-        AuthResponseDTO result = authUseCase.kakaoSignIn(request);
-
-        assertThat(result).isEqualTo(expected);
-    }
-
-    @Test
-    void 구글_로그인은_SocialSignInService에_위임한다() {
-        SocialSignInRequestDTO request = new SocialSignInRequestDTO("google-id-token");
-        AuthResponseDTO expected = new AuthResponseDTO("1", "Jane", "access", "refresh");
-        when(socialSignInService.googleSignIn(request)).thenReturn(expected);
-
-        AuthResponseDTO result = authUseCase.googleSignIn(request);
+        AuthResponseDTO result = authUseCase.socialSignIn(request);
 
         assertThat(result).isEqualTo(expected);
     }
