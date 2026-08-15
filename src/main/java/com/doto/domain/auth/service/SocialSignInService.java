@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** 카카오/구글 ID 토큰(OIDC)을 검증해 로그인 또는 자동 회원가입을 처리한다 */
+/** 카카오/구글 ID 토큰(OIDC)을 검증해 로그인 or 자동 회원가입을 처리 */
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -41,23 +41,28 @@ public class SocialSignInService {
     }
 
     private AuthResponseDTO signIn(SocialProvider provider, String idToken) {
+        // id 토큰 검증
         OidcUserInfo userInfo = findVerifier(provider).verify(idToken);
 
+        // 계정 찾기
         SocialAuthAccount account = socialAuthAccountRepository
                 .findByProviderAndExternalId(provider, userInfo.externalId())
                 .orElseGet(() -> registerMember(provider, userInfo));
 
+        // 계정 상태 검증
         Member member = account.getMember();
         if (member.getStatus() != MemberStatus.ACTIVE) {
             throw new AuthException(AuthErrorCode.INACTIVE_ACCOUNT);
         }
 
+        // 토큰 발급
         String accessToken = jwtTokenProvider.createAccessToken(member.getId());
         String refreshToken = refreshTokenService.issue(member);
 
         return AuthResponseDTO.of(member, accessToken, refreshToken);
     }
 
+    // OidcTokenverifier(ID 토큰을 검증하는 컴포넌트)반환
     private OidcTokenVerifier findVerifier(SocialProvider provider) {
         return oidcTokenVerifiers.stream()
                 .filter(verifier -> verifier.provider() == provider)
@@ -65,6 +70,7 @@ public class SocialSignInService {
                 .orElseThrow(() -> new IllegalStateException("등록된 OidcTokenVerifier가 없습니다: " + provider));
     }
 
+    // 회원생성
     private SocialAuthAccount registerMember(SocialProvider provider, OidcUserInfo userInfo) {
         Member member = memberRepository.save(Member.register(resolveNickname(provider, userInfo)));
 
@@ -74,6 +80,7 @@ public class SocialSignInService {
                 )
         );
     }
+
 
     private String resolveNickname(SocialProvider provider, OidcUserInfo userInfo) {
         String nickname = userInfo.nickname();

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class AuthUseCase {
+public class AuthUseCase { //하나의 usecase에 여러개의 service를 두어 파사드 패턴을 지킨다.
 
     private final SignUpService signUpService;
     private final SignInService signInService;

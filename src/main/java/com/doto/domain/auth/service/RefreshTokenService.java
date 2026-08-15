@@ -21,6 +21,7 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProperties jwtProperties;
 
+    // Refresh Token 발급
     public String issue(Member member) {
         String rawToken = HashTokenUtil.generate();
         String tokenHash = HashTokenUtil.hash(rawToken);
@@ -31,7 +32,7 @@ public class RefreshTokenService {
         return rawToken;
     }
 
-    /** 재발급용 검증. 정상 토큰은 재사용 방지를 위해 즉시 폐기한다(rotation) */
+    /** Access Token 재발급용 검증. 정상 토큰은 재사용 방지를 위해 즉시 폐기 */
     public RefreshToken validateAndRevoke(String rawToken) {
         RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(HashTokenUtil.hash(rawToken))
                 .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN));
@@ -44,7 +45,7 @@ public class RefreshTokenService {
         return refreshToken;
     }
 
-    /** 로그아웃용 폐기. 토큰이 이미 없거나 만료됐어도 예외 없이 조용히 끝난다(멱등). */
+    /** 로그아웃용 refresh token 폐기. 토큰이 이미 없거나 만료됐어도 예외 없이 조용히 끝남 */
     public void revoke(String rawToken) {
         refreshTokenRepository.findByTokenHash(HashTokenUtil.hash(rawToken))
                 .ifPresent(RefreshToken::revoke);
