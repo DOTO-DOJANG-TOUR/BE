@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:file:/app/config/.env[.properties]
   application:
     name: doto
   profiles:

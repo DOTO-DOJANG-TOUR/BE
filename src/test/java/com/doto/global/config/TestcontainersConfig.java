@@ -13,7 +13,10 @@ import org.testcontainers.utility.DockerImageName;
 public class TestcontainersConfig {
 
     private static final PostgreSQLContainer POSTGRES =
-            new PostgreSQLContainer(DockerImageName.parse("postgres:17-alpine"))
+            new PostgreSQLContainer(
+                    DockerImageName.parse("postgis/postgis:17-3.5-alpine")
+                            .asCompatibleSubstituteFor("postgres")
+            )
                     .withDatabaseName("doto_test")
                     .withUsername("doto")
                     .withPassword("doto");
