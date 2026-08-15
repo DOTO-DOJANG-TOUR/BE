@@ -185,7 +185,7 @@ docker compose -f docker-compose.yml up -d
 ./gradlew clean test
 ```
 
-H2 대신 Testcontainers의 `postgres:17-alpine`을 사용해 운영 DB와의 차이를 줄입니다. Docker가 제공되는 CI에서는 다음 항목을 검증합니다.
+H2 대신 Testcontainers의 `postgis/postgis:17-3.5-alpine`을 사용해 운영 DB와의 차이를 줄입니다. Docker가 제공되는 CI에서는 다음 항목을 검증합니다.
 
 - 빈 PostgreSQL에서 Flyway migration이 정상 적용되는지
 - 실제 쿼리, 인덱스와 제약 조건이 유효한지
