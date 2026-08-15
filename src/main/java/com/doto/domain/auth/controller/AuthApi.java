@@ -36,6 +36,7 @@ public interface AuthApi {
                     카카오/구글 로그인으로 발급받은 ID 토큰(OIDC)을 검증해 로그인 또는 회원가입을 처리합니다.
                     - 클라이언트에서 소셜 로그인 요청 시 scope에 "openid, email, profile"를 포함해 ID 토큰을 발급받아야 합니다.
                     - 처음 로그인하는 사용자는 자동으로 회원가입 처리됩니다.
+                    - KAKAO, GOOGLE
                     """
     )
     @ApiResponse(responseCode = "200", description = "로그인/회원가입 성공")

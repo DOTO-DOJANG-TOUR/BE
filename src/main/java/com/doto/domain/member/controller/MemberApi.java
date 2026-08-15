@@ -34,7 +34,7 @@ public interface MemberApi {
     @Operation(
             summary = "내 정보 수정",
             description = """
-                    현재는 닉네임 변경만 되는 것으로 알고 있음
+                    닉네임을 변경합니다
                     """
     )
     @ApiResponse(responseCode = "200", description = "내 정보 수정 성공")
