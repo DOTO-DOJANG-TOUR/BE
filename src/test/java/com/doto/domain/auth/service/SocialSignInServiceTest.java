@@ -55,8 +55,7 @@ class SocialSignInServiceTest {
 
     @BeforeEach
     void setUp() {
-        // findVerifier()가 provider가 일치하는 첫 항목만 찾고 멈추기 때문에, 테스트에 따라
-        // 둘 중 하나의 provider()는 아예 호출 안 될 수도 있다. lenient로 둘 다 미리 스텁해 둔다.
+        // 테스트에 따라 한쪽만 호출될 수 있어 lenient로 스텁
         lenient().when(kakaoOidcTokenVerifier.provider()).thenReturn(SocialProvider.KAKAO);
         lenient().when(googleOidcTokenVerifier.provider()).thenReturn(SocialProvider.GOOGLE);
 

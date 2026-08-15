@@ -17,9 +17,7 @@ import org.springframework.util.StringUtils;
 @Component
 public class JwtTokenProvider {
 
-    // Refresh Token은 JWT가 아니라 opaque 토큰(HashTokenUtil)으로 별도 발급된다. 그래도 이
-    // claim을 넣어두면, 나중에 다른 종류의 JWT가 생기거나 access token이 엉뚱한 곳에 잘못 쓰였을 때
-    // "타입이 다른 토큰을 사용했다"는 걸 검증 단계에서 구분해 걸러낼 수 있다.
+    // 토큰 종류를 구분하기 위한 claim
     private static final String CLAIM_TOKEN_TYPE = "type";
     private static final String TOKEN_TYPE_ACCESS = "access";
 

@@ -34,10 +34,7 @@ public interface MemberApi {
     @Operation(
             summary = "내 정보 수정",
             description = """
-                    보낸 필드만 수정하는 부분 수정(PATCH)입니다.
-
-                    - 닉네임 변경: {"nickname": "홍길동"}
-                    - 아무 필드도 보내지 않으면 변경 없이 현재 상태 그대로 200이 반환됩니다.
+                    현재는 닉네임 변경만 되는 것으로 알고 있음
                     """
     )
     @ApiResponse(responseCode = "200", description = "내 정보 수정 성공")

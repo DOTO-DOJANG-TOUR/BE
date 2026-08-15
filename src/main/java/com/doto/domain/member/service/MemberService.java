@@ -28,9 +28,7 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        // 회원은 일반(이메일/비밀번호) 계정 또는 소셜 계정 중 하나로 가입돼 있다(현재는 한 회원이
-        // 두 방식을 동시에 갖지 않음). general_auth_accounts에 없으면 social_auth_accounts를
-        // 확인해서 카카오/구글 로그인 시 저장해 둔 이메일을 대신 사용한다.
+        // 일반 계정에 없으면 소셜 계정의 이메일을 대신 사용한다
         String email = generalAuthAccountRepository.findByMember_Id(memberId)
                 .map(GeneralAuthAccount::getEmail)
                 .or(() -> socialAuthAccountRepository.findByMember_Id(memberId)

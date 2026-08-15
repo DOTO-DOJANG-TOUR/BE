@@ -18,17 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * 카카오/구글 ID 토큰(OIDC)을 검증해 로그인 또는 회원가입을 처리한다.
- *
- * <p>해당 provider + external_id로 연결된 계정이 이미 있으면 로그인, 없으면 새 회원을 만들어
- * 연결한다(자동 가입). 이메일/비밀번호 계정과의 병합은 하지 않는다 — 같은 이메일이라도
- * provider가 다르면 별개의 SocialAuthAccount로 취급한다.
- *
- * <p>ID 토큰 검증 자체는 {@link OidcTokenVerifier} 구현체(제공자별로 스프링 빈이 하나씩 등록됨)에
- * 위임한다. 서명·발급자(iss)·대상(aud)·만료(exp)가 유효하지 않으면 검증 단계에서
- * {@link AuthException}({@link AuthErrorCode#INVALID_SOCIAL_TOKEN})이 곧바로 던져진다.
- */
+/** 카카오/구글 ID 토큰(OIDC)을 검증해 로그인 또는 자동 회원가입을 처리한다 */
 @Service
 @Transactional
 @RequiredArgsConstructor

@@ -37,8 +37,7 @@ public class SwaggerConfig {
     private static final String COMMON_RESPONSE_SCHEMA = "CommonResponse";
 
     static {
-        // @CurrentMember로 주입되는 인증 정보는 SecurityContext에서 직접 채워지므로
-        // 요청 파라미터로 노출하지 않는다.
+        // @CurrentMember는 요청 파라미터로 노출하지 않는다
         SpringDocUtils.getConfig().addAnnotationsToIgnore(CurrentMember.class);
     }
 

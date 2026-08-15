@@ -25,11 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-/**
- * 응답 본문은 {@code jsonPath}로 필드를 하나씩 확인하는 대신, 기대하는 {@link CommonResponse}를 직접
- * 만들어 직렬화한 뒤 {@code content().json(...)}(lenient 모드)으로 비교한다. DTO에 필드가 추가돼도
- * 기대 객체 생성 코드만 따라가면 되고, 테스트에서 필드를 하나씩 추가로 검증할 필요가 없다.
- */
+/** 응답 본문은 기대하는 CommonResponse를 직렬화해 content().json()으로 비교한다 */
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 

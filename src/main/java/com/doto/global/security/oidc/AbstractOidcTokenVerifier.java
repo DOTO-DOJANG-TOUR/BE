@@ -10,10 +10,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.util.StringUtils;
 
-/**
- * {@link JwtDecoder}로 서명, issuer, audience, 만료 시간을 검증하고 공통 클레임(sub, email, issuer)을
- * 추출한다. 제공자마다 다른 닉네임 클레임 이름만 하위 클래스가 결정한다.
- */
+/** JWT 서명, issuer, audience, 만료 시간을 검증하고 공통 클레임을 추출한다 */
 abstract class AbstractOidcTokenVerifier implements OidcTokenVerifier {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractOidcTokenVerifier.class);
