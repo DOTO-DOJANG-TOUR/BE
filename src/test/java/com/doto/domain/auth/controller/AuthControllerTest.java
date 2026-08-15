@@ -25,11 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-/**
- * 응답 본문은 {@code jsonPath}로 필드를 하나씩 확인하는 대신, 기대하는 {@link CommonResponse}를 직접
- * 만들어 직렬화한 뒤 {@code content().json(...)}(lenient 모드)으로 비교한다. DTO에 필드가 추가돼도
- * 기대 객체 생성 코드만 따라가면 되고, 테스트에서 필드를 하나씩 추가로 검증할 필요가 없다.
- */
+/** 응답 본문은 기대하는 CommonResponse를 직렬화해 content().json()으로 비교한다 */
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
@@ -123,6 +119,77 @@ class AuthControllerTest {
                     .andExpect(content().json(objectMapper.writeValueAsString(
                             CommonResponse.error(AuthErrorCode.INVALID_CREDENTIALS)
                     )));
+        }
+    }
+
+    @Nested
+    class 소셜_로그인 {
+
+        @Test
+        void 카카오_로그인이_성공하면_200과_토큰을_반환한다() throws Exception {
+            AuthResponseDTO response = new AuthResponseDTO("1", "홍길동", "access-token", "refresh-token");
+            when(authUseCase.socialSignIn(any())).thenReturn(response);
+
+            mockMvc.perform(post("/api/v1/auth/social")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"provider":"KAKAO","idToken":"kakao-id-token"}
+                                    """))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.success(response)
+                    )));
+        }
+
+        @Test
+        void 구글_로그인이_성공하면_200과_토큰을_반환한다() throws Exception {
+            AuthResponseDTO response = new AuthResponseDTO("1", "Jane", "access-token", "refresh-token");
+            when(authUseCase.socialSignIn(any())).thenReturn(response);
+
+            mockMvc.perform(post("/api/v1/auth/social")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"provider":"GOOGLE","idToken":"google-id-token"}
+                                    """))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.success(response)
+                    )));
+        }
+
+        @Test
+        void ID_토큰이_유효하지_않으면_401을_반환한다() throws Exception {
+            when(authUseCase.socialSignIn(any())).thenThrow(new AuthException(AuthErrorCode.INVALID_SOCIAL_TOKEN));
+
+            mockMvc.perform(post("/api/v1/auth/social")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"provider":"KAKAO","idToken":"bad-token"}
+                                    """))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.error(AuthErrorCode.INVALID_SOCIAL_TOKEN)
+                    )));
+        }
+
+        @Test
+        void ID_토큰이_비어있으면_400을_반환한다() throws Exception {
+            mockMvc.perform(post("/api/v1/auth/social")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"provider":"KAKAO","idToken":""}
+                                    """))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void provider가_없으면_400을_반환한다() throws Exception {
+            mockMvc.perform(post("/api/v1/auth/social")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"idToken":"kakao-id-token"}
+                                    """))
+                    .andExpect(status().isBadRequest());
         }
     }
 

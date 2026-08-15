@@ -6,9 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-/**
- * 테스트 전역에서 재사용하는 PostgreSQL Testcontainers 싱글톤 설정.
- */
+/** 테스트 전역에서 재사용하는 PostgreSQL Testcontainers 싱글톤 설정 */
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfig {
 

@@ -117,8 +117,7 @@ class RefreshTokenServiceTest {
             ReflectionTestUtils.setField(token, "id", 1L);
             when(refreshTokenRepository.findByTokenHash(HashTokenUtil.hash(rawToken)))
                     .thenReturn(Optional.of(token));
-            // 원자적 UPDATE이므로 동시에 두 트랜잭션이 요청해도 DB에서 실제로는 하나만 1행을 갱신한다.
-            // 여기서는 두 번째 호출이 0행을 갱신하는 경쟁 상황을 모킹으로 재현한다.
+            // 두 번째 호출이 0행을 갱신하는 경쟁 상황을 모킹으로 재현
             when(refreshTokenRepository.revokeIfUsable(eq(1L), any(Instant.class)))
                     .thenReturn(1)
                     .thenReturn(0);

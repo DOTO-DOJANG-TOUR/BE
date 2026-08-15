@@ -17,4 +17,6 @@ public interface SocialAuthAccountRepository extends JpaRepository<SocialAuthAcc
             String externalId
     );
 
+    Optional<SocialAuthAccount> findByMember_Id(Long memberId);
+
 }

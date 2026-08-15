@@ -4,6 +4,9 @@ out/
 .idea/
 *.iml
 .DS_Store
-.env
+.env.*
+*.pem
+*.p12
+*.jks
 *.log
 !gradle/wrapper/gradle-wrapper.jar

@@ -17,8 +17,7 @@ import tools.jackson.databind.json.JsonMapper;
 @RequiredArgsConstructor
 public class JsonAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    // Spring Boot 4/Jackson 3는 com.fasterxml.jackson.databind.ObjectMapper(Jackson 2)가 아니라
-    // tools.jackson.databind.json.JsonMapper(Jackson 3)를 기본 Bean으로 자동 설정한다.
+    // Spring Boot 4/Jackson 3 기본 JsonMapper(Jackson 3) 빈
     private final JsonMapper jsonMapper;
 
     @Override
