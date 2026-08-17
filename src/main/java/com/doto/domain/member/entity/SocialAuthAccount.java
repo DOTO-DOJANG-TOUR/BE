@@ -58,6 +58,9 @@ public class SocialAuthAccount extends BaseTimeEntity {
     @Column(name = "email", length = 190)
     private String email;
 
+    @Column(name = "profile_img", length = 500)
+    private String profileImg;
+
     //내부 빌더 지우면 안됨
     @Builder(access = AccessLevel.PRIVATE)
     private SocialAuthAccount(
@@ -65,13 +68,15 @@ public class SocialAuthAccount extends BaseTimeEntity {
             SocialProvider provider,
             String issuer,
             String externalId,
-            String email
+            String email,
+            String profileImg
     ) {
         this.member = member;
         this.provider = provider;
         this.issuer = issuer;
         this.externalId = externalId;
         this.email = email;
+        this.profileImg = profileImg;
     }
 
     public static SocialAuthAccount create(
@@ -79,7 +84,8 @@ public class SocialAuthAccount extends BaseTimeEntity {
             SocialProvider provider,
             String issuer,
             String externalId,
-            String email
+            String email,
+            String profileImg
     ) {
         return SocialAuthAccount.builder()
                 .member(member)
@@ -87,6 +93,7 @@ public class SocialAuthAccount extends BaseTimeEntity {
                 .issuer(issuer)
                 .externalId(externalId)
                 .email(email)
+                .profileImg(profileImg)
                 .build();
     }
 

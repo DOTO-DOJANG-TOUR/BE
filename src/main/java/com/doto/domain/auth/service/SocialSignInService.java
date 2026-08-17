@@ -70,7 +70,8 @@ public class SocialSignInService {
 
         return socialAuthAccountRepository.save(
                 SocialAuthAccount.create(
-                        member, provider, userInfo.issuer(), userInfo.externalId(), userInfo.email()
+                        member, provider, userInfo.issuer(), userInfo.externalId(),
+                        userInfo.email(), userInfo.profileImg()
                 )
         );
     }
