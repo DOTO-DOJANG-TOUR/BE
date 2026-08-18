@@ -6,13 +6,16 @@ import com.doto.domain.auth.dto.SignInRequestDTO;
 import com.doto.domain.auth.dto.SignUpRequestDTO;
 import com.doto.domain.auth.dto.SocialSignInRequestDTO;
 import com.doto.domain.auth.exception.AuthErrorCode;
+import com.doto.domain.member.entity.SocialProvider;
 import com.doto.global.api.CommonResponse;
 import com.doto.global.swagger.ApiErrorCodeExamples;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -36,12 +39,15 @@ public interface AuthApi {
                     카카오/구글 로그인으로 발급받은 ID 토큰(OIDC)을 검증해 로그인 또는 회원가입을 처리합니다.
                     - 클라이언트에서 소셜 로그인 요청 시 scope에 "openid, email, profile"를 포함해 ID 토큰을 발급받아야 합니다.
                     - 처음 로그인하는 사용자는 자동으로 회원가입 처리됩니다.
-                    - KAKAO, GOOGLE
+                    - provider 경로 변수: KAKAO, GOOGLE
                     """
     )
     @ApiResponse(responseCode = "200", description = "로그인/회원가입 성공")
-    @PostMapping("/api/v1/auth/social")
-    ResponseEntity<CommonResponse<AuthResponseDTO>> socialSignIn(@Valid @RequestBody SocialSignInRequestDTO request);
+    @PostMapping("/api/v1/auth/social/{provider}")
+    ResponseEntity<CommonResponse<AuthResponseDTO>> socialSignIn(
+            @Parameter(description = "소셜 로그인 제공자", example = "KAKAO") @PathVariable SocialProvider provider,
+            @Valid @RequestBody SocialSignInRequestDTO request
+    );
 
     @Operation(
             summary = "액세스 토큰 재발급",

@@ -52,6 +52,10 @@ public class Member extends BaseTimeEntity {
         this.status = MemberStatus.INACTIVE;
     }
 
+    public void reactivate() {
+        this.status = MemberStatus.ACTIVE;
+    }
+
     public void grantAdmin() {
         this.role = MemberRole.ADMIN;
     }

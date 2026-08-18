@@ -2,6 +2,7 @@ package com.doto.domain.member.controller;
 
 import com.doto.domain.member.dto.UserResponseDTO;
 import com.doto.domain.member.dto.UserUpdateRequestDTO;
+import com.doto.domain.member.dto.UserUpdateResponseDTO;
 import com.doto.domain.member.exception.MemberErrorCode;
 import com.doto.global.api.CommonResponse;
 import com.doto.global.config.SwaggerConfig;
@@ -34,13 +35,16 @@ public interface MemberApi {
     @Operation(
             summary = "내 정보 수정",
             description = """
-                    닉네임을 변경합니다
+                    현재 로그인한 사용자의 닉네임을 변경합니다.
+                    - 닉네임은 변경할 때만 입력합니다. null이면 닉네임을 변경하지 않습니다.
+                    - 닉네임은 2자 이상 30자 이하여야 합니다.
+                    - 추후 profile_img 등의 정보를 변경할 가능성이 있습니다.
                     """
     )
     @ApiResponse(responseCode = "200", description = "내 정보 수정 성공")
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     @PatchMapping("/api/v1/members/me")
-    ResponseEntity<CommonResponse<UserResponseDTO>> updateMyInfo(
+    ResponseEntity<CommonResponse<UserUpdateResponseDTO>> updateMyInfo(
             @Parameter(hidden = true) @CurrentMember CustomMemberDetails memberDetails,
             @Valid @RequestBody UserUpdateRequestDTO request
     );

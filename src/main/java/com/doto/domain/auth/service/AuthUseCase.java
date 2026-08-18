@@ -5,6 +5,7 @@ import com.doto.domain.auth.dto.RefreshRequestDTO;
 import com.doto.domain.auth.dto.SignInRequestDTO;
 import com.doto.domain.auth.dto.SignUpRequestDTO;
 import com.doto.domain.auth.dto.SocialSignInRequestDTO;
+import com.doto.domain.member.entity.SocialProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -26,8 +27,8 @@ public class AuthUseCase { //하나의 usecase에 여러개의 service를 두어
         return signInService.signIn(request);
     }
 
-    public AuthResponseDTO socialSignIn(SocialSignInRequestDTO request) {
-        return socialSignInService.signIn(request);
+    public AuthResponseDTO socialSignIn(SocialProvider provider, SocialSignInRequestDTO request) {
+        return socialSignInService.signIn(provider, request);
     }
 
     public AuthResponseDTO refresh(RefreshRequestDTO request) {

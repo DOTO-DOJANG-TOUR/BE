@@ -62,11 +62,11 @@ class AuthUseCaseTest {
 
     @Test
     void 소셜_로그인은_SocialSignInService에_위임한다() {
-        SocialSignInRequestDTO request = new SocialSignInRequestDTO(SocialProvider.KAKAO, "kakao-id-token");
+        SocialSignInRequestDTO request = new SocialSignInRequestDTO("kakao-id-token");
         AuthResponseDTO expected = new AuthResponseDTO("1", "홍길동", "access", "refresh");
-        when(socialSignInService.signIn(request)).thenReturn(expected);
+        when(socialSignInService.signIn(SocialProvider.KAKAO, request)).thenReturn(expected);
 
-        AuthResponseDTO result = authUseCase.socialSignIn(request);
+        AuthResponseDTO result = authUseCase.socialSignIn(SocialProvider.KAKAO, request);
 
         assertThat(result).isEqualTo(expected);
     }

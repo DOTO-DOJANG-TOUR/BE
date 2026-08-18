@@ -19,6 +19,7 @@ abstract class AbstractOidcTokenVerifier implements OidcTokenVerifier {
     private static final Logger log = LoggerFactory.getLogger(AbstractOidcTokenVerifier.class);
 
     private static final String CLAIM_EMAIL = "email";
+    private static final String CLAIM_PICTURE = "picture";
 
     private final SocialProvider provider;
     private final JwtDecoder jwtDecoder;
@@ -53,7 +54,13 @@ abstract class AbstractOidcTokenVerifier implements OidcTokenVerifier {
 
         // 사용자 정보 조립
         String issuer = jwt.getIssuer() != null ? jwt.getIssuer().toString() : null;
-        return new OidcUserInfo(externalId, jwt.getClaimAsString(CLAIM_EMAIL), extractNickname(jwt), issuer);
+        return new OidcUserInfo(
+                externalId,
+                jwt.getClaimAsString(CLAIM_EMAIL),
+                extractNickname(jwt),
+                issuer,
+                jwt.getClaimAsString(CLAIM_PICTURE)
+        );
     }
 
     protected abstract String extractNickname(Jwt jwt);

@@ -11,7 +11,8 @@ class SocialAuthAccountTest {
         Member member = Member.register("홍길동");
 
         SocialAuthAccount account = SocialAuthAccount.create(
-                member, SocialProvider.KAKAO, "https://kauth.kakao.com", "external-id-1", "member@example.com"
+                member, SocialProvider.KAKAO, "https://kauth.kakao.com", "external-id-1", "member@example.com",
+                "https://kakao-img.com/profile.png"
         );
 
         assertThat(account.getMember()).isEqualTo(member);
@@ -19,5 +20,6 @@ class SocialAuthAccountTest {
         assertThat(account.getIssuer()).isEqualTo("https://kauth.kakao.com");
         assertThat(account.getExternalId()).isEqualTo("external-id-1");
         assertThat(account.getEmail()).isEqualTo("member@example.com");
+        assertThat(account.getProfileImg()).isEqualTo("https://kakao-img.com/profile.png");
     }
 }

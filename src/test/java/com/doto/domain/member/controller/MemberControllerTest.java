@@ -2,7 +2,6 @@ package com.doto.domain.member.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -10,12 +9,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.doto.domain.member.dto.UserResponseDTO;
+import com.doto.domain.member.dto.UserUpdateResponseDTO;
+import com.doto.domain.member.exception.MemberErrorCode;
+import com.doto.domain.member.exception.MemberException;
 import com.doto.domain.member.entity.Member;
 import com.doto.domain.member.service.MemberService;
 import com.doto.global.error.GlobalExceptionHandler;
 import com.doto.global.security.CurrentMemberArgumentResolver;
 import com.doto.global.security.CustomMemberDetails;
-import java.time.Instant;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -67,14 +68,16 @@ class MemberControllerTest {
         void 인증된_사용자면_200과_내_정보를_반환한다() throws Exception {
             authenticateAs(1L);
             UserResponseDTO response = new UserResponseDTO(
-                    "1", "member@example.com", "홍길동", "ACTIVE", Instant.parse("2026-08-02T00:00:00Z")
+                    "1", "member@example.com", "홍길동", "ACTIVE", "KAKAO", "profile.jpg"
             );
             when(memberService.getMyInfo(1L)).thenReturn(response);
 
             mockMvc.perform(get("/api/v1/members/me"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.result.nickname").value("홍길동"))
-                    .andExpect(jsonPath("$.result.email").value("member@example.com"));
+                    .andExpect(jsonPath("$.result.email").value("member@example.com"))
+                    .andExpect(jsonPath("$.result.profile_img").value("profile.jpg"))
+                    .andExpect(jsonPath("$.result.createdAt").doesNotExist());
         }
 
         @Test
@@ -88,12 +91,10 @@ class MemberControllerTest {
     class 내_정보_수정 {
 
         @Test
-        void 닉네임을_보내면_수정_후_최신_정보를_반환한다() throws Exception {
+        void 닉네임을_보내면_변경된_닉네임을_반환한다() throws Exception {
             authenticateAs(1L);
-            UserResponseDTO response = new UserResponseDTO(
-                    "1", "member@example.com", "김철수", "ACTIVE", Instant.parse("2026-08-02T00:00:00Z")
-            );
-            when(memberService.getMyInfo(1L)).thenReturn(response);
+            when(memberService.updateMyInfo(eq(1L), any()))
+                    .thenReturn(new UserUpdateResponseDTO("김철수"));
 
             mockMvc.perform(patch("/api/v1/members/me")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -102,20 +103,21 @@ class MemberControllerTest {
                                     """))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.result.nickname").value("김철수"));
-
-            verify(memberService).updateMyInfo(eq(1L), any());
         }
 
         @Test
-        void 닉네임_길이가_짧으면_400을_반환한다() throws Exception {
+        void 닉네임_길이가_유효하지_않으면_400을_반환한다() throws Exception {
             authenticateAs(1L);
+            when(memberService.updateMyInfo(eq(1L), any()))
+                    .thenThrow(new MemberException(MemberErrorCode.INVALID_NICKNAME_LENGTH));
 
             mockMvc.perform(patch("/api/v1/members/me")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {"nickname":"a"}
                                     """))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("MEMBER-400-001"));
         }
 
         @Test
