@@ -2,8 +2,6 @@ package com.doto.domain.auth.service;
 
 import com.doto.domain.auth.dto.AuthResponseDTO;
 import com.doto.domain.auth.dto.SocialSignInRequestDTO;
-import com.doto.domain.auth.exception.AuthErrorCode;
-import com.doto.domain.auth.exception.AuthException;
 import com.doto.domain.member.entity.Member;
 import com.doto.domain.member.entity.MemberStatus;
 import com.doto.domain.member.entity.SocialAuthAccount;
@@ -15,10 +13,12 @@ import com.doto.global.security.oidc.OidcTokenVerifier;
 import com.doto.global.security.oidc.OidcUserInfo;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** 카카오/구글 ID 토큰(OIDC)을 검증해 로그인 or 자동 회원가입을 처리 */
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -32,9 +32,7 @@ public class SocialSignInService {
     private final RefreshTokenService refreshTokenService;
     private final List<OidcTokenVerifier> oidcTokenVerifiers;
 
-    public AuthResponseDTO signIn(SocialSignInRequestDTO request) {
-        SocialProvider provider = request.provider();
-
+    public AuthResponseDTO signIn(SocialProvider provider, SocialSignInRequestDTO request) {
         // id 토큰 검증
         OidcUserInfo userInfo = findVerifier(provider).verify(request.idToken());
 
@@ -43,10 +41,14 @@ public class SocialSignInService {
                 .findByProviderAndExternalId(provider, userInfo.externalId())
                 .orElseGet(() -> registerMember(provider, userInfo));
 
-        // 계정 상태 검증
+        // 탈퇴로 휴면 상태였던 계정은 소셜 로그인 시 다시 활성화
         Member member = account.getMember();
         if (member.getStatus() != MemberStatus.ACTIVE) {
-            throw new AuthException(AuthErrorCode.INACTIVE_ACCOUNT);
+            member.reactivate();
+            log.info(
+                    "탈퇴 상태였던 회원이 소셜 로그인으로 재활성화되었습니다. memberId={}, provider={}",
+                    member.getId(), provider
+            );
         }
 
         // 토큰 발급

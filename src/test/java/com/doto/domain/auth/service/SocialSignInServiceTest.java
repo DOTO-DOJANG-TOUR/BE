@@ -13,6 +13,7 @@ import com.doto.domain.auth.dto.SocialSignInRequestDTO;
 import com.doto.domain.auth.exception.AuthErrorCode;
 import com.doto.domain.auth.exception.AuthException;
 import com.doto.domain.member.entity.Member;
+import com.doto.domain.member.entity.MemberStatus;
 import com.doto.domain.member.entity.SocialAuthAccount;
 import com.doto.domain.member.entity.SocialProvider;
 import com.doto.domain.member.repository.MemberRepository;
@@ -81,10 +82,11 @@ class SocialSignInServiceTest {
         void 이미_연결된_카카오_계정이면_새로_가입하지_않고_로그인한다() {
             Member member = activeMember("홍길동");
             SocialAuthAccount account = SocialAuthAccount.create(
-                    member, SocialProvider.KAKAO, "https://kauth.kakao.com", "kakao-1", "member@kakao.com"
+                    member, SocialProvider.KAKAO, "https://kauth.kakao.com", "kakao-1", "member@kakao.com",
+                    "https://kakao-img.com/1.png"
             );
             OidcUserInfo userInfo = new OidcUserInfo(
-                    "kakao-1", "member@kakao.com", "홍길동", "https://kauth.kakao.com"
+                    "kakao-1", "member@kakao.com", "홍길동", "https://kauth.kakao.com", "https://kakao-img.com/1.png"
             );
 
             when(kakaoOidcTokenVerifier.verify("id-token")).thenReturn(userInfo);
@@ -93,7 +95,7 @@ class SocialSignInServiceTest {
             when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
             when(refreshTokenService.issue(member)).thenReturn("refresh-token");
 
-            AuthResponseDTO response = socialSignInService.signIn(new SocialSignInRequestDTO(SocialProvider.KAKAO, "id-token"));
+            AuthResponseDTO response = socialSignInService.signIn(SocialProvider.KAKAO, new SocialSignInRequestDTO("id-token"));
 
             assertThat(response.userId()).isEqualTo("1");
             assertThat(response.accessToken()).isEqualTo("access-token");
@@ -105,7 +107,7 @@ class SocialSignInServiceTest {
         void 처음_로그인하는_구글_사용자는_자동으로_회원가입된다() {
             Member newMember = activeMember("Jane");
             OidcUserInfo userInfo = new OidcUserInfo(
-                    "google-1", "member@gmail.com", "Jane", "https://accounts.google.com"
+                    "google-1", "member@gmail.com", "Jane", "https://accounts.google.com", "https://google-img.com/1.png"
             );
 
             when(googleOidcTokenVerifier.verify("id-token")).thenReturn(userInfo);
@@ -117,7 +119,7 @@ class SocialSignInServiceTest {
             when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
             when(refreshTokenService.issue(newMember)).thenReturn("refresh-token");
 
-            AuthResponseDTO response = socialSignInService.signIn(new SocialSignInRequestDTO(SocialProvider.GOOGLE, "id-token"));
+            AuthResponseDTO response = socialSignInService.signIn(SocialProvider.GOOGLE, new SocialSignInRequestDTO("id-token"));
 
             assertThat(response.userId()).isEqualTo("1");
             verify(memberRepository).save(any(Member.class));
@@ -127,7 +129,7 @@ class SocialSignInServiceTest {
         @Test
         void ID_토큰에_닉네임이_없으면_기본_닉네임으로_가입한다() {
             Member newMember = activeMember("카카오사용자");
-            OidcUserInfo userInfo = new OidcUserInfo("kakao-2", null, null, "https://kauth.kakao.com");
+            OidcUserInfo userInfo = new OidcUserInfo("kakao-2", null, null, "https://kauth.kakao.com", null);
 
             when(kakaoOidcTokenVerifier.verify("id-token")).thenReturn(userInfo);
             when(socialAuthAccountRepository.findByProviderAndExternalId(SocialProvider.KAKAO, "kakao-2"))
@@ -138,11 +140,36 @@ class SocialSignInServiceTest {
             when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
             when(refreshTokenService.issue(newMember)).thenReturn("refresh-token");
 
-            socialSignInService.signIn(new SocialSignInRequestDTO(SocialProvider.KAKAO, "id-token"));
+            socialSignInService.signIn(SocialProvider.KAKAO, new SocialSignInRequestDTO("id-token"));
 
             verify(memberRepository).save(
                     org.mockito.ArgumentMatchers.argThat(member -> member.getNickname().equals("카카오사용자"))
             );
+        }
+
+        @Test
+        void 탈퇴로_비활성화된_회원이_소셜_로그인하면_다시_활성화된다() {
+            Member member = activeMember("홍길동");
+            member.deactivate();
+            SocialAuthAccount account = SocialAuthAccount.create(
+                    member, SocialProvider.KAKAO, "https://kauth.kakao.com", "kakao-1", "member@kakao.com",
+                    "https://kakao-img.com/1.png"
+            );
+            OidcUserInfo userInfo = new OidcUserInfo(
+                    "kakao-1", "member@kakao.com", "홍길동", "https://kauth.kakao.com", "https://kakao-img.com/1.png"
+            );
+
+            when(kakaoOidcTokenVerifier.verify("id-token")).thenReturn(userInfo);
+            when(socialAuthAccountRepository.findByProviderAndExternalId(SocialProvider.KAKAO, "kakao-1"))
+                    .thenReturn(Optional.of(account));
+            when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
+            when(refreshTokenService.issue(member)).thenReturn("refresh-token");
+
+            AuthResponseDTO response = socialSignInService.signIn(SocialProvider.KAKAO, new SocialSignInRequestDTO("id-token"));
+
+            assertThat(member.getStatus()).isEqualTo(MemberStatus.ACTIVE);
+            assertThat(response.accessToken()).isEqualTo("access-token");
+            assertThat(response.refreshToken()).isEqualTo("refresh-token");
         }
 
     }
@@ -155,31 +182,10 @@ class SocialSignInServiceTest {
             when(kakaoOidcTokenVerifier.verify("bad-token"))
                     .thenThrow(new AuthException(AuthErrorCode.INVALID_SOCIAL_TOKEN));
 
-            assertThatThrownBy(() -> socialSignInService.signIn(new SocialSignInRequestDTO(SocialProvider.KAKAO, "bad-token")))
+            assertThatThrownBy(() -> socialSignInService.signIn(SocialProvider.KAKAO, new SocialSignInRequestDTO("bad-token")))
                     .isInstanceOf(AuthException.class)
                     .extracting("errorCode")
                     .isEqualTo(AuthErrorCode.INVALID_SOCIAL_TOKEN);
-        }
-
-        @Test
-        void 연결된_회원이_비활성화_상태면_예외를_던진다() {
-            Member member = activeMember("홍길동");
-            member.deactivate();
-            SocialAuthAccount account = SocialAuthAccount.create(
-                    member, SocialProvider.KAKAO, "https://kauth.kakao.com", "kakao-1", "member@kakao.com"
-            );
-            OidcUserInfo userInfo = new OidcUserInfo(
-                    "kakao-1", "member@kakao.com", "홍길동", "https://kauth.kakao.com"
-            );
-
-            when(kakaoOidcTokenVerifier.verify("id-token")).thenReturn(userInfo);
-            when(socialAuthAccountRepository.findByProviderAndExternalId(SocialProvider.KAKAO, "kakao-1"))
-                    .thenReturn(Optional.of(account));
-
-            assertThatThrownBy(() -> socialSignInService.signIn(new SocialSignInRequestDTO(SocialProvider.KAKAO, "id-token")))
-                    .isInstanceOf(AuthException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(AuthErrorCode.INACTIVE_ACCOUNT);
         }
     }
 }

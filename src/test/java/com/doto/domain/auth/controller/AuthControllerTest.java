@@ -13,6 +13,7 @@ import com.doto.domain.auth.exception.AuthException;
 import com.doto.domain.auth.service.AuthUseCase;
 import com.doto.global.api.CommonResponse;
 import com.doto.global.api.CommonSuccessCode;
+import com.doto.global.error.CommonErrorCode;
 import com.doto.global.error.GlobalExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -128,12 +129,12 @@ class AuthControllerTest {
         @Test
         void 카카오_로그인이_성공하면_200과_토큰을_반환한다() throws Exception {
             AuthResponseDTO response = new AuthResponseDTO("1", "홍길동", "access-token", "refresh-token");
-            when(authUseCase.socialSignIn(any())).thenReturn(response);
+            when(authUseCase.socialSignIn(any(), any())).thenReturn(response);
 
-            mockMvc.perform(post("/api/v1/auth/social")
+            mockMvc.perform(post("/api/v1/auth/social/{provider}", "KAKAO")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
-                                    {"provider":"KAKAO","idToken":"kakao-id-token"}
+                                    {"idToken":"kakao-id-token"}
                                     """))
                     .andExpect(status().isOk())
                     .andExpect(content().json(objectMapper.writeValueAsString(
@@ -144,12 +145,12 @@ class AuthControllerTest {
         @Test
         void 구글_로그인이_성공하면_200과_토큰을_반환한다() throws Exception {
             AuthResponseDTO response = new AuthResponseDTO("1", "Jane", "access-token", "refresh-token");
-            when(authUseCase.socialSignIn(any())).thenReturn(response);
+            when(authUseCase.socialSignIn(any(), any())).thenReturn(response);
 
-            mockMvc.perform(post("/api/v1/auth/social")
+            mockMvc.perform(post("/api/v1/auth/social/{provider}", "GOOGLE")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
-                                    {"provider":"GOOGLE","idToken":"google-id-token"}
+                                    {"idToken":"google-id-token"}
                                     """))
                     .andExpect(status().isOk())
                     .andExpect(content().json(objectMapper.writeValueAsString(
@@ -159,12 +160,12 @@ class AuthControllerTest {
 
         @Test
         void ID_토큰이_유효하지_않으면_401을_반환한다() throws Exception {
-            when(authUseCase.socialSignIn(any())).thenThrow(new AuthException(AuthErrorCode.INVALID_SOCIAL_TOKEN));
+            when(authUseCase.socialSignIn(any(), any())).thenThrow(new AuthException(AuthErrorCode.INVALID_SOCIAL_TOKEN));
 
-            mockMvc.perform(post("/api/v1/auth/social")
+            mockMvc.perform(post("/api/v1/auth/social/{provider}", "KAKAO")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
-                                    {"provider":"KAKAO","idToken":"bad-token"}
+                                    {"idToken":"bad-token"}
                                     """))
                     .andExpect(status().isUnauthorized())
                     .andExpect(content().json(objectMapper.writeValueAsString(
@@ -174,22 +175,25 @@ class AuthControllerTest {
 
         @Test
         void ID_토큰이_비어있으면_400을_반환한다() throws Exception {
-            mockMvc.perform(post("/api/v1/auth/social")
+            mockMvc.perform(post("/api/v1/auth/social/{provider}", "KAKAO")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
-                                    {"provider":"KAKAO","idToken":""}
+                                    {"idToken":""}
                                     """))
                     .andExpect(status().isBadRequest());
         }
 
         @Test
-        void provider가_없으면_400을_반환한다() throws Exception {
-            mockMvc.perform(post("/api/v1/auth/social")
+        void provider가_유효하지_않으면_400을_반환한다() throws Exception {
+            mockMvc.perform(post("/api/v1/auth/social/{provider}", "INVALID")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {"idToken":"kakao-id-token"}
                                     """))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(content().json(objectMapper.writeValueAsString(
+                            CommonResponse.error(CommonErrorCode.INVALID_INPUT)
+                    )));
         }
     }
 

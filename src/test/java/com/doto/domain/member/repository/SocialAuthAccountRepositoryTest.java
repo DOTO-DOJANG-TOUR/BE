@@ -20,7 +20,7 @@ class SocialAuthAccountRepositoryTest extends AbstractRepositoryTest {
     void provider와_externalId로_계정을_찾는다() {
         Member member = memberRepository.save(Member.register("홍길동"));
         socialAuthAccountRepository.save(
-                SocialAuthAccount.create(member, SocialProvider.KAKAO, "issuer", "external-1", "member@example.com")
+                SocialAuthAccount.create(member, SocialProvider.KAKAO, "issuer", "external-1", "member@example.com", null)
         );
 
         assertThat(socialAuthAccountRepository.findByProviderAndExternalId(SocialProvider.KAKAO, "external-1"))
@@ -35,7 +35,7 @@ class SocialAuthAccountRepositoryTest extends AbstractRepositoryTest {
     void memberId로_계정을_찾는다() {
         Member member = memberRepository.save(Member.register("홍길동"));
         socialAuthAccountRepository.save(
-                SocialAuthAccount.create(member, SocialProvider.KAKAO, "issuer", "external-1", "member@example.com")
+                SocialAuthAccount.create(member, SocialProvider.KAKAO, "issuer", "external-1", "member@example.com", null)
         );
 
         assertThat(socialAuthAccountRepository.findByMember_Id(member.getId()))

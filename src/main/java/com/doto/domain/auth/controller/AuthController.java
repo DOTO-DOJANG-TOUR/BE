@@ -6,6 +6,7 @@ import com.doto.domain.auth.dto.SignInRequestDTO;
 import com.doto.domain.auth.dto.SignUpRequestDTO;
 import com.doto.domain.auth.dto.SocialSignInRequestDTO;
 import com.doto.domain.auth.service.AuthUseCase;
+import com.doto.domain.member.entity.SocialProvider;
 import com.doto.global.api.CommonResponse;
 import com.doto.global.api.CommonSuccessCode;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +33,8 @@ public class AuthController implements AuthApi {
     }
 
     @Override
-    public ResponseEntity<CommonResponse<AuthResponseDTO>> socialSignIn(SocialSignInRequestDTO request) {
-        AuthResponseDTO result = authUseCase.socialSignIn(request);
+    public ResponseEntity<CommonResponse<AuthResponseDTO>> socialSignIn(SocialProvider provider, SocialSignInRequestDTO request) {
+        AuthResponseDTO result = authUseCase.socialSignIn(provider, request);
         return ResponseEntity.ok(CommonResponse.success(result));
     }
 

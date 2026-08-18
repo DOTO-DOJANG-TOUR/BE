@@ -74,4 +74,18 @@ class MemberTest {
             assertThat(member.getStatus()).isEqualTo(MemberStatus.INACTIVE);
         }
     }
+
+    @Nested
+    class 재활성화 {
+
+        @Test
+        void 재활성화하면_상태가_ACTIVE로_바뀐다() {
+            Member member = Member.register("홍길동");
+            member.deactivate();
+
+            member.reactivate();
+
+            assertThat(member.getStatus()).isEqualTo(MemberStatus.ACTIVE);
+        }
+    }
 }
