@@ -1,6 +1,6 @@
 package com.doto.domain.stamp.entity;
 
-import com.doto.domain.festival.entity.TourSpot;
+import com.doto.domain.tourspot.entity.TourSpot;
 import com.doto.global.common.BaseTimeEntity;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;

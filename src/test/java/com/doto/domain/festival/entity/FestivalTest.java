@@ -22,14 +22,17 @@ class FestivalTest {
             Point location = GEOMETRY_FACTORY.createPoint(new Coordinate(127.0276, 37.4979));
 
             Festival festival = Festival.create(
-                    "도토 축제", "축제 소개", "https://doto.example.com", "FESTIVAL", "02-1234-5678", "서울시 강남구",
-                    "10:00~22:00", "월요일", "무료", "가능", "무료", "1", "11", "11680",
+                    2515245L, "도토 축제", "축제 소개", "https://doto.example.com", "FESTIVAL", "02-1234-5678", "서울시 강남구",
+                    "18:00~19:30", "10:00~22:00", "월요일", "무료", "가능", "무료", "주요 프로그램", "11", "11000",
                     Instant.parse("2026-08-15T00:00:00Z"), Instant.parse("2026-08-20T00:00:00Z"), location
             );
 
             assertThat(festival.getTitle()).isEqualTo("도토 축제");
-            assertThat(festival.getAreaCode()).isEqualTo("1");
+            assertThat(festival.getContentId()).isEqualTo(2515245L);
+            assertThat(festival.getLegalDongRegionCode()).isEqualTo("11");
             assertThat(festival.getEventStartDate()).isEqualTo(Instant.parse("2026-08-15T00:00:00Z"));
+            assertThat(festival.getOperationHours()).isEqualTo("10:00~22:00");
+            assertThat(festival.getProgram()).isEqualTo("주요 프로그램");
             assertThat(festival.getLocation()).isEqualTo(location);
             assertThat(festival.getLocation().getSRID()).isEqualTo(4326);
         }
