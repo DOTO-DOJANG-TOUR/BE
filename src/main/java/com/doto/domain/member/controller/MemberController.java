@@ -2,6 +2,7 @@ package com.doto.domain.member.controller;
 
 import com.doto.domain.member.dto.UserResponseDTO;
 import com.doto.domain.member.dto.UserUpdateRequestDTO;
+import com.doto.domain.member.dto.UserUpdateResponseDTO;
 import com.doto.domain.member.service.MemberService;
 import com.doto.global.api.CommonResponse;
 import com.doto.global.security.CustomMemberDetails;
@@ -23,14 +24,12 @@ public class MemberController implements MemberApi {
     }
 
     @Override
-    public ResponseEntity<CommonResponse<UserResponseDTO>> updateMyInfo(
+    public ResponseEntity<CommonResponse<UserUpdateResponseDTO>> updateMyInfo(
             CustomMemberDetails memberDetails,
             UserUpdateRequestDTO request
     ) {
-        memberService.updateMyInfo(memberDetails.getMemberId(), request);
-        return ResponseEntity.ok(
-                CommonResponse.success(memberService.getMyInfo(memberDetails.getMemberId()))
-        );
+        UserUpdateResponseDTO result = memberService.updateMyInfo(memberDetails.getMemberId(), request);
+        return ResponseEntity.ok(CommonResponse.success(result));
     }
 
 }
