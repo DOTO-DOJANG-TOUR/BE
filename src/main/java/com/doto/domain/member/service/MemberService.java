@@ -10,6 +10,7 @@ import com.doto.domain.member.exception.MemberException;
 import com.doto.domain.member.repository.GeneralAuthAccountRepository;
 import com.doto.domain.member.repository.MemberRepository;
 import com.doto.domain.member.repository.SocialAuthAccountRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,14 +29,17 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        // 일반 계정에 없으면 소셜 계정의 이메일을 대신 사용한다
+        Optional<SocialAuthAccount> socialAccount = socialAuthAccountRepository.findByMember_Id(memberId);
+
         String email = generalAuthAccountRepository.findByMember_Id(memberId)
                 .map(GeneralAuthAccount::getEmail)
-                .or(() -> socialAuthAccountRepository.findByMember_Id(memberId)
-                        .map(SocialAuthAccount::getEmail))
+                .or(() -> socialAccount.map(SocialAuthAccount::getEmail))
                 .orElse(null);
 
-        return UserResponseDTO.from(member, email);
+        String provider = socialAccount.map(account -> account.getProvider().name()).orElse(null);
+        String profileImg = socialAccount.map(SocialAuthAccount::getProfileImg).orElse(null);
+
+        return UserResponseDTO.from(member, email, provider, profileImg);
     }
 
     @Transactional

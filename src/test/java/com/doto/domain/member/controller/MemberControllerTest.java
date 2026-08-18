@@ -15,7 +15,6 @@ import com.doto.domain.member.service.MemberService;
 import com.doto.global.error.GlobalExceptionHandler;
 import com.doto.global.security.CurrentMemberArgumentResolver;
 import com.doto.global.security.CustomMemberDetails;
-import java.time.Instant;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -67,14 +66,16 @@ class MemberControllerTest {
         void 인증된_사용자면_200과_내_정보를_반환한다() throws Exception {
             authenticateAs(1L);
             UserResponseDTO response = new UserResponseDTO(
-                    "1", "member@example.com", "홍길동", "ACTIVE", Instant.parse("2026-08-02T00:00:00Z")
+                    "1", "member@example.com", "홍길동", "ACTIVE", "KAKAO", "profile.jpg"
             );
             when(memberService.getMyInfo(1L)).thenReturn(response);
 
             mockMvc.perform(get("/api/v1/members/me"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.result.nickname").value("홍길동"))
-                    .andExpect(jsonPath("$.result.email").value("member@example.com"));
+                    .andExpect(jsonPath("$.result.email").value("member@example.com"))
+                    .andExpect(jsonPath("$.result.profile_img").value("profile.jpg"))
+                    .andExpect(jsonPath("$.result.createdAt").doesNotExist());
         }
 
         @Test
@@ -91,7 +92,7 @@ class MemberControllerTest {
         void 닉네임을_보내면_수정_후_최신_정보를_반환한다() throws Exception {
             authenticateAs(1L);
             UserResponseDTO response = new UserResponseDTO(
-                    "1", "member@example.com", "김철수", "ACTIVE", Instant.parse("2026-08-02T00:00:00Z")
+                    "1", "member@example.com", "김철수", "ACTIVE", "KAKAO", "profile.jpg"
             );
             when(memberService.getMyInfo(1L)).thenReturn(response);
 

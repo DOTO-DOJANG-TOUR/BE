@@ -60,13 +60,16 @@ class MemberServiceTest {
             assertThat(response.userId()).isEqualTo("1");
             assertThat(response.email()).isEqualTo("member@example.com");
             assertThat(response.nickname()).isEqualTo("홍길동");
+            assertThat(response.provider()).isNull();
+            assertThat(response.profileImg()).isNull();
         }
 
         @Test
         void 일반_계정이_없고_소셜_계정만_있으면_소셜_계정의_이메일을_반환한다() {
             Member member = memberWithId(1L);
             SocialAuthAccount socialAccount = SocialAuthAccount.create(
-                    member, SocialProvider.KAKAO, "https://kauth.kakao.com", "kakao-1", "social@kakao.com", null
+                    member, SocialProvider.KAKAO, "https://kauth.kakao.com", "kakao-1", "social@kakao.com",
+                    "kakao-profile.jpg"
             );
             when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
             when(generalAuthAccountRepository.findByMember_Id(1L)).thenReturn(Optional.empty());
@@ -75,6 +78,8 @@ class MemberServiceTest {
             UserResponseDTO response = memberService.getMyInfo(1L);
 
             assertThat(response.email()).isEqualTo("social@kakao.com");
+            assertThat(response.provider()).isEqualTo("KAKAO");
+            assertThat(response.profileImg()).isEqualTo("kakao-profile.jpg");
         }
 
         @Test
@@ -87,6 +92,8 @@ class MemberServiceTest {
             UserResponseDTO response = memberService.getMyInfo(1L);
 
             assertThat(response.email()).isNull();
+            assertThat(response.provider()).isNull();
+            assertThat(response.profileImg()).isNull();
         }
 
         @Test
