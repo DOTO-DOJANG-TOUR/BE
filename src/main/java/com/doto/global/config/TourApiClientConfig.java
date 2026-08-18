@@ -3,6 +3,7 @@ package com.doto.global.config;
 import com.doto.domain.tourex.exception.TourApiErrorCode;
 import com.doto.domain.tourex.exception.TourApiException;
 import java.util.Map;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,12 @@ import org.springframework.web.client.RestClient;
 
 @Configuration
 public class TourApiClientConfig {
+
+    @Bean
+    @ConditionalOnMissingBean(RestClient.Builder.class)
+    public RestClient.Builder tourApiRestClientBuilder() {
+        return RestClient.builder();
+    }
 
     @Bean
     public RestClient tourApiRestClient(
