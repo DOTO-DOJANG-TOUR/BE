@@ -1,6 +1,7 @@
 package com.doto.global.config;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.doto.domain.stamp.service.TourSpotVisitCacheNames;
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -21,10 +22,21 @@ public class CacheConfig {
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .maximumSize(properties.maximumSize())
                 .expireAfterWrite(properties.expireAfterWrite()));
+        cacheManager.registerCustomCache(
+                TourSpotVisitCacheNames.ACTIVE_VISITS,
+                Caffeine.newBuilder()
+                        .maximumSize(properties.maximumSize())
+                        .expireAfterWrite(properties.activeTourSpotVisitExpireAfterWrite())
+                        .build()
+        );
         return cacheManager;
     }
 
     @ConfigurationProperties("doto.cache")
-    public record CacheProperties(long maximumSize, Duration expireAfterWrite) {
+    public record CacheProperties(
+            long maximumSize,
+            Duration expireAfterWrite,
+            Duration activeTourSpotVisitExpireAfterWrite
+    ) {
     }
 }

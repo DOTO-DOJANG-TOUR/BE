@@ -44,3 +44,23 @@ ALTER TABLE tour_spots
     DROP COLUMN festival_id;
 
 CREATE INDEX idx_festival_tour_spots_tour_spot_id ON festival_tour_spots (tour_spot_id);
+
+CREATE TABLE tour_spot_visits (
+    tour_spot_visit_id BIGINT NOT NULL,
+    member_id BIGINT NOT NULL,
+    tour_spot_id BIGINT NOT NULL,
+    status VARCHAR(10) NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    ended_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL,
+    CONSTRAINT pk_tour_spot_visits PRIMARY KEY (tour_spot_visit_id),
+    CONSTRAINT fk_tour_spot_visits_member FOREIGN KEY (member_id) REFERENCES members (member_id),
+    CONSTRAINT fk_tour_spot_visits_tour_spot FOREIGN KEY (tour_spot_id) REFERENCES tour_spots (tour_spot_id)
+);
+
+CREATE INDEX idx_tour_spot_visits_member_id ON tour_spot_visits (member_id);
+CREATE INDEX idx_tour_spot_visits_expires_at ON tour_spot_visits (expires_at);
+CREATE UNIQUE INDEX uk_tour_spot_visits_member_visiting
+    ON tour_spot_visits (member_id)
+    WHERE status = 'VISITING';
