@@ -185,7 +185,7 @@ docker compose -f docker-compose.yml up -d
 ./gradlew clean test
 ```
 
-H2 대신 Testcontainers의 `postgres:17-alpine`을 사용해 운영 DB와의 차이를 줄입니다. Docker가 제공되는 CI에서는 다음 항목을 검증합니다.
+H2 대신 Testcontainers의 `postgis/postgis:17-3.5-alpine`을 사용해 운영 DB와의 차이를 줄입니다. Docker가 제공되는 CI에서는 다음 항목을 검증합니다.
 
 - 빈 PostgreSQL에서 Flyway migration이 정상 적용되는지
 - 실제 쿼리, 인덱스와 제약 조건이 유효한지
@@ -217,7 +217,7 @@ JaCoCo 리포트는 테스트 실행 후 아래 경로에 생성됩니다.
 - 복잡하거나 반복되는 응답 조합은 Converter의 `toResponse()`로 분리합니다.
 - 요청 DTO에는 `toEntity()`를 두지 않고 Service의 선행 검증 후 Entity를 생성합니다.
 - Entity 클래스 레벨의 공개 Builder 대신 도메인 정적 팩토리를 사용합니다.
-- `User`, `Place`처럼 외부에서 오래 참조하는 핵심 Aggregate Root만 TSID를 사용합니다.
+- `Member`, `Place`처럼 외부에서 오래 참조하는 핵심 Aggregate Root만 TSID를 사용합니다.
 - 일시는 UTC `Instant`로 저장하고 API에서는 `2026-08-02T09:30:00Z` 형태의 ISO 8601 문자열로 반환합니다. 사용자 시간대 표시는 클라이언트가 담당합니다.
 - 스키마 변경은 `ddl-auto`가 아닌 Flyway migration으로 관리합니다.
 - Caffeine은 정합성이 덜 중요한 조회 데이터에만 제한적으로 사용합니다.

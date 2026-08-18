@@ -3,6 +3,7 @@ package com.doto.global.config;
 import com.doto.global.api.CommonResponse;
 import com.doto.global.error.CommonErrorCode;
 import com.doto.global.error.ErrorCode;
+import com.doto.global.security.CurrentMember;
 import com.doto.global.swagger.ApiErrorCodeExamples;
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverters;
@@ -23,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -33,6 +35,11 @@ public class SwaggerConfig {
 
     public static final String BEARER_AUTH = "bearerAuth";
     private static final String COMMON_RESPONSE_SCHEMA = "CommonResponse";
+
+    static {
+        // @CurrentMember는 요청 파라미터로 노출하지 않는다
+        SpringDocUtils.getConfig().addAnnotationsToIgnore(CurrentMember.class);
+    }
 
     @Bean
     public OpenAPI dotoOpenApi() {
