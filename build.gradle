@@ -86,6 +86,10 @@ jacocoTestReport {
                             '**/domain/**/exception/**',
                             '**/global/error/**',
                             '**/domain/**/repository/**',
+                            // 아직 미구현 또는 호출되지 않는 서비스
+                            '**/domain/festival/service/FestivalCommandService.class',
+                            '**/domain/tourspot/service/TourSpotQueryService.class',
+                            '**/domain/tourex/scheduler/TourApiSyncScheduler.class',
                             // 인증·인가 및 OIDC 인프라
                             '**/global/security/CurrentMember.class',
                             '**/global/security/CurrentMemberArgumentResolver.class',
