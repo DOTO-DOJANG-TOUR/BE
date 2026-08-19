@@ -1,5 +1,7 @@
 package com.doto.domain.tourex.dto;
 
+import com.doto.domain.festival.entity.enums.FestivalCategory;
+
 /**
  * TourAPI에서 조회한 축제 콘텐츠 응답
  */
@@ -12,6 +14,9 @@ public record FestivalApiResponseDTO(
         String mapX,
         String mapY,
         String overview,
+        FestivalCategory category,
+        String legalDongRegionCode,
+        String legalDongSigunguCode,
         String eventStartDate,
         String eventEndDate,
         String operationHours,

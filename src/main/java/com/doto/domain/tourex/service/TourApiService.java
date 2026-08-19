@@ -3,6 +3,7 @@ package com.doto.domain.tourex.service;
 import com.doto.domain.stamp.entity.enums.TourSpotCategory;
 import com.doto.domain.stamp.dto.TourSpotDetailResponseDTO;
 import com.doto.domain.stamp.dto.TourSpotItemResponseDTO;
+import com.doto.domain.festival.entity.enums.FestivalCategory;
 import com.doto.domain.tourex.client.TourApiClient;
 import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
 import com.doto.domain.tourex.dto.FestivalIntroApiResponseDTO;
@@ -54,6 +55,9 @@ public class TourApiService {
                 festival.mapx(),
                 festival.mapy(),
                 festival.overview(),
+                toFestivalCategory(festival.lclsSystem1()),
+                festival.legalDongRegionCode(),
+                festival.legalDongSigunguCode(),
                 intro.eventstartdate(),
                 intro.eventenddate(),
                 intro.usetimefestival(),
@@ -165,6 +169,17 @@ public class TourApiService {
             case "NA" -> TourSpotCategory.NATURE;
             case "EX", "LS" -> TourSpotCategory.EXPERIENCE;
             default -> throw new IllegalArgumentException("지원하지 않는 관광지 대분류 코드입니다: " + lclsSystem1);
+        };
+    }
+
+    // 축제 카테고리 매핑
+    private FestivalCategory toFestivalCategory(String lclsSystem1) {
+        return switch (lclsSystem1) {
+            case "VE" -> FestivalCategory.CULTURE;
+            case "HS" -> FestivalCategory.HISTORY;
+            case "NA" -> FestivalCategory.NATURE;
+            case "EX", "LS" -> FestivalCategory.EXPERIENCE;
+            default -> throw new IllegalArgumentException("지원하지 않는 축제 대분류 코드입니다: " + lclsSystem1);
         };
     }
 }

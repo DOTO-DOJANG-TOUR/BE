@@ -170,4 +170,44 @@ public class Festival extends BaseTimeEntity {
                 .location(location)
                 .build();
     }
+
+    public void update(
+            String title,
+            String summary,
+            String homepageUrl,
+            String category,
+            String phone,
+            String address,
+            String playTime,
+            String operationHours,
+            String restDate,
+            String useFee,
+            String parking,
+            String parkingFee,
+            String program,
+            String legalDongRegionCode,
+            String legalDongSigunguCode,
+            Instant eventStartDate,
+            Instant eventEndDate,
+            Point location
+    ) {
+        this.title = title;
+        this.summary = summary;
+        this.homepageUrl = homepageUrl;
+        this.category = category;
+        this.phone = phone;
+        this.address = address;
+        this.playTime = playTime;
+        this.operationHours = operationHours;
+        this.restDate = restDate;
+        this.useFee = useFee;
+        this.parking = parking;
+        this.parkingFee = parkingFee;
+        this.program = program;
+        this.legalDongRegionCode = legalDongRegionCode;
+        this.legalDongSigunguCode = legalDongSigunguCode;
+        this.eventStartDate = eventStartDate;
+        this.eventEndDate = eventEndDate;
+        this.location = location;
+    }
 }
