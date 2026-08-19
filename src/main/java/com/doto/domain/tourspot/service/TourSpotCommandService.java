@@ -10,6 +10,9 @@ import com.doto.domain.tourspot.entity.TourSpot;
 import com.doto.domain.tourspot.repository.FestivalTourSpotRepository;
 import com.doto.domain.tourspot.repository.TourSpotRepository;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,6 +42,14 @@ public class TourSpotCommandService {
 
         // TourSpot을 contentId 기준으로 upsert
         List<TourSpot> tourSpotsToSave = tourSpots.stream()
+                .collect(Collectors.toMap(
+                        TourSpotItemResponseDTO::contentId,
+                        Function.identity(),
+                        (first, ignored) -> first,
+                        LinkedHashMap::new
+                ))
+                .values()
+                .stream()
                 .map(dto -> tourSpotRepository.findByContentId(dto.contentId())
                         // 존재 시 정보 업데이트
                         .map(existingTourSpot -> {

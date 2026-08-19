@@ -10,8 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface TourSpotVisitRepository extends JpaRepository<TourSpotVisit, Long> {
 
-    Optional<TourSpotVisit> findByMember_IdAndStatus(Long memberId, TourSpotVisitStatus status);
-
     @Query("SELECT visit FROM TourSpotVisit visit "
             + "WHERE visit.member.id = :memberId "
             + "AND visit.status = :status "

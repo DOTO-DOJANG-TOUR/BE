@@ -19,6 +19,7 @@ import com.doto.domain.tourspot.repository.TourSpotRepository;
 import com.doto.fixture.FestivalFixture;
 import com.doto.fixture.TourSpotFixture;
 import java.util.List;
+import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -124,6 +125,24 @@ class TourSpotCommandServiceTest {
                 FestivalTourSpot relation = relations.iterator().next();
                 return relation.getFestival() == festival && relation.getTourSpot() == existingTourSpot;
             }));
+        }
+
+        @Test
+        @DisplayName("동일한 contentId가 중복되면 관광지와 관계를 한 번만 저장한다")
+        void savesDuplicateContentIdOnlyOnce() {
+            Festival festival = festivalWithId(1L);
+            TourSpotItemResponseDTO dto = TourSpotFixture.createResponseDTO(125405L);
+            given(festivalRepository.findByContentId(festival.getContentId())).willReturn(java.util.Optional.of(festival));
+            given(tourSpotRepository.findByContentId(dto.contentId())).willReturn(java.util.Optional.empty());
+            givenSaveAllReturnsInput();
+
+            tourSpotCommandService.saveTourSpots(festival.getContentId(), List.of(dto, dto));
+
+            then(tourSpotRepository).should().findByContentId(dto.contentId());
+            then(tourSpotRepository).should().saveAll(org.mockito.ArgumentMatchers.argThat(tourSpots ->
+                    StreamSupport.stream(tourSpots.spliterator(), false).count() == 1));
+            then(festivalTourSpotRepository).should().saveAll(org.mockito.ArgumentMatchers.argThat(relations ->
+                    StreamSupport.stream(relations.spliterator(), false).count() == 1));
         }
     }
 

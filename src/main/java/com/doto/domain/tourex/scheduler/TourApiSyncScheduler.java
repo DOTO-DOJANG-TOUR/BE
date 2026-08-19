@@ -12,11 +12,13 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "tour-api.sync", name = "enabled", havingValue = "true")
 public class TourApiSyncScheduler {
 
     private final TourApiService tourApiService;
@@ -36,7 +38,8 @@ public class TourApiSyncScheduler {
                 FestivalApiResponseDTO festivalDetail = tourApiService.getFestivalInfo(festival.contentId());
                 festivalCommandService.saveFestival(festivalDetail);
 
-                List<TourSpotItemResponseDTO> tourSpots = tourApiService.getNearbyTourSpots(festival.contentId());
+                List<TourSpotItemResponseDTO> tourSpots = tourApiService.getNearbyTourSpots(
+                        festivalDetail.mapX(), festivalDetail.mapY());
                 tourSpotCommandService.saveTourSpots(festival.contentId(), tourSpots);
 
                 log.info("TourAPI 축제 동기화 완료: festivalContentId={}, tourSpotCount={}",

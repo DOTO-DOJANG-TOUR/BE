@@ -70,6 +70,9 @@ public class TourSpotVisit extends BaseTimeEntity {
         if (status != TourSpotVisitStatus.VISITING) {
             return;
         }
+        if (expiredAt.isBefore(expiresAt)) {
+            throw new IllegalArgumentException("Visit cannot expire before its expiration time.");
+        }
 
         this.status = TourSpotVisitStatus.EXPIRED;
         this.endedAt = expiredAt;

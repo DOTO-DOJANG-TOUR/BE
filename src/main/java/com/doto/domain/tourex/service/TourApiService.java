@@ -30,7 +30,7 @@ public class TourApiService {
                 null,
                 tour.title(),
                 toTourSpotCategory(tour.lclsSystem1()),
-                tour.firstimage() != null ? tour.firstimage() : tour.firstimage2(),
+                getImageUrl(tour),
                 tour.addr1(),
                 tour.mapx(),
                 tour.mapy(),
@@ -81,7 +81,13 @@ public class TourApiService {
     // 축제 좌표를 기준으로 주변 관광지만 조회
     public List<TourSpotItemResponseDTO> getNearbyTourSpots(Long festivalContentId) {
         TourApiResponseDTO.TourContentDTO festival = getContent(festivalContentId);
-        return getNearbyTourSpots(festival);
+        return getNearbyTourSpots(festival.mapx(), festival.mapy());
+    }
+
+    public List<TourSpotItemResponseDTO> getNearbyTourSpots(String mapX, String mapY) {
+        BigDecimal longitude = toCoordinate(mapX);
+        BigDecimal latitude = toCoordinate(mapY);
+        return toTourSpotItems(tourApiClient.getNearbyTourSpots(longitude, latitude, TOUR_SPOT_SEARCH_RADIUS_METERS));
     }
 
     // 스케줄러 동기화 대상 축제 목록을 조회
@@ -89,11 +95,8 @@ public class TourApiService {
         return getContents(tourApiClient.searchFestivals(eventStartDate, null, null, null));
     }
 
-    private List<TourSpotItemResponseDTO> getNearbyTourSpots(TourApiResponseDTO.TourContentDTO festival) {
-        BigDecimal longitude = toCoordinate(festival.mapx());
-        BigDecimal latitude = toCoordinate(festival.mapy());
-
-        return tourApiClient.getNearbyTourSpots(longitude, latitude, TOUR_SPOT_SEARCH_RADIUS_METERS)
+    private List<TourSpotItemResponseDTO> toTourSpotItems(List<TourApiResponseDTO.TourContentDTO> tourSpots) {
+        return tourSpots
                 .stream()
                 .map(tourSpot -> new TourSpotItemResponseDTO(
                         null,
@@ -122,11 +125,7 @@ public class TourApiService {
     }
 
     private List<TourApiResponseDTO.TourContentDTO> getContents(TourApiResponseDTO response) {
-        if (response == null || response.response() == null || response.response().body() == null
-                || response.response().body().items() == null || response.response().body().items().item() == null) {
-            return List.of();
-        }
-        return response.response().body().items().item();
+        return response == null ? List.of() : response.itemsOrEmpty();
     }
 
     private FestivalIntroApiResponseDTO.FestivalIntroDTO getFestivalIntro(Long contentId) {

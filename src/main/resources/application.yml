@@ -60,5 +60,7 @@ oidc:
 tour-api:
   base-url: ${TOUR_API_BASE_URL:https://apis.data.go.kr/B551011/KorService2}
   service-key: ${TOUR_API_SERVICE_KEY:}
-  connect-timeout: 3s
-  read-timeout: 5s
+  connect-timeout: ${TOUR_API_CONNECT_TIMEOUT:3s}
+  read-timeout: ${TOUR_API_READ_TIMEOUT:5s}
+  sync:
+    enabled: ${TOUR_API_SYNC_ENABLED:false}

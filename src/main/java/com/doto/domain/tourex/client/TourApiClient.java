@@ -55,11 +55,7 @@ public class TourApiClient {
                 Map.of("longitude", longitude, "latitude", latitude, "radius", radius),
                 TourApiResponseDTO.class
         );
-        if (response == null || response.response() == null || response.response().body() == null
-                || response.response().body().items() == null || response.response().body().items().item() == null) {
-            return List.of();
-        }
-        return response.response().body().items().item();
+        return response.itemsOrEmpty();
     }
 
     // 축제 데이터 초기 적재·동기화에만 사용한다
@@ -114,9 +110,9 @@ public class TourApiClient {
             validateResponse(response);
             return response;
         } catch (ResourceAccessException exception) {
-            throw new TourApiException(TourApiErrorCode.TOUR_API_UNAVAILABLE);
+            throw new TourApiException(TourApiErrorCode.TOUR_API_UNAVAILABLE, exception);
         } catch (RestClientException exception) {
-            throw new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR);
+            throw new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR, exception);
         }
     }
 

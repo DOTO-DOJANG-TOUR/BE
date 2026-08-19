@@ -1,6 +1,7 @@
 package com.doto.domain.stamp.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.doto.domain.member.entity.Member;
 import com.doto.domain.tourspot.entity.TourSpot;
@@ -36,12 +37,21 @@ class TourSpotVisitTest {
         @Test
         void 만료하면_EXPIRED_상태와_종료_시각을_기록한다() {
             TourSpotVisit visit = createVisitingVisit();
-            Instant expiredAt = Instant.now();
+            Instant expiredAt = visit.getExpiresAt();
 
             visit.expire(expiredAt);
 
             assertThat(visit.getStatus()).isEqualTo(TourSpotVisitStatus.EXPIRED);
             assertThat(visit.getEndedAt()).isEqualTo(expiredAt);
+        }
+
+        @Test
+        void 만료_시각_전에는_만료할_수_없다() {
+            TourSpotVisit visit = createVisitingVisit();
+
+            assertThatThrownBy(() -> visit.expire(visit.getExpiresAt().minusSeconds(1)))
+                    .isInstanceOf(IllegalArgumentException.class);
+            assertThat(visit.getStatus()).isEqualTo(TourSpotVisitStatus.VISITING);
         }
 
         @Test

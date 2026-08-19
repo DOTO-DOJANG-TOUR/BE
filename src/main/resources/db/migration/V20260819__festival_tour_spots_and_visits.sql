@@ -1,7 +1,4 @@
 ALTER TABLE festivals
-    DROP COLUMN area_code,
-    DROP COLUMN region_code,
-    DROP COLUMN sigungu_code,
     ADD COLUMN l_dong_regn_cd VARCHAR(10),
     ADD COLUMN l_dong_signgu_cd VARCHAR(10),
     ADD COLUMN content_id BIGINT,

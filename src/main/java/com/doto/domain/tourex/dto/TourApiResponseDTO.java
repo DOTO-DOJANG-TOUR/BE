@@ -13,6 +13,14 @@ public record TourApiResponseDTO(
         Response response
 ) {
 
+    public List<TourContentDTO> itemsOrEmpty() {
+        if (response == null || response.body() == null || response.body().items() == null
+                || response.body().items().item() == null) {
+            return List.of();
+        }
+        return response.body().items().item();
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Response(
             Header header,
