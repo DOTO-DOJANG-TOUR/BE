@@ -3,7 +3,7 @@ package com.doto.domain.stamp.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import com.doto.domain.festival.entity.TourSpot;
+import com.doto.domain.tourspot.entity.TourSpot;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 

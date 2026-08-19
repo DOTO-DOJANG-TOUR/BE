@@ -26,6 +26,9 @@ public class Festival extends BaseTimeEntity {
     @Column(name = "festival_id")
     private Long id;
 
+    @Column(name = "content_id", unique = true)
+    private Long contentId;
+
     @Column(name = "title", length = 100)
     private String title;
 
@@ -38,7 +41,7 @@ public class Festival extends BaseTimeEntity {
     @Column(name = "category", length = 50)
     private String category;
 
-    @Column(name = "phone", length = 20)
+    @Column(name = "phone", length = 100)
     private String phone;
 
     @Column(name = "address", length = 100)
@@ -46,6 +49,9 @@ public class Festival extends BaseTimeEntity {
 
     @Column(name = "play_time", length = 20)
     private String playTime;
+
+    @Column(name = "operation_hours", length = 50)
+    private String operationHours;
 
     @Column(name = "rest_date", length = 50)
     private String restDate;
@@ -59,14 +65,14 @@ public class Festival extends BaseTimeEntity {
     @Column(name = "parking_fee", length = 50)
     private String parkingFee;
 
-    @Column(name = "area_code", nullable = false, length = 10)
-    private String areaCode;
+    @Column(name = "program", columnDefinition = "TEXT")
+    private String program;
 
-    @Column(name = "region_code", length = 10)
-    private String regionCode;
+    @Column(name = "l_dong_regn_cd", length = 10)
+    private String legalDongRegionCode;
 
-    @Column(name = "sigungu_code", nullable = false, length = 10)
-    private String sigunguCode;
+    @Column(name = "l_dong_signgu_cd", length = 10)
+    private String legalDongSigunguCode;
 
     @Column(name = "event_start_date", nullable = false)
     private Instant eventStartDate;
@@ -80,6 +86,7 @@ public class Festival extends BaseTimeEntity {
 
     @Builder(access = AccessLevel.PRIVATE)
     private Festival(
+            Long contentId,
             String title,
             String summary,
             String homepageUrl,
@@ -87,17 +94,19 @@ public class Festival extends BaseTimeEntity {
             String phone,
             String address,
             String playTime,
+            String operationHours,
             String restDate,
             String useFee,
             String parking,
             String parkingFee,
-            String areaCode,
-            String regionCode,
-            String sigunguCode,
+            String program,
+            String legalDongRegionCode,
+            String legalDongSigunguCode,
             Instant eventStartDate,
             Instant eventEndDate,
             Point location
     ) {
+        this.contentId = contentId;
         this.title = title;
         this.summary = summary;
         this.homepageUrl = homepageUrl;
@@ -105,19 +114,21 @@ public class Festival extends BaseTimeEntity {
         this.phone = phone;
         this.address = address;
         this.playTime = playTime;
+        this.operationHours = operationHours;
         this.restDate = restDate;
         this.useFee = useFee;
         this.parking = parking;
         this.parkingFee = parkingFee;
-        this.areaCode = areaCode;
-        this.regionCode = regionCode;
-        this.sigunguCode = sigunguCode;
+        this.program = program;
+        this.legalDongRegionCode = legalDongRegionCode;
+        this.legalDongSigunguCode = legalDongSigunguCode;
         this.eventStartDate = eventStartDate;
         this.eventEndDate = eventEndDate;
         this.location = location;
     }
 
     public static Festival create(
+            Long contentId,
             String title,
             String summary,
             String homepageUrl,
@@ -125,18 +136,20 @@ public class Festival extends BaseTimeEntity {
             String phone,
             String address,
             String playTime,
+            String operationHours,
             String restDate,
             String useFee,
             String parking,
             String parkingFee,
-            String areaCode,
-            String regionCode,
-            String sigunguCode,
+            String program,
+            String legalDongRegionCode,
+            String legalDongSigunguCode,
             Instant eventStartDate,
             Instant eventEndDate,
             Point location
     ) {
         return Festival.builder()
+                .contentId(contentId)
                 .title(title)
                 .summary(summary)
                 .homepageUrl(homepageUrl)
@@ -144,13 +157,14 @@ public class Festival extends BaseTimeEntity {
                 .phone(phone)
                 .address(address)
                 .playTime(playTime)
+                .operationHours(operationHours)
                 .restDate(restDate)
                 .useFee(useFee)
                 .parking(parking)
                 .parkingFee(parkingFee)
-                .areaCode(areaCode)
-                .regionCode(regionCode)
-                .sigunguCode(sigunguCode)
+                .program(program)
+                .legalDongRegionCode(legalDongRegionCode)
+                .legalDongSigunguCode(legalDongSigunguCode)
                 .eventStartDate(eventStartDate)
                 .eventEndDate(eventEndDate)
                 .location(location)

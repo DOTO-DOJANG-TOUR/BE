@@ -4,8 +4,9 @@ out/
 .idea/
 *.iml
 .DS_Store
-.env.*
 .env
+.env.*
+!.env.example
 *.pem
 *.p12
 *.jks

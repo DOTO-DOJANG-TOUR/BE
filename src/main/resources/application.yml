@@ -41,6 +41,7 @@ doto:
   cache:
     maximum-size: ${CACHE_MAXIMUM_SIZE:1000}
     expire-after-write: ${CACHE_EXPIRE_AFTER_WRITE:10m}
+    active-tour-spot-visit-expire-after-write: ${ACTIVE_TOUR_SPOT_VISIT_CACHE_EXPIRE_AFTER_WRITE:30s}
 
 jwt:
   expiration-seconds: ${JWT_EXPIRATION_SECONDS:3600}
@@ -55,3 +56,11 @@ oidc:
     client-id: ${GOOGLE_OIDC_CLIENT_ID:}
     issuer: https://accounts.google.com
     jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
+
+tour-api:
+  base-url: ${TOUR_API_BASE_URL:https://apis.data.go.kr/B551011/KorService2}
+  service-key: ${TOUR_API_SERVICE_KEY:}
+  connect-timeout: ${TOUR_API_CONNECT_TIMEOUT:3s}
+  read-timeout: ${TOUR_API_READ_TIMEOUT:5s}
+  sync:
+    enabled: ${TOUR_API_SYNC_ENABLED:false}
