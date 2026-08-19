@@ -3,7 +3,6 @@ package com.doto.domain.tourex.service;
 import com.doto.domain.stamp.entity.enums.TourSpotCategory;
 import com.doto.domain.stamp.dto.TourSpotDetailResponseDTO;
 import com.doto.domain.stamp.dto.TourSpotItemResponseDTO;
-import com.doto.domain.festival.entity.enums.FestivalCategory;
 import com.doto.domain.tourex.client.TourApiClient;
 import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
 import com.doto.domain.tourex.dto.FestivalIntroApiResponseDTO;
@@ -13,6 +12,7 @@ import com.doto.domain.tourex.exception.TourApiException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -42,8 +42,8 @@ public class TourApiService {
         );
     }
 
-    // 축제 상세 조회
-    public FestivalApiResponseDTO getFestivalInfo(Long festivalContentId) {
+    // 축제 상세 조회, festivalType은 searchFestival2(목록 조회) 결과에만 있어 호출부에서 넘겨받음
+    public FestivalApiResponseDTO getFestivalInfo(Long festivalContentId, String festivalType) {
         TourApiResponseDTO.TourContentDTO festival = getContent(festivalContentId);
         FestivalIntroApiResponseDTO.FestivalIntroDTO intro = getFestivalIntro(festivalContentId);
         return new FestivalApiResponseDTO(
@@ -55,7 +55,8 @@ public class TourApiService {
                 festival.mapx(),
                 festival.mapy(),
                 festival.overview(),
-                toFestivalCategory(festival.lclsSystem1()),
+                festival.lclsSystem2(),
+                festivalType,
                 festival.legalDongRegionCode(),
                 festival.legalDongSigunguCode(),
                 intro.eventstartdate(),
@@ -94,29 +95,39 @@ public class TourApiService {
         return toTourSpotItems(tourApiClient.getNearbyTourSpots(longitude, latitude, TOUR_SPOT_SEARCH_RADIUS_METERS));
     }
 
-    // 스케줄러 동기화 대상 축제 목록을 조회
+    // 스케줄러 동기화 대상 축제 목록을 조회, 각 항목에 festivalType(festivaltype) 포함
     public List<TourApiResponseDTO.TourContentDTO> getFestivalsForSync(LocalDate eventStartDate) {
         return getContents(tourApiClient.searchFestivals(eventStartDate, null, null, null));
     }
 
+    // 주변 검색 결과에는 숙박/음식/쇼핑/축제 등 다양한 대분류가 섞여 있어 항목별 카테고리 매핑 후 목록 구성
     private List<TourSpotItemResponseDTO> toTourSpotItems(List<TourApiResponseDTO.TourContentDTO> tourSpots) {
         return tourSpots
                 .stream()
-                .map(tourSpot -> new TourSpotItemResponseDTO(
-                        null,
-                        tourSpot.contentId(),
-                        tourSpot.title(),
-                        tourSpot.addr1(),
-                        getImageUrl(tourSpot),
-                        tourSpot.mapx(),
-                        tourSpot.mapy(),
-                        toTourSpotCategory(tourSpot.lclsSystem1()),
-                        tourSpot.legalDongRegionCode(),
-                        tourSpot.legalDongSigunguCode(),
-                        tourSpot.tel(),
-                        tourSpot.modifiedtime()
-                ))
+                .map(this::toTourSpotItemOrNull)
+                .filter(Objects::nonNull)
                 .toList();
+    }
+
+    private TourSpotItemResponseDTO toTourSpotItemOrNull(TourApiResponseDTO.TourContentDTO tourSpot) {
+        TourSpotCategory category = toTourSpotCategoryOrNull(tourSpot.lclsSystem1());
+        if (category == null) {
+            return null;
+        }
+        return new TourSpotItemResponseDTO(
+                null,
+                tourSpot.contentId(),
+                tourSpot.title(),
+                tourSpot.addr1(),
+                getImageUrl(tourSpot),
+                tourSpot.mapx(),
+                tourSpot.mapy(),
+                category,
+                tourSpot.legalDongRegionCode(),
+                tourSpot.legalDongSigunguCode(),
+                tourSpot.tel(),
+                tourSpot.modifiedtime()
+        );
     }
 
     private TourApiResponseDTO.TourContentDTO getContent(Long contentId) {
@@ -127,7 +138,6 @@ public class TourApiService {
         }
         return contents.getFirst();
     }
-
     private List<TourApiResponseDTO.TourContentDTO> getContents(TourApiResponseDTO response) {
         return response == null ? List.of() : response.itemsOrEmpty();
     }
@@ -161,25 +171,29 @@ public class TourApiService {
         }
     }
 
-    // 관광지 카테고리 매핑
+    // 특정 contentId 단건 조회용, 알려지지 않은 대분류면 데이터 오류로 보고 예외 발생
     private TourSpotCategory toTourSpotCategory(String lclsSystem1) {
-        return switch (lclsSystem1) {
-            case "VE" -> TourSpotCategory.CULTURE;
-            case "HS" -> TourSpotCategory.HISTORY;
-            case "NA" -> TourSpotCategory.NATURE;
-            case "EX", "LS" -> TourSpotCategory.EXPERIENCE;
-            default -> throw new IllegalArgumentException("지원하지 않는 관광지 대분류 코드입니다: " + lclsSystem1);
-        };
+        TourSpotCategory category = toTourSpotCategoryOrNull(lclsSystem1);
+        if (category == null) {
+            throw new IllegalArgumentException("지원하지 않는 관광지 대분류 코드입니다: " + lclsSystem1);
+        }
+        return category;
     }
 
-    // 축제 카테고리 매핑
-    private FestivalCategory toFestivalCategory(String lclsSystem1) {
+    // 관광지 대분류(lclsSystm1) 코드 매핑, 관광공사 lclsSystmCode2 10개 코드 전체를 영문명으로 매핑
+    private TourSpotCategory toTourSpotCategoryOrNull(String lclsSystem1) {
         return switch (lclsSystem1) {
-            case "VE" -> FestivalCategory.CULTURE;
-            case "HS" -> FestivalCategory.HISTORY;
-            case "NA" -> FestivalCategory.NATURE;
-            case "EX", "LS" -> FestivalCategory.EXPERIENCE;
-            default -> throw new IllegalArgumentException("지원하지 않는 축제 대분류 코드입니다: " + lclsSystem1);
+            case "VE" -> TourSpotCategory.CULTURE; // 문화관광
+            case "HS" -> TourSpotCategory.HISTORY; // 역사관광
+            case "NA" -> TourSpotCategory.NATURE; // 자연관광
+            case "EX" -> TourSpotCategory.EXPERIENCE; // 체험관광
+            case "LS" -> TourSpotCategory.SPORTS; // 레저스포츠
+            case "AC" -> TourSpotCategory.LODGING; // 숙박
+            case "FD" -> TourSpotCategory.FOOD; // 음식
+            case "SH" -> TourSpotCategory.SHOPPING; // 쇼핑
+            case "EV" -> TourSpotCategory.FESTIVAL; // 축제/공연/행사
+            case "C01" -> TourSpotCategory.COURSE; // 추천코스
+            default -> null;
         };
     }
 }

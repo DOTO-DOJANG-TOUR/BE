@@ -4,5 +4,11 @@ public enum TourSpotCategory {
     CULTURE,
     HISTORY,
     NATURE,
-    EXPERIENCE
+    EXPERIENCE,
+    SPORTS,
+    LODGING,
+    FOOD,
+    SHOPPING,
+    FESTIVAL,
+    COURSE
 }

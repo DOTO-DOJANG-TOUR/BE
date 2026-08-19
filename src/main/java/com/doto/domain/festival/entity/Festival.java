@@ -47,10 +47,10 @@ public class Festival extends BaseTimeEntity {
     @Column(name = "address", length = 100)
     private String address;
 
-    @Column(name = "play_time", length = 20)
+    @Column(name = "play_time", columnDefinition = "TEXT")
     private String playTime;
 
-    @Column(name = "operation_hours", length = 50)
+    @Column(name = "operation_hours", columnDefinition = "TEXT")
     private String operationHours;
 
     @Column(name = "rest_date", length = 50)

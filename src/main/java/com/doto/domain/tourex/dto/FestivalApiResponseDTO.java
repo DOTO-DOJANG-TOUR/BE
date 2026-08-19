@@ -1,9 +1,8 @@
 package com.doto.domain.tourex.dto;
 
-import com.doto.domain.festival.entity.enums.FestivalCategory;
-
 /**
  * TourAPI에서 조회한 축제 콘텐츠 응답
+ * category는 lclsSystm2(분류체계 중분류) 원본 코드, festivalType은 searchFestival2에만 있는 축제유형명(비어있을 수 있음)
  */
 public record FestivalApiResponseDTO(
         Long contentId,
@@ -14,7 +13,8 @@ public record FestivalApiResponseDTO(
         String mapX,
         String mapY,
         String overview,
-        FestivalCategory category,
+        String category,
+        String festivalType,
         String legalDongRegionCode,
         String legalDongSigunguCode,
         String eventStartDate,

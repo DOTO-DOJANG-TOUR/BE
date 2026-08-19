@@ -92,7 +92,7 @@ class TourApiServiceTest {
         return new TourApiResponseDTO.TourContentDTO(
                 126516L, 12, "보신각터", "https://example.com", "서울 종로구", "", "02-1234-5678",
                 firstImage, secondImage, "126.97", "37.56", "20260819090000", null,
-                "11", "110", category, null, null, "소개", null, null, null, null, null
+                "11", "110", category, null, null, "소개", null, null, null, null, null, null
         );
     }
 }
