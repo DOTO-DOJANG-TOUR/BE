@@ -42,7 +42,7 @@ class FestivalTourSpotRepositoryTest {
 
         assertThat(festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(festival.getId(), tourSpot.getId()))
                 .isTrue();
-        assertThat(festivalTourSpotRepository.findAllByFestival_Id(festival.getId()))
+        assertThat(festivalTourSpotRepository.findAllWithTourSpotByFestivalId(festival.getId()))
                 .singleElement()
                 .satisfies(relation -> assertThat(relation.getTourSpot().getId()).isEqualTo(tourSpot.getId()));
     }

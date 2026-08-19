@@ -8,6 +8,11 @@ ALTER TABLE festivals
 ALTER TABLE festivals
     ALTER COLUMN phone TYPE VARCHAR(100);
 
+ALTER TABLE festivals
+    ALTER COLUMN area_code DROP NOT NULL,
+    ALTER COLUMN region_code DROP NOT NULL,
+    ALTER COLUMN sigungu_code DROP NOT NULL;
+
 ALTER TABLE tour_spots
     ADD COLUMN content_id BIGINT,
     ADD COLUMN image_url TEXT,

@@ -16,7 +16,7 @@ public class TourSpotQueryService {
     private final FestivalTourSpotRepository festivalTourSpotRepository;
 
     public List<TourSpot> getTourSpotsByFestivalId(Long festivalId) {
-        return festivalTourSpotRepository.findAllByFestival_Id(festivalId)
+        return festivalTourSpotRepository.findAllWithTourSpotByFestivalId(festivalId)
                 .stream()
                 .map(FestivalTourSpot::getTourSpot)
                 .toList();
