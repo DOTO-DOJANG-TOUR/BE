@@ -38,6 +38,7 @@ public class FestivalCommandService {
                         existing -> existing.update(
                                 festival.title(),
                                 festival.overview(),
+                                festival.imageUrl(),
                                 festival.homepageUrl(),
                                 festival.category(),
                                 festival.phone(),
@@ -59,6 +60,7 @@ public class FestivalCommandService {
                                 festival.contentId(),
                                 festival.title(),
                                 festival.overview(),
+                                festival.imageUrl(),
                                 festival.homepageUrl(),
                                 festival.category(),
                                 festival.phone(),

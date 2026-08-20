@@ -22,6 +22,7 @@ public final class FestivalFixture {
                 contentId,
                 "도토 축제",
                 "도토 축제 소개",
+                "https://doto.example.com/festivals.jpg",
                 "https://doto.example.com/festivals",
                 "FESTIVAL",
                 "02-1234-5678",
@@ -37,7 +38,7 @@ public final class FestivalFixture {
                 "11000",
                 Instant.parse("2026-08-15T00:00:00Z"),
                 Instant.parse("2026-08-20T00:00:00Z"),
-                GEOMETRY_FACTORY.createPoint(new Coordinate(127.0276, 37.4979))
+                GEOMETRY_FACTORY.createPoint(new Coordinate(127.0280, 37.4980))
         );
     }
 }

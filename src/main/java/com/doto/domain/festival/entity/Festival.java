@@ -34,6 +34,9 @@ public class Festival extends BaseTimeEntity {
 
     @Column(name = "summary", columnDefinition = "TEXT")
     private String summary;
+    //firstimage → 없으면 firstimage2 저장하도록 했는데 후에 이미지 별로 얼마나 적절한지 판단하는 기능 개선이 가능할 듯
+    @Column(name = "image_url", columnDefinition = "TEXT")
+    private String imageUrl;
 
     @Column(name = "homepage_url", columnDefinition = "TEXT")
     private String homepageUrl;
@@ -89,6 +92,7 @@ public class Festival extends BaseTimeEntity {
             Long contentId,
             String title,
             String summary,
+            String imageUrl,
             String homepageUrl,
             String category,
             String phone,
@@ -109,6 +113,7 @@ public class Festival extends BaseTimeEntity {
         this.contentId = contentId;
         this.title = title;
         this.summary = summary;
+        this.imageUrl = imageUrl;
         this.homepageUrl = homepageUrl;
         this.category = category;
         this.phone = phone;
@@ -131,6 +136,7 @@ public class Festival extends BaseTimeEntity {
             Long contentId,
             String title,
             String summary,
+            String imageUrl,
             String homepageUrl,
             String category,
             String phone,
@@ -152,6 +158,7 @@ public class Festival extends BaseTimeEntity {
                 .contentId(contentId)
                 .title(title)
                 .summary(summary)
+                .imageUrl(imageUrl)
                 .homepageUrl(homepageUrl)
                 .category(category)
                 .phone(phone)
@@ -174,6 +181,7 @@ public class Festival extends BaseTimeEntity {
     public void update(
             String title,
             String summary,
+            String imageUrl,
             String homepageUrl,
             String category,
             String phone,
@@ -193,6 +201,7 @@ public class Festival extends BaseTimeEntity {
     ) {
         this.title = title;
         this.summary = summary;
+        this.imageUrl = imageUrl;
         this.homepageUrl = homepageUrl;
         this.category = category;
         this.phone = phone;
