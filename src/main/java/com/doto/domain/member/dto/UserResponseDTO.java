@@ -8,7 +8,7 @@ public record UserResponseDTO(
         @Schema(description = "사용자 ID")
         String userId,
 
-        @Schema(description = "이메일", example = "user@example.com")
+        @Schema(description = "이메일", example = "testuser@example.com")
         String email,
 
         @Schema(description = "닉네임", example = "홍길동")
