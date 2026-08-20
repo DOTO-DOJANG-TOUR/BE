@@ -1,6 +1,8 @@
 package com.doto.fixture;
 
 import com.doto.domain.festival.entity.Festival;
+import com.doto.domain.festival.entity.enums.Region;
+import com.doto.domain.festival.entity.enums.RegionGroup;
 import java.time.Instant;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -34,8 +36,8 @@ public final class FestivalFixture {
                 "가능",
                 "무료",
                 "주요 프로그램",
-                "11",
-                "11000",
+                Region.서울특별시,
+                RegionGroup.서울,
                 Instant.parse("2026-08-15T00:00:00Z"),
                 Instant.parse("2026-08-20T00:00:00Z"),
                 GEOMETRY_FACTORY.createPoint(new Coordinate(127.0280, 37.4980))

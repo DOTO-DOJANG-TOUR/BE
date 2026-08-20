@@ -3,6 +3,8 @@ package com.doto.domain.tourspot.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.doto.domain.festival.entity.Festival;
+import com.doto.domain.festival.entity.enums.Region;
+import com.doto.domain.festival.entity.enums.RegionGroup;
 import java.time.Instant;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -39,7 +41,7 @@ class TourSpotTest {
 
     private Festival createFestival() {
         return Festival.create(
-                2515245L, "도토 축제", null, null, null, null, null, null, null, null, null, null, null, null, null, "11", "11000",
+                2515245L, "도토 축제", null, null, null, null, null, null, null, null, null, null, null, null, null, Region.서울특별시, RegionGroup.서울,
                 Instant.parse("2026-08-15T00:00:00Z"), Instant.parse("2026-08-20T00:00:00Z"),
                 GEOMETRY_FACTORY.createPoint(new Coordinate(127.0276, 37.4979))
         );

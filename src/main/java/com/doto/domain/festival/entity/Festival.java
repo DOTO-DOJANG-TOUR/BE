@@ -1,9 +1,13 @@
 package com.doto.domain.festival.entity;
 
+import com.doto.domain.festival.entity.enums.Region;
+import com.doto.domain.festival.entity.enums.RegionGroup;
 import com.doto.global.common.BaseTimeEntity;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
@@ -71,11 +75,13 @@ public class Festival extends BaseTimeEntity {
     @Column(name = "program", columnDefinition = "TEXT")
     private String program;
 
-    @Column(name = "l_dong_regn_cd", length = 10)
-    private String legalDongRegionCode;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "region", length = 20)
+    private Region legalRegion;
 
-    @Column(name = "l_dong_signgu_cd", length = 10)
-    private String legalDongSigunguCode;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "region_group", length = 20)
+    private RegionGroup legalGungu;
 
     @Column(name = "event_start_date", nullable = false)
     private Instant eventStartDate;
@@ -104,8 +110,8 @@ public class Festival extends BaseTimeEntity {
             String parking,
             String parkingFee,
             String program,
-            String legalDongRegionCode,
-            String legalDongSigunguCode,
+            Region legalRegion,
+            RegionGroup legalGungu,
             Instant eventStartDate,
             Instant eventEndDate,
             Point location
@@ -125,8 +131,8 @@ public class Festival extends BaseTimeEntity {
         this.parking = parking;
         this.parkingFee = parkingFee;
         this.program = program;
-        this.legalDongRegionCode = legalDongRegionCode;
-        this.legalDongSigunguCode = legalDongSigunguCode;
+        this.legalRegion = legalRegion;
+        this.legalGungu = legalGungu;
         this.eventStartDate = eventStartDate;
         this.eventEndDate = eventEndDate;
         this.location = location;
@@ -148,8 +154,8 @@ public class Festival extends BaseTimeEntity {
             String parking,
             String parkingFee,
             String program,
-            String legalDongRegionCode,
-            String legalDongSigunguCode,
+            Region legalRegion,
+            RegionGroup legalGungu,
             Instant eventStartDate,
             Instant eventEndDate,
             Point location
@@ -170,8 +176,8 @@ public class Festival extends BaseTimeEntity {
                 .parking(parking)
                 .parkingFee(parkingFee)
                 .program(program)
-                .legalDongRegionCode(legalDongRegionCode)
-                .legalDongSigunguCode(legalDongSigunguCode)
+                .legalRegion(legalRegion)
+                .legalGungu(legalGungu)
                 .eventStartDate(eventStartDate)
                 .eventEndDate(eventEndDate)
                 .location(location)
@@ -193,8 +199,8 @@ public class Festival extends BaseTimeEntity {
             String parking,
             String parkingFee,
             String program,
-            String legalDongRegionCode,
-            String legalDongSigunguCode,
+            Region legalRegion,
+            RegionGroup legalGungu,
             Instant eventStartDate,
             Instant eventEndDate,
             Point location
@@ -213,8 +219,8 @@ public class Festival extends BaseTimeEntity {
         this.parking = parking;
         this.parkingFee = parkingFee;
         this.program = program;
-        this.legalDongRegionCode = legalDongRegionCode;
-        this.legalDongSigunguCode = legalDongSigunguCode;
+        this.legalRegion = legalRegion;
+        this.legalGungu = legalGungu;
         this.eventStartDate = eventStartDate;
         this.eventEndDate = eventEndDate;
         this.location = location;

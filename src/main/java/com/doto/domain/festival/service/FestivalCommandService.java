@@ -1,6 +1,8 @@
 package com.doto.domain.festival.service;
 
 import com.doto.domain.festival.entity.Festival;
+import com.doto.domain.festival.entity.enums.Region;
+import com.doto.domain.festival.entity.enums.RegionGroup;
 import com.doto.domain.festival.repository.FestivalRepository;
 import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
 import com.doto.domain.tourex.exception.TourApiErrorCode;
@@ -32,6 +34,8 @@ public class FestivalCommandService {
         Instant eventStartDate = toEventStartInstant(festival.eventStartDate());
         Instant eventEndDate = toEventEndInstant(festival.eventEndDate());
         Point location = toPoint(festival.mapX(), festival.mapY());
+        Region legalRegion = Region.fromCode(festival.legalDongRegionCode());
+        RegionGroup legalGungu = RegionGroup.from(legalRegion);
 
         festivalRepository.findByContentId(festival.contentId())
                 .ifPresentOrElse(
@@ -50,8 +54,8 @@ public class FestivalCommandService {
                                 festival.parkingInfo(),
                                 festival.parkingFee(),
                                 festival.program(),
-                                festival.legalDongRegionCode(),
-                                festival.legalDongSigunguCode(),
+                                legalRegion,
+                                legalGungu,
                                 eventStartDate,
                                 eventEndDate,
                                 location
@@ -72,8 +76,8 @@ public class FestivalCommandService {
                                 festival.parkingInfo(),
                                 festival.parkingFee(),
                                 festival.program(),
-                                festival.legalDongRegionCode(),
-                                festival.legalDongSigunguCode(),
+                                legalRegion,
+                                legalGungu,
                                 eventStartDate,
                                 eventEndDate,
                                 location
