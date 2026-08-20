@@ -41,7 +41,7 @@ class TourApiServiceTest {
 
             assertThat(result.title()).isEqualTo("보신각터");
             assertThat(result.imageUrl()).isEqualTo("fallback.jpg");
-            assertThat(result.tourSpotCategory()).isEqualTo(TourSpotCategory.CULTURE);
+            assertThat(result.tourSpotCategory()).isEqualTo(TourSpotCategory.문화관광);
         }
 
         @Test
@@ -67,7 +67,7 @@ class TourApiServiceTest {
             var result = tourApiService.getNearbyTourSpots("126.97", "37.56");
 
             assertThat(result).singleElement().satisfies(tourSpot -> {
-                assertThat(tourSpot.tourSpotCategory()).isEqualTo(TourSpotCategory.HISTORY);
+                assertThat(tourSpot.tourSpotCategory()).isEqualTo(TourSpotCategory.역사관광);
                 assertThat(tourSpot.imageUrl()).isEqualTo("image.jpg");
             });
         }

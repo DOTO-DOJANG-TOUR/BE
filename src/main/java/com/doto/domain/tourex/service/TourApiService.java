@@ -180,19 +180,19 @@ public class TourApiService {
         return category;
     }
 
-    // 관광지 대분류(lclsSystm1) 코드 매핑, 관광공사 lclsSystmCode2 10개 코드 전체를 영문명으로 매핑
+    // 관광지 대분류(lclsSystm1) 코드 매핑, 관광공사 lclsSystmCode2 10개 코드 전체를 한글 카테고리명으로 매핑
     private TourSpotCategory toTourSpotCategoryOrNull(String lclsSystem1) {
         return switch (lclsSystem1) {
-            case "VE" -> TourSpotCategory.CULTURE; // 문화관광
-            case "HS" -> TourSpotCategory.HISTORY; // 역사관광
-            case "NA" -> TourSpotCategory.NATURE; // 자연관광
-            case "EX" -> TourSpotCategory.EXPERIENCE; // 체험관광
-            case "LS" -> TourSpotCategory.SPORTS; // 레저스포츠
-            case "AC" -> TourSpotCategory.LODGING; // 숙박
-            case "FD" -> TourSpotCategory.FOOD; // 음식
-            case "SH" -> TourSpotCategory.SHOPPING; // 쇼핑
-            case "EV" -> TourSpotCategory.FESTIVAL; // 축제/공연/행사
-            case "C01" -> TourSpotCategory.COURSE; // 추천코스
+            case "VE" -> TourSpotCategory.문화관광;
+            case "HS" -> TourSpotCategory.역사관광;
+            case "NA" -> TourSpotCategory.자연관광;
+            case "EX" -> TourSpotCategory.체험관광;
+            case "LS" -> TourSpotCategory.레저스포츠;
+            case "AC" -> TourSpotCategory.숙박;
+            case "FD" -> TourSpotCategory.음식;
+            case "SH" -> TourSpotCategory.쇼핑;
+            case "EV" -> TourSpotCategory.축제공연행사;
+            case "C01" -> TourSpotCategory.추천코스;
             default -> null;
         };
     }

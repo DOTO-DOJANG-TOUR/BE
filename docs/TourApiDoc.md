@@ -1,0 +1,36 @@
+Festival (festivals 테이블)
+※ 축제 목록에서 contentId를 받은 뒤, 해당 ID로 축제 공통·축제소개를 조회합니다.
+
+├── contentId (축제 목록 contentid: "1340294")
+├── title (축제 공통 title: "거문도백도 은빛바다체험행사")
+├── summary (축제 공통 overview: "축제 설명...")
+├── homepageUrl (축제 공통 homepage: "https://..." / 없으면 축제소개 eventhomepage)
+├── category (축제 공통 lclsSystm2: "EV01"-->**직접 매핑**)
+├── phone (축제 공통 tel: "061-659-4742")
+├── address (축제 공통 addr1: "전남 여수시...")
+├── legalDongRegionCode (축제 공통 lDongRegnCd: "12")
+├── legalDongSigunguCode (축제 공통 lDongSignguCd: "130")
+├── location (축제 공통 mapx/mapy: "127.3099", "34.0244" → Point)
+├── playTime (축제소개 playtime: "60분")
+├── operationHours (축제소개 usetimefestival: "10:00~18:00")
+├── restDate (축제소개 restdate: "월요일")
+├── useFee (축제소개 usefee: "무료")
+├── parking (축제소개 parking: "가능")
+├── parkingFee (축제소개 parkingfee: "무료")
+├── eventStartDate (축제소개 eventstartdate: "20260731")
+└── eventEndDate (축제소개 eventenddate: "20260801")
+
+
+TourSpot (tour_spots 테이블)
+※ 축제 좌표를 기준으로 위치관광 API를 호출해 주변 관광지를 저장합니다.
+
+├── contentId (위치관광 contentid: "123456")
+├── title (위치관광 title: "무등산")
+├── category (위치관광 lclsSystm1: "NA" → TourSpotCategory.NATURE)
+├── imageUrl (위치관광 firstimage: "https://..." / 없으면 firstimage2)
+├── address (위치관광 addr1: "광주광역시 동구...")
+├── legalDongRegionCode (위치관광 lDongRegnCd: "24")
+├── legalDongSigunguCode (위치관광 lDongSignguCd: "110")
+├── phone (위치관광 tel: "062-000-0000")
+├── apiModifiedAt (위치관광 modifiedtime: "20260721092317")
+└── location (위치관광 mapx/mapy: "126.988", "35.135" → Point)

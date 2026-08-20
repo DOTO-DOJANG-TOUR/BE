@@ -5,11 +5,9 @@ import com.doto.domain.festival.repository.FestivalRepository;
 import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
 import com.doto.domain.tourex.exception.TourApiErrorCode;
 import com.doto.domain.tourex.exception.TourApiException;
+import com.doto.global.util.DateTimeUtils;
+import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
@@ -24,10 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class FestivalCommandService {
 
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory(new PrecisionModel(), 4326);
-    private static final DateTimeFormatter EVENT_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
-    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private final FestivalRepository festivalRepository;
+    private final Clock applicationClock;
 
     // 축제를 contentId 기준으로 upsert
     @Transactional
@@ -84,22 +81,27 @@ public class FestivalCommandService {
 
     // 행사 시작일 파싱
     private Instant toEventStartInstant(String yyyyMMdd) {
-        return parseEventDate(yyyyMMdd).atStartOfDay(KST).toInstant();
+        validateEventDate(yyyyMMdd);
+        try {
+            return DateTimeUtils.startOfDay(yyyyMMdd, applicationClock.getZone());
+        } catch (DateTimeParseException exception) {
+            throw new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR, exception);
+        }
     }
 
     // 행사 종료일 파싱
     private Instant toEventEndInstant(String yyyyMMdd) {
-        return parseEventDate(yyyyMMdd).atTime(LocalTime.MAX).atZone(KST).toInstant();
-    }
-
-    private LocalDate parseEventDate(String yyyyMMdd) {
-        if (yyyyMMdd == null || yyyyMMdd.isBlank()) {
-            throw new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR);
-        }
+        validateEventDate(yyyyMMdd);
         try {
-            return LocalDate.parse(yyyyMMdd, EVENT_DATE_FORMATTER);
+            return DateTimeUtils.endOfDay(yyyyMMdd, applicationClock.getZone());
         } catch (DateTimeParseException exception) {
             throw new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR, exception);
+        }
+    }
+
+    private void validateEventDate(String yyyyMMdd) {
+        if (yyyyMMdd == null || yyyyMMdd.isBlank()) {
+            throw new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR);
         }
     }
 
