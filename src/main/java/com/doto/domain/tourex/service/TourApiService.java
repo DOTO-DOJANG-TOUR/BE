@@ -58,6 +58,7 @@ public class TourApiService {
                 festival.lclsSystem2(),
                 festivalType,
                 festival.legalDongRegionCode(),
+                festival.legalDongSigunguCode(),
                 intro.eventstartdate(),
                 intro.eventenddate(),
                 intro.usetimefestival(),

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 
+// 정해진 시도를 10개로 줄여서 매핑하기 위해 사용
 public enum RegionGroup {
 
     서울(EnumSet.of(Region.서울특별시)),

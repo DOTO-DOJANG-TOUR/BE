@@ -1,7 +1,6 @@
 package com.doto.domain.festival.entity;
 
 import com.doto.domain.festival.entity.enums.Region;
-import com.doto.domain.festival.entity.enums.RegionGroup;
 import com.doto.global.common.BaseTimeEntity;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;
@@ -79,9 +78,8 @@ public class Festival extends BaseTimeEntity {
     @Column(name = "region", length = 20)
     private Region legalRegion;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "region_group", length = 20)
-    private RegionGroup legalGungu;
+    @Column(name = "gungu", length = 20)
+    private String legalGungu;
 
     @Column(name = "event_start_date", nullable = false)
     private Instant eventStartDate;
@@ -111,7 +109,7 @@ public class Festival extends BaseTimeEntity {
             String parkingFee,
             String program,
             Region legalRegion,
-            RegionGroup legalGungu,
+            String legalGungu,
             Instant eventStartDate,
             Instant eventEndDate,
             Point location
@@ -155,7 +153,7 @@ public class Festival extends BaseTimeEntity {
             String parkingFee,
             String program,
             Region legalRegion,
-            RegionGroup legalGungu,
+            String legalGungu,
             Instant eventStartDate,
             Instant eventEndDate,
             Point location
@@ -200,7 +198,7 @@ public class Festival extends BaseTimeEntity {
             String parkingFee,
             String program,
             Region legalRegion,
-            RegionGroup legalGungu,
+            String legalGungu,
             Instant eventStartDate,
             Instant eventEndDate,
             Point location

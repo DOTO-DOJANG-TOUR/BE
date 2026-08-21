@@ -16,6 +16,7 @@ public record FestivalApiResponseDTO(
         String category,
         String festivalType,
         String legalDongRegionCode,
+        String legalDongSigunguCode,
         String eventStartDate,
         String eventEndDate,
         String operationHours,

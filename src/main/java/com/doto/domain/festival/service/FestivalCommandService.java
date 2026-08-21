@@ -2,7 +2,6 @@ package com.doto.domain.festival.service;
 
 import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.festival.entity.enums.Region;
-import com.doto.domain.festival.entity.enums.RegionGroup;
 import com.doto.domain.festival.repository.FestivalRepository;
 import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
 import com.doto.domain.tourex.exception.TourApiErrorCode;
@@ -35,7 +34,7 @@ public class FestivalCommandService {
         Instant eventEndDate = toEventEndInstant(festival.eventEndDate());
         Point location = toPoint(festival.mapX(), festival.mapY());
         Region legalRegion = Region.fromCode(festival.legalDongRegionCode());
-        RegionGroup legalGungu = RegionGroup.from(legalRegion);
+        String legalGungu = festival.legalDongSigunguCode();
 
         festivalRepository.findByContentId(festival.contentId())
                 .ifPresentOrElse(

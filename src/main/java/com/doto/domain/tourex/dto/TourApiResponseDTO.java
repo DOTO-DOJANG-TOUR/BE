@@ -50,11 +50,8 @@ public record TourApiResponseDTO(
     ) {
     }
 
-    /**
-     * 관광지와 축제 목록·상세 조회에서 공통으로 사용하는 콘텐츠 정보
-     * festivalType(festivaltype)은 searchFestival2(목록 조회) 응답에만 존재하고
-     * detailCommon2(상세 조회) 응답에는 없어 상세 조회 경로에서는 항상 null
-     * */
+    //관광지와 축제 목록·상세 조회에서 공통으로 사용하는 콘텐츠 정보
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record TourContentDTO(
             @JsonProperty("contentid") Long contentId,
