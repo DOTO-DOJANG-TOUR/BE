@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class FestivalRecommendationService {
 
+    private static final String FIRST_PAGE_TITLE = "";
+
     private final FestivalRepository festivalRepository;
     private final Clock applicationClock;
 
@@ -26,12 +28,17 @@ public class FestivalRecommendationService {
         FestivalCursor decoded = FestivalCursor.decode(cursor);
         Instant now = applicationClock.instant();
 
+        // 첫 페이지에서는 커서 때문에 데이터를 제외하지 말고, 기본 조건에 맞는 결과의 맨 앞부터 조회
+        Instant cursorEventEndDate = decoded != null ? decoded.eventEndDate() : Instant.EPOCH; //1970년
+        Instant cursorEventStartDate = decoded != null ? decoded.eventStartDate() : Instant.EPOCH;
+        String cursorTitle = decoded != null ? decoded.title() : FIRST_PAGE_TITLE; //첫페이지 title
+
         // 다음 페이지 존재 여부 확인을 위해 요청 크기보다 하나 더 조회
         List<Festival> festivals = festivalRepository.findTodayFestivals(
                 now,
-                decoded == null ? null : decoded.eventEndDate(),
-                decoded == null ? null : decoded.eventStartDate(),
-                decoded == null ? null : decoded.title(),
+                cursorEventEndDate,
+                cursorEventStartDate,
+                cursorTitle,
                 PageRequest.ofSize(size + 1)
         );
 
