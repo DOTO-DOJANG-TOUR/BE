@@ -30,6 +30,8 @@ public class FestivalCommandService {
     // 축제를 contentId 기준으로 upsert
     @Transactional
     public void saveFestival(FestivalApiResponseDTO festival) {
+        validateTitle(festival.title());
+        validateImageUrl(festival.imageUrl());
         Instant eventStartDate = toEventStartInstant(festival.eventStartDate());
         Instant eventEndDate = toEventEndInstant(festival.eventEndDate());
         Point location = toPoint(festival.mapX(), festival.mapY());
@@ -82,6 +84,20 @@ public class FestivalCommandService {
                                 location
                         ))
                 );
+    }
+
+    // 제목 없는 축제는 저장하지 않음 (정렬/커서 기준 컬럼이라 필수)
+    private void validateTitle(String title) {
+        if (title == null || title.isBlank()) {
+            throw new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR);
+        }
+    }
+
+    // 이미지 없는 축제는 저장하지 않음
+    private void validateImageUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            throw new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR);
+        }
     }
 
     // 행사 시작일 파싱

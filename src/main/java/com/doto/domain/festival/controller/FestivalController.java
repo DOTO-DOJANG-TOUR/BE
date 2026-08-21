@@ -1,9 +1,8 @@
 package com.doto.domain.festival.controller;
 
-import com.doto.domain.festival.dto.FestivalShortResponseDTO;
+import com.doto.domain.festival.dto.FestivalTodayResponseDTO;
 import com.doto.domain.festival.service.FestivalRecommendationService;
 import com.doto.global.api.CommonResponse;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,9 +14,9 @@ public class FestivalController implements FestivalApi {
     private final FestivalRecommendationService festivalRecommendationService;
 
     @Override
-    public ResponseEntity<CommonResponse<List<FestivalShortResponseDTO>>> getTodayFestivals() {
+    public ResponseEntity<CommonResponse<FestivalTodayResponseDTO>> getTodayFestivals(String cursor, int size) {
         return ResponseEntity.ok(
-                CommonResponse.success(festivalRecommendationService.getTodayFestivals())
+                CommonResponse.success(festivalRecommendationService.getTodayFestivals(cursor, size))
         );
     }
 

@@ -16,6 +16,6 @@ public record FestivalShortResponseDTO(
         String eventEndDate,
 
         @Schema(description = "군구", example = "거창군")
-        String legalDongSigunguCode
+        String gunguName
 ) {
 }
