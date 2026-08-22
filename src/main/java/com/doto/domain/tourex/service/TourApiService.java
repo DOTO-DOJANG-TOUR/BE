@@ -55,7 +55,7 @@ public class TourApiService {
                 festival.mapx(),
                 festival.mapy(),
                 festival.overview(),
-                festival.lclsSystem2(),
+                festival.lclsSystem1(),
                 festivalType,
                 festival.legalDongRegionCode(),
                 festival.legalDongSigunguCode(),

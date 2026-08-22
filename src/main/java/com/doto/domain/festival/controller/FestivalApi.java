@@ -1,6 +1,8 @@
 package com.doto.domain.festival.controller;
 
 import com.doto.domain.festival.dto.FestivalPageResponseDTO;
+import com.doto.domain.festival.dto.FestivalRegionPageResponseDTO;
+import com.doto.domain.festival.entity.enums.RegionGroup;
 import com.doto.global.api.CommonResponse;
 import com.doto.global.config.SwaggerConfig;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,6 +39,22 @@ public interface FestivalApi {
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     @GetMapping("/api/v1/festival/upcoming")
     ResponseEntity<CommonResponse<FestivalPageResponseDTO>> getUpcomingFestivals(
+            @Parameter(description = "이전 응답의 nextCursor, 첫 페이지면 생략")
+            @RequestParam(required = false) String cursor,
+            @Parameter(description = "한 페이지에 조회할 개수")
+            @RequestParam(defaultValue = "5") int size
+    );
+
+    @Operation(
+            summary = "지역별 축제 조회",
+            description = "선택한 지역 그룹의 개최중/개최전 축제 목록을 종료 임박순으로 커서 기반 조회합니다."
+    )
+    @ApiResponse(responseCode = "200", description = "지역별 축제 조회 성공")
+    @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
+    @GetMapping("/api/v1/festival/region")
+    ResponseEntity<CommonResponse<FestivalRegionPageResponseDTO>> getFestivalsByRegion(
+            @Parameter(description = "지역 그룹")
+            @RequestParam RegionGroup regionGroup,
             @Parameter(description = "이전 응답의 nextCursor, 첫 페이지면 생략")
             @RequestParam(required = false) String cursor,
             @Parameter(description = "한 페이지에 조회할 개수")

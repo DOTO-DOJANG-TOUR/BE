@@ -1,10 +1,12 @@
 package com.doto.domain.festival.repository;
 
 import com.doto.domain.festival.entity.Festival;
+import com.doto.domain.festival.entity.enums.Region;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -47,6 +49,24 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             @Param("now") Instant now,
             @Param("cursorEventStartDate") Instant cursorEventStartDate,
             @Param("cursorDuration") Duration cursorDuration,
+            @Param("cursorTitle") String cursorTitle,
+            Pageable pageable
+    );
+
+    // 지역별 축제: RegionGroup에 속한 Region들 대상, 개최중/개최전 섞어서 findTodayFestivals와 동일한 eventEndDate 커서
+    @Query("SELECT f FROM Festival f "
+            + "WHERE f.legalRegion IN :regions "
+            + "AND f.eventEndDate >= :now "
+            + "AND f.imageUrl IS NOT NULL "
+            + "AND f.imageUrl <> '' "
+            + "AND (f.eventEndDate > :cursorEventEndDate "
+            + "     OR (f.eventEndDate = :cursorEventEndDate "
+            + "         AND function('regexp_replace', f.title, '[^가-힣a-zA-Z0-9]', '', 'g') > :cursorTitle)) "
+            + "ORDER BY f.eventEndDate ASC, f.title ASC")
+    List<Festival> findByRegionGroup(
+            @Param("regions") Set<Region> regions,
+            @Param("now") Instant now,
+            @Param("cursorEventEndDate") Instant cursorEventEndDate,
             @Param("cursorTitle") String cursorTitle,
             Pageable pageable
     );

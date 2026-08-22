@@ -14,7 +14,7 @@
 ├── phone (축제 공통 tel: "061-659-4742")
 ├── address (축제 공통 addr1: "전남 여수시...")
 ├── legalRegion (축제 공통 lDongRegnCd: "12" → Region.전남광주통합특별시)
-├── legalGungu (legalRegion → RegionGroup.from(legalRegion): RegionGroup.전남권)
+├── legalGungu (legalRegion → RegionGroup.from(legalRegion): RegionGroup.JEONNAM)
 ├── location (축제 공통 mapx/mapy: "127.3099", "34.0244" → Point)
 ├── playTime (축제소개 playtime: "60분")
 ├── operationHours (축제소개 usetimefestival: "10:00~18:00")
