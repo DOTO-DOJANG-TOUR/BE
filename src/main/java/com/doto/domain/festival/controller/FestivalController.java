@@ -1,6 +1,6 @@
 package com.doto.domain.festival.controller;
 
-import com.doto.domain.festival.dto.FestivalTodayResponseDTO;
+import com.doto.domain.festival.dto.FestivalPageResponseDTO;
 import com.doto.domain.festival.service.FestivalRecommendationService;
 import com.doto.global.api.CommonResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +14,16 @@ public class FestivalController implements FestivalApi {
     private final FestivalRecommendationService festivalRecommendationService;
 
     @Override
-    public ResponseEntity<CommonResponse<FestivalTodayResponseDTO>> getTodayFestivals(String cursor, int size) {
+    public ResponseEntity<CommonResponse<FestivalPageResponseDTO>> getTodayFestivals(String cursor, int size) {
         return ResponseEntity.ok(
                 CommonResponse.success(festivalRecommendationService.getTodayFestivals(cursor, size))
+        );
+    }
+
+    @Override
+    public ResponseEntity<CommonResponse<FestivalPageResponseDTO>> getUpcomingFestivals(String cursor, int size) {
+        return ResponseEntity.ok(
+                CommonResponse.success(festivalRecommendationService.getUpcomingFestivals(cursor, size))
         );
     }
 

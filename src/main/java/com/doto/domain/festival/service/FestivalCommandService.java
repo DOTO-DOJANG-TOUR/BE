@@ -86,14 +86,14 @@ public class FestivalCommandService {
                 );
     }
 
-    // 제목 없는 축제는 저장하지 않음 (정렬/커서 기준 컬럼이라 필수)
+    // 제목 없는 축제 저장 제외
     private void validateTitle(String title) {
         if (title == null || title.isBlank()) {
             throw new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR);
         }
     }
 
-    // 이미지 없는 축제는 저장하지 않음
+    // 이미지 없는 축제 저장 제외
     private void validateImageUrl(String imageUrl) {
         if (imageUrl == null || imageUrl.isBlank()) {
             throw new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR);

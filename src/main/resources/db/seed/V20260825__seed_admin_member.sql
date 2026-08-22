@@ -11,5 +11,5 @@ INSERT INTO general_auth_accounts (
     updated_at
 )
 VALUES (1,'user@example.com',
-        '$2b$10$IaeWWG8XSS8dRwpYiX.a8Oj7Q2SweisMvt.TCAJogk0BRtepBjD.y',NOW(),NOW())
+        '$2b$10$iAkITcfb7aQ9ejv82YShPuNhgwNKDwuZG8GIWjZZkUbQFgEMjCGeq',NOW(),NOW())
     ON CONFLICT DO NOTHING;

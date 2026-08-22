@@ -1,13 +1,15 @@
 package com.doto.domain.festival.service;
 
-import com.doto.domain.festival.dto.FestivalCursor;
+import com.doto.domain.festival.dto.FestivalEndDateCursor;
+import com.doto.domain.festival.dto.FestivalPageResponseDTO;
 import com.doto.domain.festival.dto.FestivalShortResponseDTO;
-import com.doto.domain.festival.dto.FestivalTodayResponseDTO;
+import com.doto.domain.festival.dto.FestivalUpcomingCursor;
 import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.festival.entity.code.GunguCodes;
 import com.doto.domain.festival.repository.FestivalRepository;
 import com.doto.global.util.DateTimeUtils;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
@@ -20,41 +22,57 @@ import org.springframework.stereotype.Service;
 public class FestivalRecommendationService {
 
     private static final String FIRST_PAGE_TITLE = "";
+    // 실제 축제 기간은 항상 0 이상이라 -1초면 항상 첫번째
+    private static final Duration FIRST_PAGE_DURATION = Duration.ofSeconds(-1);
 
     private final FestivalRepository festivalRepository;
     private final Clock applicationClock;
 
-    public FestivalTodayResponseDTO getTodayFestivals(String cursor, int size) {
-        FestivalCursor decoded = FestivalCursor.decode(cursor);
+    public FestivalPageResponseDTO getTodayFestivals(String cursor, int size) {
+        FestivalEndDateCursor decoded = FestivalEndDateCursor.decode(cursor);
         Instant now = applicationClock.instant();
-
-        // 첫 페이지에서는 커서 때문에 데이터를 제외하지 말고, 기본 조건에 맞는 결과의 맨 앞부터 조회
-        Instant cursorEventEndDate = decoded != null ? decoded.eventEndDate() : Instant.EPOCH; //1970년
-        Instant cursorEventStartDate = decoded != null ? decoded.eventStartDate() : Instant.EPOCH;
-        String cursorTitle = decoded != null ? decoded.title() : FIRST_PAGE_TITLE; //첫페이지 title
-
-        // 다음 페이지 존재 여부 확인을 위해 요청 크기보다 하나 더 조회
         List<Festival> festivals = festivalRepository.findTodayFestivals(
                 now,
-                cursorEventEndDate,
-                cursorEventStartDate,
-                cursorTitle,
+                decoded != null ? decoded.eventEndDate() : Instant.EPOCH,
+                decoded != null ? decoded.title() : FIRST_PAGE_TITLE,
                 PageRequest.ofSize(size + 1)
         );
-
         boolean hasNext = festivals.size() > size;
         List<Festival> page = hasNext ? festivals.subList(0, size) : festivals;
-        String nextCursor = hasNext ? toCursor(page.get(page.size() - 1)) : null;
+        String nextCursor = hasNext ? toEndDateCursor(page.get(page.size() - 1)) : null;
+        return toPageResponse(page, nextCursor);
+    }
 
+    public FestivalPageResponseDTO getUpcomingFestivals(String cursor, int size) {
+        FestivalUpcomingCursor decoded = FestivalUpcomingCursor.decode(cursor);
+        Instant now = applicationClock.instant();
+        List<Festival> festivals = festivalRepository.findUpcomingFestivals(
+                now,
+                decoded != null ? decoded.eventStartDate() : Instant.EPOCH,
+                decoded != null ? decoded.duration() : FIRST_PAGE_DURATION,
+                decoded != null ? decoded.title() : FIRST_PAGE_TITLE,
+                PageRequest.ofSize(size + 1)
+        );
+        boolean hasNext = festivals.size() > size;
+        List<Festival> page = hasNext ? festivals.subList(0, size) : festivals;
+        String nextCursor = hasNext ? toUpcomingCursor(page.get(page.size() - 1)) : null;
+        return toPageResponse(page, nextCursor);
+    }
+
+    private FestivalPageResponseDTO toPageResponse(List<Festival> page, String nextCursor) {
         List<FestivalShortResponseDTO> responses = page.stream()
                 .map(this::toShortResponse)
                 .toList();
-        return new FestivalTodayResponseDTO(responses, nextCursor);
+        return new FestivalPageResponseDTO(responses, nextCursor);
     }
 
-    private String toCursor(Festival festival) {
-        return new FestivalCursor(festival.getEventEndDate(), festival.getEventStartDate(), festival.getTitle())
-                .encode();
+    private String toEndDateCursor(Festival festival) {
+        return new FestivalEndDateCursor(festival.getEventEndDate(), festival.getTitle()).encode();
+    }
+
+    private String toUpcomingCursor(Festival festival) {
+        Duration duration = Duration.between(festival.getEventStartDate(), festival.getEventEndDate());
+        return new FestivalUpcomingCursor(festival.getEventStartDate(), duration, festival.getTitle()).encode();
     }
 
     private FestivalShortResponseDTO toShortResponse(Festival festival) {
@@ -67,4 +85,5 @@ public class FestivalRecommendationService {
                 GunguCodes.findName(festival.getLegalRegion(), festival.getLegalGungu())
         );
     }
+
 }
