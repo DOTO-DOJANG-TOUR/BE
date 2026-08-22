@@ -193,7 +193,7 @@ public class TourApiService {
             case "SH" -> TourSpotCategory.쇼핑;
             case "EV" -> TourSpotCategory.축제공연행사;
             case "C01" -> TourSpotCategory.추천코스;
-            default -> null;
+            case null, default -> null;
         };
     }
 }
