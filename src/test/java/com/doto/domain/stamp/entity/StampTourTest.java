@@ -6,6 +6,8 @@ import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.festival.entity.enums.Region;
 import com.doto.domain.member.entity.Member;
 import java.time.Instant;
+
+import com.doto.domain.stamp.entity.enums.StampTourStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;

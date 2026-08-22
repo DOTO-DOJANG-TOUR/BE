@@ -1,7 +1,9 @@
 package com.doto.domain.festival.controller;
 
+import com.doto.domain.festival.dto.FestivalDetailResponseDTO;
 import com.doto.domain.festival.dto.FestivalPageResponseDTO;
 import com.doto.domain.festival.dto.FestivalRegionPageResponseDTO;
+import com.doto.domain.festival.entity.enums.FestivalSort;
 import com.doto.domain.festival.entity.enums.RegionGroup;
 import com.doto.domain.festival.service.FestivalRecommendationService;
 import com.doto.global.api.CommonResponse;
@@ -31,10 +33,17 @@ public class FestivalController implements FestivalApi {
 
     @Override
     public ResponseEntity<CommonResponse<FestivalRegionPageResponseDTO>> getFestivalsByRegion(
-            RegionGroup regionGroup, String cursor, int size
+            RegionGroup regionGroup, FestivalSort sort, String cursor, int size
     ) {
         return ResponseEntity.ok(
-                CommonResponse.success(festivalRecommendationService.getFestivalsByRegion(regionGroup, cursor, size))
+                CommonResponse.success(festivalRecommendationService.getFestivalsByRegion(regionGroup, sort, cursor, size))
+        );
+    }
+
+    @Override
+    public ResponseEntity<CommonResponse<FestivalDetailResponseDTO>> getFestivalDetail(Long festivalId) {
+        return ResponseEntity.ok(
+                CommonResponse.success(festivalRecommendationService.getFestivalDetail(festivalId))
         );
     }
 

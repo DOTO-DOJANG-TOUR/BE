@@ -1,7 +1,7 @@
 package com.doto.domain.stamp.repository;
 
 import com.doto.domain.stamp.entity.TourSpotVisit;
-import com.doto.domain.stamp.entity.TourSpotVisitStatus;
+import com.doto.domain.stamp.entity.enums.TourSpotVisitStatus;
 import java.time.Instant;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,7 +1,8 @@
 package com.doto.domain.festival.dto;
 
-// 지역별 축제 응답에서만 쓰는 파생 상태값, eventStartDate<=now면 개최중
+// eventStartDate<=now<=eventEndDate면 개최중, eventStartDate>now면 개최전, eventEndDate<now면 종료
 public enum FestivalStatus {
     ONGOING,
-    UPCOMING
+    UPCOMING,
+    ENDED
 }

@@ -53,9 +53,6 @@ public class Festival extends BaseTimeEntity {
     @Column(name = "address", length = 100)
     private String address;
 
-    @Column(name = "play_time", columnDefinition = "TEXT")
-    private String playTime;
-
     @Column(name = "operation_hours", columnDefinition = "TEXT")
     private String operationHours;
 
@@ -101,7 +98,6 @@ public class Festival extends BaseTimeEntity {
             String category,
             String phone,
             String address,
-            String playTime,
             String operationHours,
             String restDate,
             String useFee,
@@ -122,7 +118,6 @@ public class Festival extends BaseTimeEntity {
         this.category = category;
         this.phone = phone;
         this.address = address;
-        this.playTime = playTime;
         this.operationHours = operationHours;
         this.restDate = restDate;
         this.useFee = useFee;
@@ -145,7 +140,6 @@ public class Festival extends BaseTimeEntity {
             String category,
             String phone,
             String address,
-            String playTime,
             String operationHours,
             String restDate,
             String useFee,
@@ -167,7 +161,6 @@ public class Festival extends BaseTimeEntity {
                 .category(category)
                 .phone(phone)
                 .address(address)
-                .playTime(playTime)
                 .operationHours(operationHours)
                 .restDate(restDate)
                 .useFee(useFee)
@@ -190,7 +183,6 @@ public class Festival extends BaseTimeEntity {
             String category,
             String phone,
             String address,
-            String playTime,
             String operationHours,
             String restDate,
             String useFee,
@@ -210,7 +202,6 @@ public class Festival extends BaseTimeEntity {
         this.category = category;
         this.phone = phone;
         this.address = address;
-        this.playTime = playTime;
         this.operationHours = operationHours;
         this.restDate = restDate;
         this.useFee = useFee;

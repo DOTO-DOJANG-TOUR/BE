@@ -1,12 +1,12 @@
 package com.doto.domain.tourex.service;
 
-import com.doto.domain.stamp.entity.enums.TourSpotCategory;
 import com.doto.domain.stamp.dto.TourSpotDetailResponseDTO;
 import com.doto.domain.stamp.dto.TourSpotItemResponseDTO;
 import com.doto.domain.tourex.client.TourApiClient;
 import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
 import com.doto.domain.tourex.dto.FestivalIntroApiResponseDTO;
 import com.doto.domain.tourex.dto.TourApiResponseDTO;
+import com.doto.domain.tourex.enums.TourApiCategory;
 import com.doto.domain.tourex.exception.TourApiErrorCode;
 import com.doto.domain.tourex.exception.TourApiException;
 import java.math.BigDecimal;
@@ -30,7 +30,7 @@ public class TourApiService {
                 tour.contentId(),
                 null,
                 tour.title(),
-                toTourSpotCategory(tour.lclsSystem1()),
+                toTourApiCategory(tour.lclsSystem1()),
                 getImageUrl(tour),
                 tour.addr1(),
                 tour.mapx(),
@@ -110,7 +110,7 @@ public class TourApiService {
     }
 
     private TourSpotItemResponseDTO toTourSpotItemOrNull(TourApiResponseDTO.TourContentDTO tourSpot) {
-        TourSpotCategory category = toTourSpotCategoryOrNull(tourSpot.lclsSystem1());
+        TourApiCategory category = TourApiCategory.fromLclsSystem1Code(tourSpot.lclsSystem1());
         if (category == null) {
             return null;
         }
@@ -172,28 +172,11 @@ public class TourApiService {
     }
 
     // 특정 contentId 단건 조회용, 알려지지 않은 대분류면 데이터 오류로 보고 예외 발생
-    private TourSpotCategory toTourSpotCategory(String lclsSystem1) {
-        TourSpotCategory category = toTourSpotCategoryOrNull(lclsSystem1);
+    private TourApiCategory toTourApiCategory(String lclsSystem1) {
+        TourApiCategory category = TourApiCategory.fromLclsSystem1Code(lclsSystem1);
         if (category == null) {
             throw new IllegalArgumentException("지원하지 않는 관광지 대분류 코드입니다: " + lclsSystem1);
         }
         return category;
-    }
-
-    // 관광지 대분류(lclsSystm1) 코드 매핑, 관광공사 lclsSystmCode2 10개 코드 전체를 한글 카테고리명으로 매핑
-    private TourSpotCategory toTourSpotCategoryOrNull(String lclsSystem1) {
-        return switch (lclsSystem1) {
-            case "VE" -> TourSpotCategory.문화관광;
-            case "HS" -> TourSpotCategory.역사관광;
-            case "NA" -> TourSpotCategory.자연관광;
-            case "EX" -> TourSpotCategory.체험관광;
-            case "LS" -> TourSpotCategory.레저스포츠;
-            case "AC" -> TourSpotCategory.숙박;
-            case "FD" -> TourSpotCategory.음식;
-            case "SH" -> TourSpotCategory.쇼핑;
-            case "EV" -> TourSpotCategory.축제공연행사;
-            case "C01" -> TourSpotCategory.추천코스;
-            case null, default -> null;
-        };
     }
 }

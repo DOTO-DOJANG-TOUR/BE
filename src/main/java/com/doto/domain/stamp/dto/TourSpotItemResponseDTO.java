@@ -1,6 +1,6 @@
 package com.doto.domain.stamp.dto;
 
-import com.doto.domain.stamp.entity.enums.TourSpotCategory;
+import com.doto.domain.tourex.enums.TourApiCategory;
 
 public record TourSpotItemResponseDTO(
         Long tourSpotId,
@@ -10,7 +10,7 @@ public record TourSpotItemResponseDTO(
         String imageUrl,
         String mapX,
         String mapY,
-        TourSpotCategory tourSpotCategory,
+        TourApiCategory tourSpotCategory,
         String legalDongRegionCode,
         String legalDongSigunguCode,
         String phone,

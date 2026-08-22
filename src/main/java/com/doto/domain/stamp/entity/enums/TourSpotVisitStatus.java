@@ -1,4 +1,4 @@
-package com.doto.domain.stamp.entity;
+package com.doto.domain.stamp.entity.enums;
 
 public enum TourSpotVisitStatus {
     VISITING,
