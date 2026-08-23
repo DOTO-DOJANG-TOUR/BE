@@ -24,7 +24,7 @@ class FestivalTest {
 
             Festival festival = Festival.create(
                     2515245L, "도토 축제", "축제 소개", "https://doto.example.com/image.jpg", "https://doto.example.com", "FESTIVAL", "02-1234-5678", "서울시 강남구",
-                    "18:00~19:30", "10:00~22:00", "월요일", "무료", "가능", "무료", "주요 프로그램", Region.서울특별시, "680",
+                    "10:00~22:00", "월요일", "무료", "가능", "무료", "주요 프로그램", Region.서울특별시, "680",
                     Instant.parse("2026-08-15T00:00:00Z"), Instant.parse("2026-08-20T00:00:00Z"), location
             );
 

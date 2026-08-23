@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
-import com.doto.domain.stamp.entity.enums.TourSpotCategory;
+import com.doto.domain.tourex.enums.TourApiCategory;
 import com.doto.domain.tourex.client.TourApiClient;
 import com.doto.domain.tourex.dto.TourApiResponseDTO;
 import com.doto.domain.tourex.exception.TourApiException;
@@ -41,7 +41,7 @@ class TourApiServiceTest {
 
             assertThat(result.title()).isEqualTo("보신각터");
             assertThat(result.imageUrl()).isEqualTo("fallback.jpg");
-            assertThat(result.tourSpotCategory()).isEqualTo(TourSpotCategory.문화관광);
+            assertThat(result.tourSpotCategory()).isEqualTo(TourApiCategory.문화관광);
         }
 
         @Test
@@ -67,7 +67,7 @@ class TourApiServiceTest {
             var result = tourApiService.getNearbyTourSpots("126.97", "37.56");
 
             assertThat(result).singleElement().satisfies(tourSpot -> {
-                assertThat(tourSpot.tourSpotCategory()).isEqualTo(TourSpotCategory.역사관광);
+                assertThat(tourSpot.tourSpotCategory()).isEqualTo(TourApiCategory.역사관광);
                 assertThat(tourSpot.imageUrl()).isEqualTo("image.jpg");
             });
         }

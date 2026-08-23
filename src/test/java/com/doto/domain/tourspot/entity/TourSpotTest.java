@@ -40,7 +40,7 @@ class TourSpotTest {
 
     private Festival createFestival() {
         return Festival.create(
-                2515245L, "도토 축제", null, null, null, null, null, null, null, null, null, null, null, null, null, Region.서울특별시, "680",
+                2515245L, "도토 축제", null, null, null, null, null, null, null, null, null, null, null, null, Region.서울특별시, "680",
                 Instant.parse("2026-08-15T00:00:00Z"), Instant.parse("2026-08-20T00:00:00Z"),
                 GEOMETRY_FACTORY.createPoint(new Coordinate(127.0276, 37.4979))
         );

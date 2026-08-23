@@ -28,7 +28,6 @@ public final class FestivalFixture {
                 "FESTIVAL",
                 "02-1234-5678",
                 "서울특별시 강남구 도토로 1",
-                "18:00~19:30",
                 "10:00~22:00",
                 "월요일",
                 "무료",
