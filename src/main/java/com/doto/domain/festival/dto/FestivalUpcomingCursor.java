@@ -7,17 +7,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 
-// 앞으로의 축제 정렬 기준(eventStartDate, 기간, title 정규화 앞 6글자) opaque 인코딩
-public record FestivalUpcomingCursor(Instant eventStartDate, Duration duration, String title) {
+// 앞으로의 축제 정렬 기준(eventStartDate, 기간, id) opaque 인코딩
+public record FestivalUpcomingCursor(Instant eventStartDate, Duration duration, Long id) {
 
     private static final String DELIMITER = "|";
-    private static final int TITLE_PREFIX_LENGTH = 6;
-    private static final String NORMALIZE_PATTERN = "[^가-힣a-zA-Z0-9]";
 
     public String encode() {
-        String normalized = title.replaceAll(NORMALIZE_PATTERN, "");
-        String titlePrefix = normalized.substring(0, Math.min(TITLE_PREFIX_LENGTH, normalized.length()));
-        String raw = eventStartDate + DELIMITER + duration + DELIMITER + titlePrefix;
+        String raw = eventStartDate + DELIMITER + duration + DELIMITER + id;
         return Base64.getUrlEncoder().withoutPadding().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -28,7 +24,7 @@ public record FestivalUpcomingCursor(Instant eventStartDate, Duration duration, 
         try {
             String raw = new String(Base64.getUrlDecoder().decode(cursor), StandardCharsets.UTF_8);
             String[] parts = raw.split("\\|", 3);
-            return new FestivalUpcomingCursor(Instant.parse(parts[0]), Duration.parse(parts[1]), parts[2]);
+            return new FestivalUpcomingCursor(Instant.parse(parts[0]), Duration.parse(parts[1]), Long.parseLong(parts[2]));
         } catch (RuntimeException exception) {
             throw new FestivalException(FestivalErrorCode.INVALID_CURSOR);
         }

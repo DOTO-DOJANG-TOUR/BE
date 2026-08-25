@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class FestivalRecommendationService {
 
-    private static final String FIRST_PAGE_TITLE = "";
+    private static final Long FIRST_PAGE_ID = 0L;
     // duration 첫 페이지 sentinel, 실제 축제 기간은 항상 0 이상이라 -1초면 항상 첫 분기로 통과
     private static final Duration FIRST_PAGE_DURATION = Duration.ofSeconds(-1);
     // parking 값에 이 문구가 포함되면 parkingFee도 불가능으로 덮어씀
@@ -45,7 +45,7 @@ public class FestivalRecommendationService {
         List<Festival> festivals = festivalRepository.findTodayFestivals(
                 now,
                 decoded != null ? decoded.eventEndDate() : Instant.EPOCH,
-                decoded != null ? decoded.title() : FIRST_PAGE_TITLE,
+                decoded != null ? decoded.id() : FIRST_PAGE_ID,
                 PageRequest.ofSize(size + 1)
         );
         boolean hasNext = festivals.size() > size;
@@ -62,7 +62,7 @@ public class FestivalRecommendationService {
                 now,
                 decoded != null ? decoded.eventStartDate() : Instant.EPOCH,
                 decoded != null ? decoded.duration() : FIRST_PAGE_DURATION,
-                decoded != null ? decoded.title() : FIRST_PAGE_TITLE,
+                decoded != null ? decoded.id() : FIRST_PAGE_ID,
                 PageRequest.ofSize(size + 1)
         );
         boolean hasNext = festivals.size() > size;
@@ -98,7 +98,7 @@ public class FestivalRecommendationService {
                 regionGroup.getRegions(),
                 now,
                 decoded != null ? decoded.eventEndDate() : Instant.EPOCH,
-                decoded != null ? decoded.title() : FIRST_PAGE_TITLE,
+                decoded != null ? decoded.id() : FIRST_PAGE_ID,
                 PageRequest.ofSize(size + 1)
         );
     }
@@ -110,7 +110,7 @@ public class FestivalRecommendationService {
                 now,
                 decoded != null ? decoded.eventStartDate() : Instant.EPOCH,
                 decoded != null ? decoded.duration() : FIRST_PAGE_DURATION,
-                decoded != null ? decoded.title() : FIRST_PAGE_TITLE,
+                decoded != null ? decoded.id() : FIRST_PAGE_ID,
                 PageRequest.ofSize(size + 1)
         );
     }
@@ -136,12 +136,12 @@ public class FestivalRecommendationService {
     }
 
     private String toEndDateCursor(Festival festival) {
-        return new FestivalEndDateCursor(festival.getEventEndDate(), festival.getTitle()).encode();
+        return new FestivalEndDateCursor(festival.getEventEndDate(), festival.getId()).encode();
     }
 
     private String toUpcomingCursor(Festival festival) {
         Duration duration = Duration.between(festival.getEventStartDate(), festival.getEventEndDate());
-        return new FestivalUpcomingCursor(festival.getEventStartDate(), duration, festival.getTitle()).encode();
+        return new FestivalUpcomingCursor(festival.getEventStartDate(), duration, festival.getId()).encode();
     }
 
     private FestivalShortResponseDTO toShortResponse(Festival festival) {
