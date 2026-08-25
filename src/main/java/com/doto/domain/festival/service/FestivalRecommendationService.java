@@ -128,6 +128,7 @@ public class FestivalRecommendationService {
                 festival.getPhone(),
                 festival.getHomepageUrl(),
                 festival.getSummary(),
+                festival.getProgram(),
                 festival.getOperationHours(),
                 festival.getRestDate(),
                 festival.getUseFee(),
