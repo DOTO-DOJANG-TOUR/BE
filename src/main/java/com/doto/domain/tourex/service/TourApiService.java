@@ -1,17 +1,18 @@
 package com.doto.domain.tourex.service;
 
-import com.doto.domain.stamp.entity.enums.TourSpotCategory;
 import com.doto.domain.stamp.dto.TourSpotDetailResponseDTO;
 import com.doto.domain.stamp.dto.TourSpotItemResponseDTO;
 import com.doto.domain.tourex.client.TourApiClient;
 import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
 import com.doto.domain.tourex.dto.FestivalIntroApiResponseDTO;
 import com.doto.domain.tourex.dto.TourApiResponseDTO;
+import com.doto.domain.tourex.enums.TourApiCategory;
 import com.doto.domain.tourex.exception.TourApiErrorCode;
 import com.doto.domain.tourex.exception.TourApiException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +30,7 @@ public class TourApiService {
                 tour.contentId(),
                 null,
                 tour.title(),
-                toTourSpotCategory(tour.lclsSystem1()),
+                toTourApiCategory(tour.lclsSystem1()),
                 getImageUrl(tour),
                 tour.addr1(),
                 tour.mapx(),
@@ -41,8 +42,8 @@ public class TourApiService {
         );
     }
 
-    // 축제 상세 조회
-    public FestivalApiResponseDTO getFestivalInfo(Long festivalContentId) {
+    // 축제 상세 조회, festivalType은 searchFestival2(목록 조회) 결과에만 있어 호출부에서 넘겨받음
+    public FestivalApiResponseDTO getFestivalInfo(Long festivalContentId, String festivalType) {
         TourApiResponseDTO.TourContentDTO festival = getContent(festivalContentId);
         FestivalIntroApiResponseDTO.FestivalIntroDTO intro = getFestivalIntro(festivalContentId);
         return new FestivalApiResponseDTO(
@@ -54,6 +55,10 @@ public class TourApiService {
                 festival.mapx(),
                 festival.mapy(),
                 festival.overview(),
+                festival.lclsSystem1(),
+                festivalType,
+                festival.legalDongRegionCode(),
+                festival.legalDongSigunguCode(),
                 intro.eventstartdate(),
                 intro.eventenddate(),
                 intro.usetimefestival(),
@@ -90,29 +95,39 @@ public class TourApiService {
         return toTourSpotItems(tourApiClient.getNearbyTourSpots(longitude, latitude, TOUR_SPOT_SEARCH_RADIUS_METERS));
     }
 
-    // 스케줄러 동기화 대상 축제 목록을 조회
+    // 스케줄러 동기화 대상 축제 목록을 조회, 각 항목에 festivalType(festivaltype) 포함
     public List<TourApiResponseDTO.TourContentDTO> getFestivalsForSync(LocalDate eventStartDate) {
         return getContents(tourApiClient.searchFestivals(eventStartDate, null, null, null));
     }
 
+    // 주변 검색 결과에는 숙박/음식/쇼핑/축제 등 다양한 대분류가 섞여 있어 항목별 카테고리 매핑 후 목록 구성
     private List<TourSpotItemResponseDTO> toTourSpotItems(List<TourApiResponseDTO.TourContentDTO> tourSpots) {
         return tourSpots
                 .stream()
-                .map(tourSpot -> new TourSpotItemResponseDTO(
-                        null,
-                        tourSpot.contentId(),
-                        tourSpot.title(),
-                        tourSpot.addr1(),
-                        getImageUrl(tourSpot),
-                        tourSpot.mapx(),
-                        tourSpot.mapy(),
-                        toTourSpotCategory(tourSpot.lclsSystem1()),
-                        tourSpot.legalDongRegionCode(),
-                        tourSpot.legalDongSigunguCode(),
-                        tourSpot.tel(),
-                        tourSpot.modifiedtime()
-                ))
+                .map(this::toTourSpotItemOrNull)
+                .filter(Objects::nonNull)
                 .toList();
+    }
+
+    private TourSpotItemResponseDTO toTourSpotItemOrNull(TourApiResponseDTO.TourContentDTO tourSpot) {
+        TourApiCategory category = TourApiCategory.fromLclsSystem1Code(tourSpot.lclsSystem1());
+        if (category == null) {
+            return null;
+        }
+        return new TourSpotItemResponseDTO(
+                null,
+                tourSpot.contentId(),
+                tourSpot.title(),
+                tourSpot.addr1(),
+                getImageUrl(tourSpot),
+                tourSpot.mapx(),
+                tourSpot.mapy(),
+                category,
+                tourSpot.legalDongRegionCode(),
+                tourSpot.legalDongSigunguCode(),
+                tourSpot.tel(),
+                tourSpot.modifiedtime()
+        );
     }
 
     private TourApiResponseDTO.TourContentDTO getContent(Long contentId) {
@@ -123,7 +138,6 @@ public class TourApiService {
         }
         return contents.getFirst();
     }
-
     private List<TourApiResponseDTO.TourContentDTO> getContents(TourApiResponseDTO response) {
         return response == null ? List.of() : response.itemsOrEmpty();
     }
@@ -157,14 +171,12 @@ public class TourApiService {
         }
     }
 
-    // 관광지 카테고리 매핑
-    private TourSpotCategory toTourSpotCategory(String lclsSystem1) {
-        return switch (lclsSystem1) {
-            case "VE" -> TourSpotCategory.CULTURE;
-            case "HS" -> TourSpotCategory.HISTORY;
-            case "NA" -> TourSpotCategory.NATURE;
-            case "EX", "LS" -> TourSpotCategory.EXPERIENCE;
-            default -> throw new IllegalArgumentException("지원하지 않는 관광지 대분류 코드입니다: " + lclsSystem1);
-        };
+    // 특정 contentId 단건 조회용, 알려지지 않은 대분류면 데이터 오류로 보고 예외 발생
+    private TourApiCategory toTourApiCategory(String lclsSystem1) {
+        TourApiCategory category = TourApiCategory.fromLclsSystem1Code(lclsSystem1);
+        if (category == null) {
+            throw new IllegalArgumentException("지원하지 않는 관광지 대분류 코드입니다: " + lclsSystem1);
+        }
+        return category;
     }
 }

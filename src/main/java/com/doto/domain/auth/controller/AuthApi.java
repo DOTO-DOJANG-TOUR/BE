@@ -23,12 +23,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 @ApiErrorCodeExamples({AuthErrorCode.class})
 public interface AuthApi {
 
-    @Operation(summary = "회원가입")
+    @Operation(
+            summary = "회원가입",
+            description = """
+                    소셜 로그인만 사용하기 때문에 개발 체크용으로만 사용합니다.
+                    """
+    )
     @ApiResponse(responseCode = "201", description = "회원가입 성공")
     @PostMapping("/api/v1/auth/sign-up")
     ResponseEntity<CommonResponse<AuthResponseDTO>> signUp(@Valid @RequestBody SignUpRequestDTO request);
 
-    @Operation(summary = "로그인")
+    @Operation(
+            summary = "로그인",
+            description = """
+                    소셜 로그인만 사용하기 때문에 개발 체크용으로만 사용합니다.
+                    """
+    )
     @ApiResponse(responseCode = "200", description = "로그인 성공")
     @PostMapping("/api/v1/auth/sign-in")
     ResponseEntity<CommonResponse<AuthResponseDTO>> signIn(@Valid @RequestBody SignInRequestDTO request);

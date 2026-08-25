@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.doto.domain.member.entity.Member;
+import com.doto.domain.stamp.entity.enums.TourSpotVisitStatus;
 import com.doto.domain.tourspot.entity.TourSpot;
 import java.time.Instant;
 import org.junit.jupiter.api.Nested;

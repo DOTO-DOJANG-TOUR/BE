@@ -1,6 +1,7 @@
 package com.doto.fixture;
 
 import com.doto.domain.festival.entity.Festival;
+import com.doto.domain.festival.entity.enums.Region;
 import java.time.Instant;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -22,22 +23,22 @@ public final class FestivalFixture {
                 contentId,
                 "도토 축제",
                 "도토 축제 소개",
+                "https://doto.example.com/festivals.jpg",
                 "https://doto.example.com/festivals",
                 "FESTIVAL",
                 "02-1234-5678",
                 "서울특별시 강남구 도토로 1",
-                "18:00~19:30",
                 "10:00~22:00",
                 "월요일",
                 "무료",
                 "가능",
                 "무료",
                 "주요 프로그램",
-                "11",
-                "11000",
+                Region.서울특별시,
+                "680",
                 Instant.parse("2026-08-15T00:00:00Z"),
                 Instant.parse("2026-08-20T00:00:00Z"),
-                GEOMETRY_FACTORY.createPoint(new Coordinate(127.0276, 37.4979))
+                GEOMETRY_FACTORY.createPoint(new Coordinate(127.0280, 37.4980))
         );
     }
 }

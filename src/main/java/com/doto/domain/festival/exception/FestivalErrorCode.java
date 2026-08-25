@@ -6,7 +6,8 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum FestivalErrorCode implements ErrorCode {
-    FESTIVAL_NOT_FOUND(HttpStatus.NOT_FOUND, "FESTIVAL-404-001", "축제를 찾을 수 없습니다.");
+    FESTIVAL_NOT_FOUND(HttpStatus.NOT_FOUND, "FESTIVAL-404-001", "축제를 찾을 수 없습니다."),
+    INVALID_CURSOR(HttpStatus.BAD_REQUEST, "FESTIVAL-400-001", "커서 값이 올바르지 않습니다.");
 
     private final HttpStatus status;
     private final String code;

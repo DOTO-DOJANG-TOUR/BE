@@ -50,9 +50,8 @@ public record TourApiResponseDTO(
     ) {
     }
 
-    /**
-     * 관광지와 축제 목록·상세 조회에서 공통으로 사용하는 콘텐츠 정보
-     * */
+    //관광지와 축제 목록·상세 조회에서 공통으로 사용하는 콘텐츠 정보
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record TourContentDTO(
             @JsonProperty("contentid") Long contentId,
@@ -78,7 +77,8 @@ public record TourApiResponseDTO(
             String eventenddate,
             String eventplace,
             String playtime,
-            String usetimefestival
+            String usetimefestival,
+            @JsonProperty("festivaltype") String festivalType
     ) {
     }
 }

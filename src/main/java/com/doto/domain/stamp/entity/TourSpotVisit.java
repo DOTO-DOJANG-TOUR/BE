@@ -1,6 +1,7 @@
 package com.doto.domain.stamp.entity;
 
 import com.doto.domain.member.entity.Member;
+import com.doto.domain.stamp.entity.enums.TourSpotVisitStatus;
 import com.doto.domain.tourspot.entity.TourSpot;
 import com.doto.global.common.BaseTimeEntity;
 import io.hypersistence.utils.hibernate.id.Tsid;

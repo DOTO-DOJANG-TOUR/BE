@@ -1,9 +1,12 @@
 package com.doto.domain.festival.entity;
 
+import com.doto.domain.festival.entity.enums.Region;
 import com.doto.global.common.BaseTimeEntity;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
@@ -34,6 +37,9 @@ public class Festival extends BaseTimeEntity {
 
     @Column(name = "summary", columnDefinition = "TEXT")
     private String summary;
+    //firstimage → 없으면 firstimage2 저장하도록 했는데 후에 이미지 별로 얼마나 적절한지 판단하는 기능 개선이 가능할 듯
+    @Column(name = "image_url", columnDefinition = "TEXT")
+    private String imageUrl;
 
     @Column(name = "homepage_url", columnDefinition = "TEXT")
     private String homepageUrl;
@@ -47,10 +53,7 @@ public class Festival extends BaseTimeEntity {
     @Column(name = "address", length = 100)
     private String address;
 
-    @Column(name = "play_time", length = 20)
-    private String playTime;
-
-    @Column(name = "operation_hours", length = 50)
+    @Column(name = "operation_hours", columnDefinition = "TEXT")
     private String operationHours;
 
     @Column(name = "rest_date", length = 50)
@@ -68,11 +71,12 @@ public class Festival extends BaseTimeEntity {
     @Column(name = "program", columnDefinition = "TEXT")
     private String program;
 
-    @Column(name = "l_dong_regn_cd", length = 10)
-    private String legalDongRegionCode;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "region", length = 20)
+    private Region legalRegion;
 
-    @Column(name = "l_dong_signgu_cd", length = 10)
-    private String legalDongSigunguCode;
+    @Column(name = "gungu", length = 20)
+    private String legalGungu;
 
     @Column(name = "event_start_date", nullable = false)
     private Instant eventStartDate;
@@ -89,19 +93,19 @@ public class Festival extends BaseTimeEntity {
             Long contentId,
             String title,
             String summary,
+            String imageUrl,
             String homepageUrl,
             String category,
             String phone,
             String address,
-            String playTime,
             String operationHours,
             String restDate,
             String useFee,
             String parking,
             String parkingFee,
             String program,
-            String legalDongRegionCode,
-            String legalDongSigunguCode,
+            Region legalRegion,
+            String legalGungu,
             Instant eventStartDate,
             Instant eventEndDate,
             Point location
@@ -109,19 +113,19 @@ public class Festival extends BaseTimeEntity {
         this.contentId = contentId;
         this.title = title;
         this.summary = summary;
+        this.imageUrl = imageUrl;
         this.homepageUrl = homepageUrl;
         this.category = category;
         this.phone = phone;
         this.address = address;
-        this.playTime = playTime;
         this.operationHours = operationHours;
         this.restDate = restDate;
         this.useFee = useFee;
         this.parking = parking;
         this.parkingFee = parkingFee;
         this.program = program;
-        this.legalDongRegionCode = legalDongRegionCode;
-        this.legalDongSigunguCode = legalDongSigunguCode;
+        this.legalRegion = legalRegion;
+        this.legalGungu = legalGungu;
         this.eventStartDate = eventStartDate;
         this.eventEndDate = eventEndDate;
         this.location = location;
@@ -131,19 +135,19 @@ public class Festival extends BaseTimeEntity {
             Long contentId,
             String title,
             String summary,
+            String imageUrl,
             String homepageUrl,
             String category,
             String phone,
             String address,
-            String playTime,
             String operationHours,
             String restDate,
             String useFee,
             String parking,
             String parkingFee,
             String program,
-            String legalDongRegionCode,
-            String legalDongSigunguCode,
+            Region legalRegion,
+            String legalGungu,
             Instant eventStartDate,
             Instant eventEndDate,
             Point location
@@ -152,22 +156,62 @@ public class Festival extends BaseTimeEntity {
                 .contentId(contentId)
                 .title(title)
                 .summary(summary)
+                .imageUrl(imageUrl)
                 .homepageUrl(homepageUrl)
                 .category(category)
                 .phone(phone)
                 .address(address)
-                .playTime(playTime)
                 .operationHours(operationHours)
                 .restDate(restDate)
                 .useFee(useFee)
                 .parking(parking)
                 .parkingFee(parkingFee)
                 .program(program)
-                .legalDongRegionCode(legalDongRegionCode)
-                .legalDongSigunguCode(legalDongSigunguCode)
+                .legalRegion(legalRegion)
+                .legalGungu(legalGungu)
                 .eventStartDate(eventStartDate)
                 .eventEndDate(eventEndDate)
                 .location(location)
                 .build();
+    }
+
+    public void update(
+            String title,
+            String summary,
+            String imageUrl,
+            String homepageUrl,
+            String category,
+            String phone,
+            String address,
+            String operationHours,
+            String restDate,
+            String useFee,
+            String parking,
+            String parkingFee,
+            String program,
+            Region legalRegion,
+            String legalGungu,
+            Instant eventStartDate,
+            Instant eventEndDate,
+            Point location
+    ) {
+        this.title = title;
+        this.summary = summary;
+        this.imageUrl = imageUrl;
+        this.homepageUrl = homepageUrl;
+        this.category = category;
+        this.phone = phone;
+        this.address = address;
+        this.operationHours = operationHours;
+        this.restDate = restDate;
+        this.useFee = useFee;
+        this.parking = parking;
+        this.parkingFee = parkingFee;
+        this.program = program;
+        this.legalRegion = legalRegion;
+        this.legalGungu = legalGungu;
+        this.eventStartDate = eventStartDate;
+        this.eventEndDate = eventEndDate;
+        this.location = location;
     }
 }

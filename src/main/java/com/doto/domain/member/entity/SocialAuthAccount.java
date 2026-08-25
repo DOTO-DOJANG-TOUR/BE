@@ -58,7 +58,7 @@ public class SocialAuthAccount extends BaseTimeEntity {
     @Column(name = "email", length = 190)
     private String email;
 
-    @Column(name = "profile_img", length = 500)
+    @Column(name = "profile_img", columnDefinition = "TEXT")
     private String profileImg;
 
     //내부 빌더 지우면 안됨

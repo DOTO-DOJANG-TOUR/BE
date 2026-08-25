@@ -2,6 +2,7 @@ package com.doto.domain.stamp.entity;
 
 import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.member.entity.Member;
+import com.doto.domain.stamp.entity.enums.StampTourStatus;
 import com.doto.global.common.BaseTimeEntity;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;
