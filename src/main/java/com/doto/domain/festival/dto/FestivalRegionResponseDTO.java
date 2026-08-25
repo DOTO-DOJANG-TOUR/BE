@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public record FestivalRegionResponseDTO(
         @Schema(description = "축제 ID", example = "1234567890123456789")
-        Long festivalId,
+        String festivalId,
 
         @Schema(description = "대표 이미지 URL", example = "https://tong.visitkorea.or.kr/cms/resource/20/4089520_image2_1.jpg")
         String imageUrl,

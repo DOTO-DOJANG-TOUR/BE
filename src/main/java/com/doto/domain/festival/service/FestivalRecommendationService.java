@@ -148,7 +148,7 @@ public class FestivalRecommendationService {
     private FestivalShortResponseDTO toShortResponse(Festival festival) {
         ZoneId zone = applicationClock.getZone();
         return new FestivalShortResponseDTO(
-                festival.getId(),
+                String.valueOf(festival.getId()),
                 festival.getTitle(),
                 festival.getImageUrl(),
                 DateTimeUtils.toDateString(festival.getEventStartDate(), zone),
@@ -162,7 +162,7 @@ public class FestivalRecommendationService {
         ZoneId zone = applicationClock.getZone();
         FestivalStatus status = !festival.getEventStartDate().isAfter(now) ? FestivalStatus.ONGOING : FestivalStatus.UPCOMING;
         return new FestivalRegionResponseDTO(
-                festival.getId(),
+                String.valueOf(festival.getId()),
                 festival.getImageUrl(),
                 status,
                 festival.getTitle(),
