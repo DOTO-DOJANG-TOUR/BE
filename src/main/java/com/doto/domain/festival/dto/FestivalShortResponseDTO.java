@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public record FestivalShortResponseDTO(
         @Schema(description = "축제 ID", example = "1234567890123456789")
-        Long festivalId,
+        String festivalId,
 
         @Schema(description = "축제명", example = "보령머드축제")
         String title,

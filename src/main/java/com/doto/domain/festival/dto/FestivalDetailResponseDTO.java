@@ -27,6 +27,9 @@ public record FestivalDetailResponseDTO(
         @Schema(description = "축제 소개")
         String summary,
 
+        @Schema(description = "행사 소개")
+        String program,
+
         @Schema(description = "운영시간")
         String operationHours,
 
