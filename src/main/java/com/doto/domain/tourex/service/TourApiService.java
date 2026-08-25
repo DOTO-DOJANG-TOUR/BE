@@ -46,41 +46,41 @@ public class TourApiService {
     public FestivalApiResponseDTO getFestivalInfo(Long festivalContentId, String festivalType) {
         TourApiResponseDTO.TourContentDTO festival = getContent(festivalContentId);
         FestivalIntroApiResponseDTO.FestivalIntroDTO intro = getFestivalIntro(festivalContentId);
-        return new FestivalApiResponseDTO(
-                festival.contentId(),
-                festival.title(),
-                getImageUrl(festival),
-                festival.addr1(),
-                festival.tel(),
-                festival.mapx(),
-                festival.mapy(),
-                festival.overview(),
-                festival.lclsSystem1(),
-                festivalType,
-                festival.legalDongRegionCode(),
-                festival.legalDongSigunguCode(),
-                intro.eventstartdate(),
-                intro.eventenddate(),
-                intro.usetimefestival(),
-                intro.playtime(),
-                intro.spendtimefestival(),
-                intro.restdate(),
-                intro.usefee(),
-                intro.discountinfofestival(),
-                intro.parking(),
-                intro.parkingfee(),
-                intro.eventplace(),
-                getHomepageUrl(festival.homepage(), intro.eventhomepage()),
-                intro.reservation(),
-                intro.reservationurl(),
-                intro.program(),
-                intro.subevent(),
-                intro.schedule(),
-                intro.sponsor1(),
-                intro.sponsor1tel(),
-                intro.infocenter(),
-                intro.agelimit()
-        );
+        return FestivalApiResponseDTO.builder()
+                .contentId(festival.contentId())
+                .title(festival.title())
+                .imageUrl(getImageUrl(festival))
+                .address(festival.addr1())
+                .phone(festival.tel())
+                .mapX(festival.mapx())
+                .mapY(festival.mapy())
+                .overview(festival.overview())
+                .category(festival.lclsSystem1())
+                .festivalType(festivalType)
+                .legalDongRegionCode(festival.legalDongRegionCode())
+                .legalDongSigunguCode(festival.legalDongSigunguCode())
+                .eventStartDate(intro.eventstartdate())
+                .eventEndDate(intro.eventenddate())
+                .operationHours(intro.usetimefestival())
+                .playTime(intro.playtime())
+                .spendTime(intro.spendtimefestival())
+                .holiday(intro.restdate())
+                .fee(intro.usefee())
+                .discountInfo(intro.discountinfofestival())
+                .parkingInfo(intro.parking())
+                .parkingFee(intro.parkingfee())
+                .eventPlace(intro.eventplace())
+                .homepageUrl(getHomepageUrl(festival.homepage(), intro.eventhomepage()))
+                .reservationInfo(intro.reservation())
+                .reservationUrl(intro.reservationurl())
+                .program(intro.program())
+                .subEvent(intro.subevent())
+                .schedule(intro.schedule())
+                .sponsor(intro.sponsor1())
+                .sponsorPhone(intro.sponsor1tel())
+                .informationPhone(intro.infocenter())
+                .ageLimit(intro.agelimit())
+                .build();
     }
 
     // 축제 좌표를 기준으로 주변 관광지만 조회
