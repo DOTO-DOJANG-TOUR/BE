@@ -43,7 +43,8 @@ public class SocialSignInService {
 
         // 탈퇴로 휴면 상태였던 계정은 소셜 로그인 시 다시 활성화
         Member member = account.getMember();
-        if (member.getStatus() != MemberStatus.ACTIVE) {
+        boolean reactivated = member.getStatus() != MemberStatus.ACTIVE;
+        if (reactivated) {
             member.reactivate();
             log.info(
                     "탈퇴 상태였던 회원이 소셜 로그인으로 재활성화되었습니다. memberId={}, provider={}",
@@ -55,7 +56,7 @@ public class SocialSignInService {
         String accessToken = jwtTokenProvider.createAccessToken(member.getId());
         String refreshToken = refreshTokenService.issue(member);
 
-        return AuthResponseDTO.of(member, accessToken, refreshToken);
+        return AuthResponseDTO.of(member, accessToken, refreshToken, reactivated);
     }
 
     // OidcTokenverifier(ID 토큰을 검증하는 컴포넌트)반환

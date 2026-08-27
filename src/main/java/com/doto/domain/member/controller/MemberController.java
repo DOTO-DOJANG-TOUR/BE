@@ -32,4 +32,10 @@ public class MemberController implements MemberApi {
         return ResponseEntity.ok(CommonResponse.success(result));
     }
 
+    @Override
+    public ResponseEntity<Void> withdraw(CustomMemberDetails memberDetails) {
+        memberService.withdraw(memberDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
 }
