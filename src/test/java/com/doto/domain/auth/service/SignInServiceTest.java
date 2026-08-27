@@ -14,6 +14,7 @@ import com.doto.domain.auth.exception.AuthErrorCode;
 import com.doto.domain.auth.exception.AuthException;
 import com.doto.domain.member.entity.GeneralAuthAccount;
 import com.doto.domain.member.entity.Member;
+import com.doto.domain.member.entity.MemberStatus;
 import com.doto.domain.member.repository.GeneralAuthAccountRepository;
 import com.doto.global.security.jwt.JwtTokenProvider;
 import java.util.Optional;
@@ -70,6 +71,24 @@ class SignInServiceTest {
             assertThat(response.accessToken()).isEqualTo("access-token");
             assertThat(response.refreshToken()).isEqualTo("refresh-token");
         }
+
+        @Test
+        void 비활성화된_계정으로_로그인하면_재활성화된다() {
+            Member member = activeMember();
+            member.deactivate();
+            GeneralAuthAccount account = GeneralAuthAccount.create(member, "member@example.com", "encoded");
+            SignInRequestDTO request = new SignInRequestDTO("member@example.com", "raw-password");
+
+            when(generalAuthAccountRepository.findByEmail("member@example.com")).thenReturn(Optional.of(account));
+            when(passwordEncoder.matches("raw-password", "encoded")).thenReturn(true);
+            when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
+            when(refreshTokenService.issue(member)).thenReturn("refresh-token");
+
+            AuthResponseDTO response = signInService.signIn(request);
+
+            assertThat(member.getStatus()).isEqualTo(MemberStatus.ACTIVE);
+            assertThat(response.reactivated()).isTrue();
+        }
     }
 
     @Nested
@@ -110,24 +129,6 @@ class SignInServiceTest {
                     .isInstanceOf(AuthException.class)
                     .extracting("errorCode")
                     .isEqualTo(AuthErrorCode.INVALID_CREDENTIALS);
-
-            verifyNoInteractions(jwtTokenProvider, refreshTokenService);
-        }
-
-        @Test
-        void 비활성화된_계정이면_예외를_던진다() {
-            Member member = activeMember();
-            member.deactivate();
-            GeneralAuthAccount account = GeneralAuthAccount.create(member, "member@example.com", "encoded");
-            SignInRequestDTO request = new SignInRequestDTO("member@example.com", "raw-password");
-
-            when(generalAuthAccountRepository.findByEmail("member@example.com")).thenReturn(Optional.of(account));
-            when(passwordEncoder.matches("raw-password", "encoded")).thenReturn(true);
-
-            assertThatThrownBy(() -> signInService.signIn(request))
-                    .isInstanceOf(AuthException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(AuthErrorCode.INACTIVE_ACCOUNT);
 
             verifyNoInteractions(jwtTokenProvider, refreshTokenService);
         }

@@ -100,6 +100,7 @@ class SocialSignInServiceTest {
             assertThat(response.userId()).isEqualTo("1");
             assertThat(response.accessToken()).isEqualTo("access-token");
             assertThat(response.refreshToken()).isEqualTo("refresh-token");
+            assertThat(response.reactivated()).isFalse();
             verify(memberRepository, never()).save(any());
         }
 
@@ -170,6 +171,7 @@ class SocialSignInServiceTest {
             assertThat(member.getStatus()).isEqualTo(MemberStatus.ACTIVE);
             assertThat(response.accessToken()).isEqualTo("access-token");
             assertThat(response.refreshToken()).isEqualTo("refresh-token");
+            assertThat(response.reactivated()).isTrue();
         }
 
     }
