@@ -1,10 +1,8 @@
 name: CD
 
 on:
-  workflow_run:
-    workflows: [CI]
-    branches: [develop]
-    types: [completed]
+  push:
+    branches: [main]
 
 permissions:
   contents: read
@@ -16,17 +14,14 @@ env:
 
 jobs:
   deploy:
-    if: >-
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     environment: dev
 
     steps:
-      - name: Checkout tested revision
+      - name: Checkout merged revision
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.sha }}
 
       - name: Configure AWS credentials with GitHub OIDC
         uses: aws-actions/configure-aws-credentials@v4
@@ -42,9 +37,9 @@ jobs:
         id: image
         env:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
-          SHA: ${{ github.event.workflow_run.head_sha }}
+          SHA: ${{ github.sha }}
         run: |
-          image="$REGISTRY/$ECR_REPOSITORY:develop-${SHA::7}"
+          image="$REGISTRY/$ECR_REPOSITORY:main-${SHA::7}"
           docker build --tag "$image" .
           docker push "$image"
           echo "value=$image" >> "$GITHUB_OUTPUT"
