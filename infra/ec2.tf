@@ -60,7 +60,6 @@ resource "aws_instance" "app" {
     echo "deb [arch=$$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $$(. /etc/os-release && echo \"$$VERSION_CODENAME\") stable" > /etc/apt/sources.list.d/docker.list
     apt-get update
     apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-    systemctl enable --now docker
     usermod -aG docker ubuntu
     if ! swapon --noheadings --show=NAME | grep -qx /swapfile; then
       fallocate -l 2G /swapfile
@@ -80,7 +79,15 @@ resource "aws_instance" "app" {
     UUID=$$(blkid -s UUID -o value "$$DEVICE")
     grep -qE "^[^#]*[[:space:]]/data[[:space:]]" /etc/fstab || echo "UUID=$$UUID /data ext4 defaults,nofail 0 2" >> /etc/fstab
     mount -a
-    mkdir -p /data/db
+    systemctl stop docker.service docker.socket containerd.service || true
+    mkdir -p /data/docker /data/containerd /data/db
+    cat > /etc/docker/daemon.json <<'DOCKERD'
+    {
+      "data-root": "/data/docker"
+    }
+    DOCKERD
+    sed -i 's|^#root = "/var/lib/containerd"|root = "/data/containerd"|' /etc/containerd/config.toml
+    systemctl enable --now containerd.service docker.service
     chown 999:999 /data/db
 
     touch /opt/app/.env
