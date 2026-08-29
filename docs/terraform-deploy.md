@@ -11,7 +11,7 @@ Terraform은 ECR 저장소와 GitHub Actions OIDC Role을 함께 생성합니다
 ## 사전 준비
 
 1. 서울 리전의 EC2 Key Pair를 준비합니다.
-2. GitHub repository와 동일한 이름이 아니라면 `terraform.tfvars`에 `github_repository = "owner/repository"`를 추가합니다.
+2. GitHub Organization에서 OIDC subject template을 변경했다면, CloudTrail에 기록된 subject를 `terraform.tfvars`의 `github_oidc_subject`에 설정합니다.
 
 ## Terraform 실행
 

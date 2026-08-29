@@ -1,2 +1,6 @@
 key_name         = "doto-key" # .pem 파일명이 아닌 AWS Key Pair 이름
 ssh_allowed_cidr = "203.0.113.10/32"
+
+# GitHub Organization OIDC subject template을 사용하는 경우 실제 subject를 입력합니다.
+# 기본 DOTO 조직 설정값: repo:DOTO-DOJANG-TOUR@310031602/BE@1314599304:environment:dev
+# github_oidc_subject = "repo:DOTO-DOJANG-TOUR@310031602/BE@1314599304:environment:dev"

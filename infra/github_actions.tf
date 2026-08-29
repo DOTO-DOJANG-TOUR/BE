@@ -1,7 +1,7 @@
-variable "github_repository" {
+variable "github_oidc_subject" {
   type        = string
-  description = "GitHub organization/repository allowed to deploy"
-  default     = "DOTO-DOJANG-TOUR/BE"
+  description = "GitHub Actions OIDC subject allowed to deploy"
+  default     = "repo:DOTO-DOJANG-TOUR@310031602/BE@1314599304:environment:dev"
 }
 
 resource "aws_iam_openid_connect_provider" "github_actions" {
@@ -21,7 +21,7 @@ resource "aws_iam_role" "github_actions_deploy" {
       Condition = {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-          "token.actions.githubusercontent.com:sub" = "repo:${var.github_repository}:environment:dev"
+          "token.actions.githubusercontent.com:sub" = var.github_oidc_subject
         }
       }
     }]
