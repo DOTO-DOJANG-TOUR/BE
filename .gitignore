@@ -1,4 +1,5 @@
 .gradle/
+.terraform/
 build/
 out/
 .idea/
@@ -7,6 +8,10 @@ out/
 .env
 .env.*
 !.env.example
+*.tfvars
+!terraform.tfvars.example
+*.tfstate
+*.tfstate.*
 *.pem
 *.p12
 *.jks

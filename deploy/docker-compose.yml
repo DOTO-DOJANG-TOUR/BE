@@ -1,0 +1,60 @@
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME:-_}
+    depends_on:
+      app:
+        condition: service_healthy
+    volumes:
+      - ./nginx.conf:/etc/nginx/templates/default.conf.template:ro
+      - /data/letsencrypt/conf:/etc/letsencrypt:ro
+      - /data/letsencrypt/www:/var/www/certbot:ro
+    restart: unless-stopped
+
+  app:
+    image: ${APP_IMAGE:?APP_IMAGE must be set in /opt/app/.env}
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://db:5432/doto
+      DB_USERNAME: doto
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+    expose:
+      - "8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8080/actuator/health | grep -q 'UP'"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
+    restart: unless-stopped
+
+  db:
+    image: postgis/postgis:17-3.5
+    environment:
+      POSTGRES_DB: doto
+      POSTGRES_USER: doto
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+    expose:
+      - "5432"
+    volumes:
+      - /data/db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U doto -d doto"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot:v2.11.0
+    profiles: ["certbot"]
+    volumes:
+      - /data/letsencrypt/conf:/etc/letsencrypt
+      - /data/letsencrypt/www:/var/www/certbot

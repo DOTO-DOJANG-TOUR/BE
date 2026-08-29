@@ -1,0 +1,2 @@
+key_name         = "doto-key" # .pem 파일명이 아닌 AWS Key Pair 이름
+ssh_allowed_cidr = "203.0.113.10/32"

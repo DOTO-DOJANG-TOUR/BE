@@ -57,6 +57,7 @@
 6. [테스트 전략](#-테스트-전략)
 7. [핵심 설계 원칙](#-핵심-설계-원칙)
 8. [GitHub 관리 규칙](#-github-관리-규칙)
+9. [인프라 배포 가이드](docs/terraform-deploy.md)
 
 ---
 
@@ -237,6 +238,12 @@ JaCoCo 리포트는 테스트 실행 후 아래 경로에 생성됩니다.
 | 기능 개발 | `feature/*` |
 | 버그 수정 | `fix/*` |
 | 초기 설정 | `init/*` |
+
+---
+
+## ☁️ 인프라 배포
+
+Terraform, EC2 초기 설정, GitHub Actions 배포, 도메인 및 HTTPS 설정은 [인프라 배포 가이드](docs/terraform-deploy.md)를 참고합니다.
 
 - `main`과 `develop`에는 직접 push하지 않습니다.
 - 작업 전 Issue를 만들고 Pull Request에서 관련 Issue를 연결합니다.
