@@ -22,6 +22,7 @@ services:
       DB_URL: jdbc:postgresql://db:5432/doto
       DB_USERNAME: doto
       DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
     expose:
       - "8080"
     depends_on:
