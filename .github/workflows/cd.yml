@@ -1,0 +1,84 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: [CI]
+    branches: [develop]
+    types: [completed]
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: doto-server
+
+jobs:
+  deploy:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout tested revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Configure AWS credentials with GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push application image
+        id: image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          image="$REGISTRY/$ECR_REPOSITORY:develop-${SHA::7}"
+          docker build --tag "$image" .
+          docker push "$image"
+          echo "value=$image" >> "$GITHUB_OUTPUT"
+
+      - name: Package deployment files
+        run: tar -czf release.tar.gz deploy scripts
+
+      - name: Upload deployment files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEV_HOST }}
+          username: ${{ secrets.DEV_USERNAME }}
+          key: ${{ secrets.DEV_PRIVATE_KEY }}
+          source: release.tar.gz
+          target: /tmp
+
+      - name: Deploy with Docker Compose
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          IMAGE: ${{ steps.image.outputs.value }}
+        with:
+          host: ${{ secrets.DEV_HOST }}
+          username: ${{ secrets.DEV_USERNAME }}
+          key: ${{ secrets.DEV_PRIVATE_KEY }}
+          envs: IMAGE
+          script: |
+            set -eu
+            rm -rf /tmp/doto-release
+            mkdir -p /tmp/doto-release
+            tar -xzf /tmp/release.tar.gz -C /tmp/doto-release
+            sudo mkdir -p /opt/app
+            sudo cp -R /tmp/doto-release/deploy/. /opt/app/
+            sudo cp -R /tmp/doto-release/scripts /opt/app/
+            printf 'APP_IMAGE=%s\n' "$IMAGE" | sudo tee /opt/app/release.env >/dev/null
+            sudo /opt/app/scripts/after-install.sh
+            sudo /opt/app/scripts/start.sh
+            sudo /opt/app/scripts/validate.sh
