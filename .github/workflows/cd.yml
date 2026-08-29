@@ -74,6 +74,6 @@ jobs:
             sudo cp -R /tmp/doto-release/deploy/. /opt/app/
             sudo cp -R /tmp/doto-release/scripts /opt/app/
             printf 'APP_IMAGE=%s\n' "$IMAGE" | sudo tee /opt/app/release.env >/dev/null
-            sudo /opt/app/scripts/after-install.sh
-            sudo /opt/app/scripts/start.sh
-            sudo /opt/app/scripts/validate.sh
+            sudo bash /opt/app/scripts/after-install.sh
+            sudo bash /opt/app/scripts/start.sh
+            sudo bash /opt/app/scripts/validate.sh
