@@ -55,6 +55,28 @@ public interface FestivalApi {
     );
 
     @Operation(
+            summary = "축제 검색",
+            description = """
+                    축제 제목을 검색합니다.
+                    query에 "진행" 또는 "오늘"이 포함되면 진행 중인 축제만, "예정" 또는 "내일"이 포함되면 개최 예정 축제만 필터링하고, 둘 다 없으면 진행중+개최예정 전체를 대상으로 합니다.
+                    남은 검색어와 제목의 유사도가 높은 순으로 보여줍니다."""
+    )
+    @ApiResponse(responseCode = "200", description = "축제 검색 성공")
+    @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
+    @GetMapping("/api/v1/festival")
+    ResponseEntity<CommonResponse<FestivalRegionPageResponseDTO>> searchFestivals(
+            @Parameter(description = "검색어. \"오늘\"/\"진행\", \"내일\"/\"예정\" 같은 상태 키워드와 제목 텍스트를 함께 넣을 수 있습니다.", example = "오늘 국가유산야행")
+            @RequestParam String query,
+            @Parameter(description = """
+                    첫 페이지 조회 시에는 생략합니다.
+                    이전 응답의 nextCursor 값을 다음 요청에 그대로 넣습니다.
+                    nextCursor가 null이면 마지막 페이지입니다.""")
+            @RequestParam(required = false) String cursor,
+            @Parameter(description = "한 페이지에 조회할 개수")
+            @RequestParam(defaultValue = "5") int size
+    );
+
+    @Operation(
             summary = "지역별 축제 조회",
             description = "선택한 지역 그룹의 개최중/개최전 축제 목록을 종료임박순/개최임박순 중 선택한 기준으로 커서 기반 조회합니다."
     )
