@@ -4,7 +4,7 @@ import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.festival.exception.FestivalErrorCode;
 import com.doto.domain.festival.exception.FestivalException;
 import com.doto.domain.festival.repository.FestivalRepository;
-import com.doto.domain.stamp.dto.TourSpotItemResponseDTO;
+import com.doto.domain.stamp.dto.TourSpotItemDetailResponseDTO;
 import com.doto.domain.tourspot.entity.FestivalTourSpot;
 import com.doto.domain.tourspot.entity.TourSpot;
 import com.doto.domain.tourspot.repository.FestivalTourSpotRepository;
@@ -35,7 +35,7 @@ public class TourSpotCommandService {
 
     // TourSpot을 contentId 기준으로 upsert
     @Transactional
-    public void saveTourSpots(Long festivalContentId, List<TourSpotItemResponseDTO> tourSpots) {
+    public void saveTourSpots(Long festivalContentId, List<TourSpotItemDetailResponseDTO> tourSpots) {
         Festival festival = festivalRepository.findByContentId(festivalContentId)
                 .orElseThrow(() -> new FestivalException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
         log.info("관광지 동기화 시작: festivalContentId={}, requestedCount={}", festivalContentId, tourSpots.size());
@@ -43,7 +43,7 @@ public class TourSpotCommandService {
         // TourSpot을 contentId 기준으로 upsert
         List<TourSpot> tourSpotsToSave = tourSpots.stream()
                 .collect(Collectors.toMap(
-                        TourSpotItemResponseDTO::contentId,
+                        TourSpotItemDetailResponseDTO::contentId,
                         Function.identity(),
                         (first, ignored) -> first,
                         LinkedHashMap::new
@@ -58,7 +58,7 @@ public class TourSpotCommandService {
                                     dto.tourSpotCategory().name(),
                                     dto.imageUrl(),
                                     dto.address(),
-                                    dto.legalDongRegionCode(),
+                                    null,
                                     dto.legalDongSigunguCode(),
                                     dto.phone(),
                                     dto.apiModifiedAt(),
@@ -75,7 +75,7 @@ public class TourSpotCommandService {
                                     dto.tourSpotCategory().name(),
                                     dto.imageUrl(),
                                     dto.address(),
-                                    dto.legalDongRegionCode(),
+                                    null,
                                     dto.legalDongSigunguCode(),
                                     dto.phone(),
                                     dto.apiModifiedAt(),
@@ -84,12 +84,16 @@ public class TourSpotCommandService {
                         }))
                 .toList();
 
-        List<TourSpot> savedTourSpots = tourSpotRepository.saveAll(tourSpotsToSave);
+        List<TourSpot> savedTourSpots = tourSpotRepository.saveAllAndFlush(tourSpotsToSave);
         // 축제와 관광지 관계 저장
         List<FestivalTourSpot> relationsToSave = savedTourSpots.stream()
                 .filter(tourSpot -> !festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(
                         festival.getId(), tourSpot.getId()))
-                .map(tourSpot -> FestivalTourSpot.create(festival, tourSpot))
+                .map(tourSpot -> FestivalTourSpot.create(
+                        festival,
+                        tourSpot,
+                        festivalTourSpotRepository.calculateDistanceMeters(festival.getId(), tourSpot.getId())
+                ))
                 .toList();
         if (!relationsToSave.isEmpty()) {
             festivalTourSpotRepository.saveAll(relationsToSave);

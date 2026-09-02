@@ -11,7 +11,7 @@ import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.festival.exception.FestivalErrorCode;
 import com.doto.domain.festival.exception.FestivalException;
 import com.doto.domain.festival.repository.FestivalRepository;
-import com.doto.domain.stamp.dto.TourSpotItemResponseDTO;
+import com.doto.domain.stamp.dto.TourSpotItemDetailResponseDTO;
 import com.doto.domain.tourspot.entity.FestivalTourSpot;
 import com.doto.domain.tourspot.entity.TourSpot;
 import com.doto.domain.tourspot.repository.FestivalTourSpotRepository;
@@ -61,7 +61,7 @@ class TourSpotCommandServiceTest {
                     .satisfies(exception -> assertThat(((FestivalException) exception).getErrorCode())
                             .isEqualTo(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
-            then(tourSpotRepository).should(never()).saveAll(anyList());
+            then(tourSpotRepository).should(never()).saveAllAndFlush(anyList());
             then(festivalTourSpotRepository).shouldHaveNoInteractions();
         }
 
@@ -69,14 +69,14 @@ class TourSpotCommandServiceTest {
         @DisplayName("새 관광지를 만들고 축제와의 관계를 저장한다")
         void createsTourSpotAndFestivalRelationWhenTourSpotDoesNotExist() {
             Festival festival = festivalWithId(1L);
-            TourSpotItemResponseDTO dto = TourSpotFixture.createResponseDTO(125405L);
+            TourSpotItemDetailResponseDTO dto = TourSpotFixture.createResponseDTO(125405L);
             given(festivalRepository.findByContentId(festival.getContentId())).willReturn(java.util.Optional.of(festival));
             given(tourSpotRepository.findByContentId(dto.contentId())).willReturn(java.util.Optional.empty());
             givenSaveAllReturnsInput();
 
             tourSpotCommandService.saveTourSpots(festival.getContentId(), List.of(dto));
 
-            then(tourSpotRepository).should().saveAll(org.mockito.ArgumentMatchers.argThat(tourSpots -> {
+            then(tourSpotRepository).should().saveAllAndFlush(org.mockito.ArgumentMatchers.argThat(tourSpots -> {
                 TourSpot createdTourSpot = tourSpots.iterator().next();
                 return createdTourSpot.getContentId().equals(dto.contentId())
                         && createdTourSpot.getTitle().equals(dto.title());
@@ -93,7 +93,7 @@ class TourSpotCommandServiceTest {
         void updatesTourSpotOnlyWhenRelationAlreadyExists() {
             Festival festival = festivalWithId(1L);
             TourSpot existingTourSpot = tourSpotWithId(2L, 125405L);
-            TourSpotItemResponseDTO dto = TourSpotFixture.createResponseDTO(125405L);
+            TourSpotItemDetailResponseDTO dto = TourSpotFixture.createResponseDTO(125405L);
             given(festivalRepository.findByContentId(festival.getContentId())).willReturn(java.util.Optional.of(festival));
             given(tourSpotRepository.findByContentId(dto.contentId())).willReturn(java.util.Optional.of(existingTourSpot));
             given(festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(1L, 2L)).willReturn(true);
@@ -104,7 +104,7 @@ class TourSpotCommandServiceTest {
             assertThat(existingTourSpot.getTitle()).isEqualTo(dto.title());
             assertThat(existingTourSpot.getAddress()).isEqualTo(dto.address());
             assertThat(existingTourSpot.getImageUrl()).isEqualTo(dto.imageUrl());
-            then(tourSpotRepository).should().saveAll(List.of(existingTourSpot));
+            then(tourSpotRepository).should().saveAllAndFlush(List.of(existingTourSpot));
             then(festivalTourSpotRepository).should(never()).saveAll(anyList());
         }
 
@@ -113,7 +113,7 @@ class TourSpotCommandServiceTest {
         void createsOnlyFestivalRelationWhenExistingTourSpotIsNotLinked() {
             Festival festival = festivalWithId(1L);
             TourSpot existingTourSpot = tourSpotWithId(2L, 125405L);
-            TourSpotItemResponseDTO dto = TourSpotFixture.createResponseDTO(125405L);
+            TourSpotItemDetailResponseDTO dto = TourSpotFixture.createResponseDTO(125405L);
             given(festivalRepository.findByContentId(festival.getContentId())).willReturn(java.util.Optional.of(festival));
             given(tourSpotRepository.findByContentId(dto.contentId())).willReturn(java.util.Optional.of(existingTourSpot));
             given(festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(1L, 2L)).willReturn(false);
@@ -131,7 +131,7 @@ class TourSpotCommandServiceTest {
         @DisplayName("동일한 contentId가 중복되면 관광지와 관계를 한 번만 저장한다")
         void savesDuplicateContentIdOnlyOnce() {
             Festival festival = festivalWithId(1L);
-            TourSpotItemResponseDTO dto = TourSpotFixture.createResponseDTO(125405L);
+            TourSpotItemDetailResponseDTO dto = TourSpotFixture.createResponseDTO(125405L);
             given(festivalRepository.findByContentId(festival.getContentId())).willReturn(java.util.Optional.of(festival));
             given(tourSpotRepository.findByContentId(dto.contentId())).willReturn(java.util.Optional.empty());
             givenSaveAllReturnsInput();
@@ -139,7 +139,7 @@ class TourSpotCommandServiceTest {
             tourSpotCommandService.saveTourSpots(festival.getContentId(), List.of(dto, dto));
 
             then(tourSpotRepository).should().findByContentId(dto.contentId());
-            then(tourSpotRepository).should().saveAll(org.mockito.ArgumentMatchers.argThat(tourSpots ->
+            then(tourSpotRepository).should().saveAllAndFlush(org.mockito.ArgumentMatchers.argThat(tourSpots ->
                     StreamSupport.stream(tourSpots.spliterator(), false).count() == 1));
             then(festivalTourSpotRepository).should().saveAll(org.mockito.ArgumentMatchers.argThat(relations ->
                     StreamSupport.stream(relations.spliterator(), false).count() == 1));
@@ -159,7 +159,7 @@ class TourSpotCommandServiceTest {
     }
 
     private void givenSaveAllReturnsInput() {
-        given(tourSpotRepository.saveAll(anyList()))
+        given(tourSpotRepository.saveAllAndFlush(anyList()))
                 .willAnswer(invocation -> invocation.getArgument(0));
     }
 }
