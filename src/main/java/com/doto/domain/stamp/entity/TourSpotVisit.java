@@ -1,6 +1,7 @@
 package com.doto.domain.stamp.entity;
 
 import com.doto.domain.member.entity.Member;
+import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.stamp.entity.enums.TourSpotVisitStatus;
 import com.doto.domain.tourspot.entity.TourSpot;
 import com.doto.global.common.BaseTimeEntity;
@@ -14,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -30,9 +32,17 @@ public class TourSpotVisit extends BaseTimeEntity {
     @Column(name = "tour_spot_visit_id")
     private Long id;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "festival_id", nullable = false)
+    private Festival festival;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "tour_spot_id", nullable = false)
@@ -48,19 +58,20 @@ public class TourSpotVisit extends BaseTimeEntity {
     @Column(name = "ended_at")
     private Instant endedAt;
 
-    private TourSpotVisit(Member member, TourSpot tourSpot, Instant expiresAt) {
+    private TourSpotVisit(Member member, Festival festival, TourSpot tourSpot, Instant expiresAt) {
         if (!expiresAt.isAfter(Instant.now())) {
             throw new IllegalArgumentException("Visit expiration time must be in the future.");
         }
 
         this.member = member;
+        this.festival = festival;
         this.tourSpot = tourSpot;
         this.status = TourSpotVisitStatus.VISITING;
         this.expiresAt = expiresAt;
     }
 
-    public static TourSpotVisit start(Member member, TourSpot tourSpot, Instant expiresAt) {
-        return new TourSpotVisit(member, tourSpot, expiresAt);
+    public static TourSpotVisit start(Member member, Festival festival, TourSpot tourSpot, Instant expiresAt) {
+        return new TourSpotVisit(member, festival, tourSpot, expiresAt);
     }
 
     public boolean isExpiredAt(Instant now) {

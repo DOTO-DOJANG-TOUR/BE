@@ -8,6 +8,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import com.doto.domain.tourex.exception.TourApiException;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -57,6 +58,39 @@ class TourApiClientTest {
 
         assertThatThrownBy(() -> tourApiClient.getContentDetail(126516L))
                 .isInstanceOf(TourApiException.class);
+    }
+
+    @Test
+    @DisplayName("주변 관광지가 없을 때 items 빈 문자열을 빈 목록으로 처리한다")
+    void returnsEmptyListWhenNearbyTourApiItemsIsBlankString() {
+        server.expect(request -> assertThat(request.getURI().getPath()).isEqualTo("/locationBasedList2"))
+                .andRespond(withSuccess("""
+                        {"response":{"header":{"resultCode":"0000","resultMsg":"OK"},"body":{"items":""}}}
+                        """, MediaType.APPLICATION_JSON));
+
+        assertThat(tourApiClient.getNearbyTourSpots(
+                new java.math.BigDecimal("126.97"), new java.math.BigDecimal("37.56"), 5_000)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("축제 범위 조회 결과가 100건을 넘으면 다음 페이지도 조회한다")
+    void retrievesAllFestivalPages() {
+        server.expect(once(), request -> assertThat(request.getURI().getRawQuery()).contains("pageNo=1"))
+                .andRespond(withSuccess(festivalResponse(101, 1L), MediaType.APPLICATION_JSON));
+        server.expect(once(), request -> assertThat(request.getURI().getRawQuery()).contains("pageNo=2"))
+                .andRespond(withSuccess(festivalResponse(101, 2L), MediaType.APPLICATION_JSON));
+
+        var response = tourApiClient.searchFestivals(LocalDate.of(2026, 9, 2), LocalDate.of(2026, 10, 2), null, null);
+
+        assertThat(response.itemsOrEmpty()).extracting(item -> item.contentId()).containsExactly(1L, 2L);
+        server.verify();
+    }
+
+    private String festivalResponse(int totalCount, long contentId) {
+        return """
+                {"response":{"header":{"resultCode":"0000","resultMsg":"OK"},"body":{
+                "items":{"item":[{"contentid":%d}]},"numOfRows":100,"pageNo":1,"totalCount":%d}}}
+                """.formatted(contentId, totalCount);
     }
 
     private String successResponse() {

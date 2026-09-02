@@ -20,6 +20,7 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +82,47 @@ public class SwaggerConfig {
     }
 
     private ApiErrorCodeExamples findDomainErrorCodes(HandlerMethod handlerMethod) {
-        Class<?> beanType = handlerMethod.getBeanType();
+        // 메서드 레벨 선언이 있으면 그 operation은 타입 레벨 선언보다 우선한다
+        ApiErrorCodeExamples methodLevel = findMethodErrorCodes(handlerMethod);
+        if (methodLevel != null) {
+            return methodLevel;
+        }
+        return findTypeErrorCodes(handlerMethod.getBeanType());
+    }
+
+    private ApiErrorCodeExamples findMethodErrorCodes(HandlerMethod handlerMethod) {
+        Method method = handlerMethod.getMethod();
+        ApiErrorCodeExamples annotation = AnnotatedElementUtils.findMergedAnnotation(
+                method,
+                ApiErrorCodeExamples.class
+        );
+        if (annotation != null) {
+            return annotation;
+        }
+
+        // Controller 구현체가 아니라 그게 구현하는 Api 인터페이스의 같은 메서드에 선언된 경우
+        for (Class<?> interfaceType : handlerMethod.getBeanType().getInterfaces()) {
+            Method interfaceMethod = findMatchingMethod(interfaceType, method);
+            if (interfaceMethod == null) {
+                continue;
+            }
+            annotation = AnnotatedElementUtils.findMergedAnnotation(interfaceMethod, ApiErrorCodeExamples.class);
+            if (annotation != null) {
+                return annotation;
+            }
+        }
+        return null;
+    }
+
+    private Method findMatchingMethod(Class<?> interfaceType, Method method) {
+        try {
+            return interfaceType.getMethod(method.getName(), method.getParameterTypes());
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+    }
+
+    private ApiErrorCodeExamples findTypeErrorCodes(Class<?> beanType) {
         ApiErrorCodeExamples annotation = AnnotatedElementUtils.findMergedAnnotation(
                 beanType,
                 ApiErrorCodeExamples.class

@@ -15,8 +15,11 @@ public class TourSyncAdminController implements TourSyncAdminApi {
     private final TourSyncAdminService tourSyncAdminService;
 
     @Override
-    public ResponseEntity<CommonResponse<TourSyncResultDTO>> synchronizeFestivals(LocalDate eventStartDate) {
-        TourSyncResultDTO result = tourSyncAdminService.synchronizeFestivals(eventStartDate);
+    public ResponseEntity<CommonResponse<TourSyncResultDTO>> synchronizeFestivals(
+            LocalDate eventStartDate,
+            LocalDate eventEndDate
+    ) {
+        TourSyncResultDTO result = tourSyncAdminService.synchronizeFestivals(eventStartDate, eventEndDate);
         return ResponseEntity.ok(CommonResponse.success(result));
     }
 }

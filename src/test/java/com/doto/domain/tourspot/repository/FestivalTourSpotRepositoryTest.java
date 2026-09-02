@@ -38,7 +38,7 @@ class FestivalTourSpotRepositoryTest {
     void savesAndFindsFestivalTourSpot() {
         Festival festival = festivalRepository.saveAndFlush(FestivalFixture.create());
         TourSpot tourSpot = tourSpotRepository.saveAndFlush(TourSpotFixture.create());
-        festivalTourSpotRepository.saveAndFlush(FestivalTourSpot.create(festival, tourSpot));
+        festivalTourSpotRepository.saveAndFlush(FestivalTourSpot.create(festival, tourSpot, null));
 
         assertThat(festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(festival.getId(), tourSpot.getId()))
                 .isTrue();
@@ -52,9 +52,9 @@ class FestivalTourSpotRepositoryTest {
     void preventsDuplicateFestivalTourSpot() {
         Festival festival = festivalRepository.saveAndFlush(FestivalFixture.create());
         TourSpot tourSpot = tourSpotRepository.saveAndFlush(TourSpotFixture.create());
-        festivalTourSpotRepository.saveAndFlush(FestivalTourSpot.create(festival, tourSpot));
+        festivalTourSpotRepository.saveAndFlush(FestivalTourSpot.create(festival, tourSpot, null));
 
-        assertThatThrownBy(() -> festivalTourSpotRepository.saveAndFlush(FestivalTourSpot.create(festival, tourSpot)))
+        assertThatThrownBy(() -> festivalTourSpotRepository.saveAndFlush(FestivalTourSpot.create(festival, tourSpot, null)))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 }

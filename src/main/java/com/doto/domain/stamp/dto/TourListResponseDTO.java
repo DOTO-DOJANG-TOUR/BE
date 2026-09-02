@@ -4,5 +4,5 @@ import java.util.List;
 
 public record TourListResponseDTO(
         Long stampCount,
-        List<TourSpotItemResponseDTO> items
+        List<TourSpotItemDetailResponseDTO> items
 ){}

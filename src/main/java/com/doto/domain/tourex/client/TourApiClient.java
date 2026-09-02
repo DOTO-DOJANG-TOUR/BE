@@ -70,17 +70,35 @@ public class TourApiClient {
         }
 
         StringBuilder uri = new StringBuilder(
-                "/searchFestival2?eventStartDate={eventStartDate}&numOfRows=100&pageNo=1"
+                "/searchFestival2?eventStartDate={eventStartDate}&numOfRows=100&pageNo={pageNo}"
                         + "&MobileOS=ETC&MobileApp=DOTO&_type=json&serviceKey={serviceKey}"
         );
         Map<String, Object> uriVariables = new HashMap<>();
         uriVariables.put("eventStartDate", eventStartDate.format(DateTimeFormatter.BASIC_ISO_DATE));
+        uriVariables.put("pageNo", 1);
 
         appendDateQueryParam(uri, uriVariables, "eventEndDate", eventEndDate);
         appendQueryParam(uri, uriVariables, "lDongRegnCd", legalDongRegionCode);
         appendQueryParam(uri, uriVariables, "lDongSignguCd", legalDongSigunguCode);
 
-        return get(uri.toString(), uriVariables, TourApiResponseDTO.class);
+        TourApiResponseDTO firstPage = get(uri.toString(), uriVariables, TourApiResponseDTO.class);
+        int totalCount = firstPage.response().body().totalCount() == null ? 0 : firstPage.response().body().totalCount();
+        if (totalCount <= 100) {
+            return firstPage;
+        }
+
+        List<TourApiResponseDTO.TourContentDTO> festivals = new java.util.ArrayList<>(firstPage.itemsOrEmpty());
+        int pageCount = (totalCount + 99) / 100;
+        for (int pageNo = 2; pageNo <= pageCount; pageNo++) {
+            uriVariables.put("pageNo", pageNo);
+            festivals.addAll(get(uri.toString(), uriVariables, TourApiResponseDTO.class).itemsOrEmpty());
+        }
+
+        return new TourApiResponseDTO(new TourApiResponseDTO.Response(
+                firstPage.response().header(),
+                new TourApiResponseDTO.Body(
+                        new TourApiResponseDTO.Items(festivals), 100, 1, totalCount)
+        ));
     }
 
     private void appendDateQueryParam(

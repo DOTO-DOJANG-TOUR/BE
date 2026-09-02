@@ -1,7 +1,7 @@
 package com.doto.domain.tourex.scheduler;
 
 import com.doto.domain.festival.service.FestivalCommandService;
-import com.doto.domain.stamp.dto.TourSpotItemResponseDTO;
+import com.doto.domain.stamp.dto.TourSpotItemDetailResponseDTO;
 import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
 import com.doto.domain.tourex.dto.TourApiResponseDTO;
 import com.doto.domain.tourex.service.TourApiService;
@@ -40,7 +40,7 @@ public class TourApiSyncScheduler {
                         festival.contentId(), festival.festivalType());
                 festivalCommandService.saveFestival(festivalDetail);
 
-                List<TourSpotItemResponseDTO> tourSpots = tourApiService.getNearbyTourSpots(
+                List<TourSpotItemDetailResponseDTO> tourSpots = tourApiService.getNearbyTourSpots(
                         festivalDetail.mapX(), festivalDetail.mapY());
                 tourSpotCommandService.saveTourSpots(festival.contentId(), tourSpots);
 

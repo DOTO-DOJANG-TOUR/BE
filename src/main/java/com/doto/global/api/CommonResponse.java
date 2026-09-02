@@ -10,6 +10,7 @@ public record CommonResponse<T>(
         @JsonProperty("isSuccess") boolean success,
         String code,
         String message,
+        @JsonInclude(JsonInclude.Include.ALWAYS)
         T result
 ) {
 

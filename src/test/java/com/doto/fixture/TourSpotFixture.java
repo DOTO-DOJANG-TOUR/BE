@@ -1,7 +1,7 @@
 package com.doto.fixture;
 
-import com.doto.domain.stamp.dto.TourSpotItemResponseDTO;
-import com.doto.domain.tourex.enums.TourApiCategory;
+import com.doto.domain.stamp.dto.TourSpotItemDetailResponseDTO;
+import com.doto.domain.tourspot.entity.enums.TourSpotCategory;
 import com.doto.domain.tourspot.entity.TourSpot;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -22,7 +22,7 @@ public final class TourSpotFixture {
         return TourSpot.create(
                 contentId,
                 "도토 광장",
-                TourApiCategory.문화관광.name(),
+                TourSpotCategory.문화.name(),
                 "https://doto.example.com/tour-spots.jpg",
                 "서울특별시 강남구 도토길 1",
                 "11",
@@ -33,12 +33,12 @@ public final class TourSpotFixture {
         );
     }
 
-    public static TourSpotItemResponseDTO createResponseDTO() {
+    public static TourSpotItemDetailResponseDTO createResponseDTO() {
         return createResponseDTO(125405L);
     }
 
-    public static TourSpotItemResponseDTO createResponseDTO(Long contentId) {
-        return new TourSpotItemResponseDTO(
+    public static TourSpotItemDetailResponseDTO createResponseDTO(Long contentId) {
+        return new TourSpotItemDetailResponseDTO(
                 null,
                 contentId,
                 "도토 광장",
@@ -46,8 +46,7 @@ public final class TourSpotFixture {
                 "https://doto.example.com/tour-spots.jpg",
                 "127.0280",
                 "37.4980",
-                TourApiCategory.문화관광,
-                "11",
+                TourSpotCategory.문화,
                 "11000",
                 "02-9876-5432",
                 "20260819090000"

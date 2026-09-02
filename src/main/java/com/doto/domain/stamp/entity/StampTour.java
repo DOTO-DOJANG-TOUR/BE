@@ -25,6 +25,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StampTour extends BaseTimeEntity {
 
+    private static final int REQUIRED_STAMP_COUNT = 3;
+
     @Id
     @Tsid
     @Column(name = "stamp_tour_id")
@@ -44,6 +46,9 @@ public class StampTour extends BaseTimeEntity {
     @Column(name = "completed_at")
     private Instant completedAt;
 
+    @Column(name = "completed_stamp_count", nullable = false)
+    private int completedStampCount;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 10)
     private StampTourStatus status;
@@ -62,6 +67,17 @@ public class StampTour extends BaseTimeEntity {
     public void complete() {
         this.status = StampTourStatus.COMPLETED;
         this.completedAt = Instant.now();
+    }
+
+    public void completeStamp() {
+        if (status != StampTourStatus.PROGRESS || completedStampCount >= REQUIRED_STAMP_COUNT) {
+            throw new IllegalStateException("Stamp tour cannot accept another completed stamp.");
+        }
+
+        completedStampCount++;
+        if (completedStampCount == REQUIRED_STAMP_COUNT) {
+            complete();
+        }
     }
 
     public void reward() {

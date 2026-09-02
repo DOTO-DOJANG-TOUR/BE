@@ -3,6 +3,8 @@ package com.doto.global.api;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.doto.global.error.CommonErrorCode;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -38,6 +40,15 @@ class CommonResponseTest {
             assertThat(response.success()).isFalse();
             assertThat(response.code()).isEqualTo("COMMON-400-001");
             assertThat(response.result()).isNull();
+        }
+
+        @Test
+        void result가_null이어도_JSON_응답에_포함된다() throws JsonProcessingException {
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            String json = objectMapper.writeValueAsString(CommonResponse.success(null));
+
+            assertThat(json).contains("\"result\":null");
         }
     }
 }
