@@ -17,7 +17,6 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     Optional<Festival> findByContentId(Long contentId);
 
     // 오늘의 축제: eventEndDate-오늘 크기순 = eventEndDate 오름차순과 동일해서 eventEndDate 그대로 정렬/커서에 사용
-    // 첫 페이지는 service에서 EPOCH/0 sentinel 전달
     @Query("SELECT f FROM Festival f "
             + "WHERE f.eventStartDate <= :now "
             + "AND f.eventEndDate >= :now "
@@ -35,7 +34,6 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     );
 
     // 앞으로의 축제: eventStartDate-오늘 크기순 = eventStartDate 오름차순과 동일해서 eventStartDate 그대로 사용
-    // 첫 페이지는 service에서 EPOCH/-1초/0 sentinel 전달, 시작 전 축제만 대상
     @Query("SELECT f FROM Festival f "
             + "WHERE f.eventStartDate > :now "
             + "AND f.imageUrl IS NOT NULL "
@@ -54,7 +52,6 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     );
 
     // 지역별 축제(종료임박순): event_start_date<=오늘<=event_end_date인 진행중 축제만 대상(오늘의 축제와 필터 동일 + 지역 조건)
-    // eventEndDate-오늘 크기순 = eventEndDate 오름차순과 동일해서 eventEndDate 그대로 정렬/커서에 사용
     @Query("SELECT f FROM Festival f "
             + "WHERE f.legalRegion IN :regions "
             + "AND f.eventStartDate <= :now "
@@ -74,7 +71,6 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     );
 
     // 지역별 축제(개최임박순): event_start_date>오늘인 개최 전 축제만 대상(앞으로의 축제와 필터 동일 + 지역 조건)
-    // eventStartDate-오늘 크기순 = eventStartDate 오름차순과 동일해서 eventStartDate 그대로 사용
     @Query("SELECT f FROM Festival f "
             + "WHERE f.legalRegion IN :regions "
             + "AND f.eventStartDate > :now "

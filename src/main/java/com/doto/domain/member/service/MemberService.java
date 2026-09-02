@@ -59,6 +59,14 @@ public class MemberService {
         return UserUpdateResponseDTO.from(member);
     }
 
+    @Transactional
+    public void withdraw(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        member.deactivate();
+    }
+
     private void validateNicknameLength(String nickname) {
         if (nickname.length() < NICKNAME_MIN_LENGTH || nickname.length() > NICKNAME_MAX_LENGTH) {
             throw new MemberException(MemberErrorCode.INVALID_NICKNAME_LENGTH);

@@ -9,6 +9,7 @@ import com.doto.domain.member.dto.UserUpdateRequestDTO;
 import com.doto.domain.member.dto.UserUpdateResponseDTO;
 import com.doto.domain.member.entity.GeneralAuthAccount;
 import com.doto.domain.member.entity.Member;
+import com.doto.domain.member.entity.MemberStatus;
 import com.doto.domain.member.entity.SocialAuthAccount;
 import com.doto.domain.member.entity.SocialProvider;
 import com.doto.domain.member.exception.MemberErrorCode;
@@ -164,6 +165,30 @@ class MemberServiceTest {
             assertThatThrownBy(() ->
                     memberService.updateMyInfo(1L, new UserUpdateRequestDTO("김철수"))
             )
+                    .isInstanceOf(MemberException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND);
+        }
+    }
+
+    @Nested
+    class 회원_탈퇴 {
+
+        @Test
+        void 탈퇴하면_상태가_INACTIVE로_바뀐다() {
+            Member member = memberWithId(1L);
+            when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
+
+            memberService.withdraw(1L);
+
+            assertThat(member.getStatus()).isEqualTo(MemberStatus.INACTIVE);
+        }
+
+        @Test
+        void 존재하지_않는_사용자면_예외를_던진다() {
+            when(memberRepository.findById(1L)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> memberService.withdraw(1L))
                     .isInstanceOf(MemberException.class)
                     .extracting("errorCode")
                     .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND);

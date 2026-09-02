@@ -39,7 +39,7 @@ jobs:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
           SHA: ${{ github.sha }}
         run: |
-          image="$REGISTRY/$ECR_REPOSITORY:main-${SHA::7}"
+          image="$REGISTRY/$ECR_REPOSITORY:main-${SHA::7}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           docker build --tag "$image" .
           docker push "$image"
           echo "value=$image" >> "$GITHUB_OUTPUT"
@@ -74,6 +74,6 @@ jobs:
             sudo cp -R /tmp/doto-release/deploy/. /opt/app/
             sudo cp -R /tmp/doto-release/scripts /opt/app/
             printf 'APP_IMAGE=%s\n' "$IMAGE" | sudo tee /opt/app/release.env >/dev/null
-            sudo /opt/app/scripts/after-install.sh
-            sudo /opt/app/scripts/start.sh
-            sudo /opt/app/scripts/validate.sh
+            sudo bash /opt/app/scripts/after-install.sh
+            sudo bash /opt/app/scripts/start.sh
+            sudo bash /opt/app/scripts/validate.sh
