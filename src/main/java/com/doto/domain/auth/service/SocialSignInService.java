@@ -56,7 +56,7 @@ public class SocialSignInService {
         String accessToken = jwtTokenProvider.createAccessToken(member.getId());
         String refreshToken = refreshTokenService.issue(member);
 
-        return AuthResponseDTO.of(member, accessToken, refreshToken, reactivated);
+        return AuthResponseDTO.of(member, account.getProfileImg(), accessToken, refreshToken, reactivated);
     }
 
     // OidcTokenverifier(ID 토큰을 검증하는 컴포넌트)반환

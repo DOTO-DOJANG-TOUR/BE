@@ -177,7 +177,7 @@ class AuthFlowIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(signInBody))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result.reactivated").value(true));
+                .andExpect(jsonPath("$.result.isActivated").value(true));
     }
 
     private String readResultField(MvcResult result, String field) throws Exception {

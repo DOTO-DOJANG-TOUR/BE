@@ -48,7 +48,7 @@ class AuthControllerTest {
 
         @Test
         void 성공하면_201과_토큰을_반환한다() throws Exception {
-            AuthResponseDTO response = new AuthResponseDTO("1", "홍길동", "access-token", "refresh-token", false);
+            AuthResponseDTO response = new AuthResponseDTO("1", "홍길동", null, "access-token", "refresh-token", false);
             when(authUseCase.signUp(any())).thenReturn(response);
 
             mockMvc.perform(post("/api/v1/auth/sign-up")
@@ -93,7 +93,7 @@ class AuthControllerTest {
 
         @Test
         void 성공하면_200과_토큰을_반환한다() throws Exception {
-            AuthResponseDTO response = new AuthResponseDTO("1", "홍길동", "access-token", "refresh-token", false);
+            AuthResponseDTO response = new AuthResponseDTO("1", "홍길동", null, "access-token", "refresh-token", false);
             when(authUseCase.signIn(any())).thenReturn(response);
 
             mockMvc.perform(post("/api/v1/auth/sign-in")
@@ -128,7 +128,9 @@ class AuthControllerTest {
 
         @Test
         void 카카오_로그인이_성공하면_200과_토큰을_반환한다() throws Exception {
-            AuthResponseDTO response = new AuthResponseDTO("1", "홍길동", "access-token", "refresh-token", false);
+            AuthResponseDTO response = new AuthResponseDTO(
+                    "1", "홍길동", "https://kakao-img.com/1.png", "access-token", "refresh-token", false
+            );
             when(authUseCase.socialSignIn(any(), any())).thenReturn(response);
 
             mockMvc.perform(post("/api/v1/auth/social/{provider}", "KAKAO")
@@ -144,7 +146,9 @@ class AuthControllerTest {
 
         @Test
         void 구글_로그인이_성공하면_200과_토큰을_반환한다() throws Exception {
-            AuthResponseDTO response = new AuthResponseDTO("1", "Jane", "access-token", "refresh-token", false);
+            AuthResponseDTO response = new AuthResponseDTO(
+                    "1", "Jane", "https://google-img.com/1.png", "access-token", "refresh-token", false
+            );
             when(authUseCase.socialSignIn(any(), any())).thenReturn(response);
 
             mockMvc.perform(post("/api/v1/auth/social/{provider}", "GOOGLE")
@@ -202,7 +206,7 @@ class AuthControllerTest {
 
         @Test
         void 성공하면_200과_새_토큰을_반환한다() throws Exception {
-            AuthResponseDTO response = new AuthResponseDTO("1", "홍길동", "new-access", "new-refresh", false);
+            AuthResponseDTO response = new AuthResponseDTO("1", "홍길동", null, "new-access", "new-refresh", false);
             when(authUseCase.refresh(any())).thenReturn(response);
 
             mockMvc.perform(post("/api/v1/auth/refresh")

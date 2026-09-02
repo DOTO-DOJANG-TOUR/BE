@@ -87,7 +87,7 @@ class SignInServiceTest {
             AuthResponseDTO response = signInService.signIn(request);
 
             assertThat(member.getStatus()).isEqualTo(MemberStatus.ACTIVE);
-            assertThat(response.reactivated()).isTrue();
+            assertThat(response.isActivated()).isTrue();
         }
     }
 

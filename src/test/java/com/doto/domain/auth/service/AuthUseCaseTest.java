@@ -41,7 +41,7 @@ class AuthUseCaseTest {
     @Test
     void 회원가입은_SignUpService에_위임한다() {
         SignUpRequestDTO request = new SignUpRequestDTO("member@example.com", "password1", "홍길동");
-        AuthResponseDTO expected = new AuthResponseDTO("1", "홍길동", "access", "refresh", false);
+        AuthResponseDTO expected = new AuthResponseDTO("1", "홍길동", null, "access", "refresh", false);
         when(signUpService.signUp(request)).thenReturn(expected);
 
         AuthResponseDTO result = authUseCase.signUp(request);
@@ -52,7 +52,7 @@ class AuthUseCaseTest {
     @Test
     void 로그인은_SignInService에_위임한다() {
         SignInRequestDTO request = new SignInRequestDTO("member@example.com", "password1");
-        AuthResponseDTO expected = new AuthResponseDTO("1", "홍길동", "access", "refresh", false);
+        AuthResponseDTO expected = new AuthResponseDTO("1", "홍길동", null, "access", "refresh", false);
         when(signInService.signIn(request)).thenReturn(expected);
 
         AuthResponseDTO result = authUseCase.signIn(request);
@@ -63,7 +63,7 @@ class AuthUseCaseTest {
     @Test
     void 소셜_로그인은_SocialSignInService에_위임한다() {
         SocialSignInRequestDTO request = new SocialSignInRequestDTO("kakao-id-token");
-        AuthResponseDTO expected = new AuthResponseDTO("1", "홍길동", "access", "refresh", false);
+        AuthResponseDTO expected = new AuthResponseDTO("1", "홍길동", null, "access", "refresh", false);
         when(socialSignInService.signIn(SocialProvider.KAKAO, request)).thenReturn(expected);
 
         AuthResponseDTO result = authUseCase.socialSignIn(SocialProvider.KAKAO, request);
@@ -74,7 +74,7 @@ class AuthUseCaseTest {
     @Test
     void 재발급은_RefreshService에_위임한다() {
         RefreshRequestDTO request = new RefreshRequestDTO("raw-token");
-        AuthResponseDTO expected = new AuthResponseDTO("1", "홍길동", "access", "refresh", false);
+        AuthResponseDTO expected = new AuthResponseDTO("1", "홍길동", null, "access", "refresh", false);
         when(refreshService.refresh(request)).thenReturn(expected);
 
         AuthResponseDTO result = authUseCase.refresh(request);
