@@ -1,6 +1,7 @@
 package com.doto.domain.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -145,6 +146,38 @@ class AuthFlowIntegrationTest {
                         .content(signInBody))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("AUTH-401-001"));
+    }
+
+    @Test
+    void 탈퇴한_계정으로_다시_로그인하면_재활성화된다() throws Exception {
+        String email = "withdraw-member@example.com";
+        String password = "stringst";
+        String signUpBody = objectMapper.writeValueAsString(new SignUpRequest(email, password, "탈퇴테스트"));
+
+        MvcResult signUpResult = mockMvc.perform(post("/api/v1/auth/sign-up")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(signUpBody))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String accessToken = readResultField(signUpResult, "accessToken");
+
+        mockMvc.perform(delete("/api/v1/members/me")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNoContent());
+
+        // 탈퇴로 비활성화된 계정은 기존 access token으로도 더 이상 접근할 수 없다
+        mockMvc.perform(get("/api/v1/members/me")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isUnauthorized());
+
+        String signInBody = objectMapper.writeValueAsString(new SignInRequest(email, password));
+
+        mockMvc.perform(post("/api/v1/auth/sign-in")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(signInBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.isActivated").value(true));
     }
 
     private String readResultField(MvcResult result, String field) throws Exception {

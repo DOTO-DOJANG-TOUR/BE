@@ -98,8 +98,10 @@ class SocialSignInServiceTest {
             AuthResponseDTO response = socialSignInService.signIn(SocialProvider.KAKAO, new SocialSignInRequestDTO("id-token"));
 
             assertThat(response.userId()).isEqualTo("1");
+            assertThat(response.profileImg()).isEqualTo("https://kakao-img.com/1.png");
             assertThat(response.accessToken()).isEqualTo("access-token");
             assertThat(response.refreshToken()).isEqualTo("refresh-token");
+            assertThat(response.isActivated()).isFalse();
             verify(memberRepository, never()).save(any());
         }
 
@@ -168,8 +170,10 @@ class SocialSignInServiceTest {
             AuthResponseDTO response = socialSignInService.signIn(SocialProvider.KAKAO, new SocialSignInRequestDTO("id-token"));
 
             assertThat(member.getStatus()).isEqualTo(MemberStatus.ACTIVE);
+            assertThat(response.profileImg()).isEqualTo("https://kakao-img.com/1.png");
             assertThat(response.accessToken()).isEqualTo("access-token");
             assertThat(response.refreshToken()).isEqualTo("refresh-token");
+            assertThat(response.isActivated()).isTrue();
         }
 
     }

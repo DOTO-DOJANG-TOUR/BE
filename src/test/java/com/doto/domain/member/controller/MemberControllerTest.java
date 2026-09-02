@@ -2,7 +2,9 @@ package com.doto.domain.member.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -127,6 +129,26 @@ class MemberControllerTest {
                             .content("""
                                     {"nickname":"홍길동"}
                                     """))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    class 회원_탈퇴 {
+
+        @Test
+        void 인증된_사용자면_204를_반환한다() throws Exception {
+            authenticateAs(1L);
+
+            mockMvc.perform(delete("/api/v1/members/me"))
+                    .andExpect(status().isNoContent());
+
+            verify(memberService).withdraw(1L);
+        }
+
+        @Test
+        void 인증되지_않으면_401을_반환한다() throws Exception {
+            mockMvc.perform(delete("/api/v1/members/me"))
                     .andExpect(status().isUnauthorized());
         }
     }
