@@ -10,6 +10,6 @@ sed -i '/^APP_IMAGE=/d' /opt/app/.env
 printf 'APP_IMAGE=%s\n' "$app_image" >> /opt/app/.env
 
 docker compose --env-file /opt/app/.env -f /opt/app/docker-compose.yml pull
-systemctl start doto-compose.service
+systemctl restart doto-compose.service
 script_dir="$(cd "$(dirname "$0")" && pwd)"
 bash "$script_dir/issue-certificate.sh"
