@@ -90,7 +90,7 @@ class TourApiServiceTest {
         @DisplayName("TourAPI 콘텐츠와 소개 정보를 축제 응답으로 변환한다")
         void mapsFestivalInfo() {
             given(tourApiClient.getContentDetail(126516L))
-                    .willReturn(response(festivalContent("041-730-2971,3", "https://example.com")));
+                    .willReturn(response(festivalContent("041-730-2971,3", "https://example.com", "EV010100")));
             given(tourApiClient.getFestivalIntro(126516L)).willReturn(festivalIntro(
                     "18:00~22:00", "없음", "무료", null
             ));
@@ -104,13 +104,14 @@ class TourApiServiceTest {
             assertThat(result.holiday()).isEqualTo("없음");
             assertThat(result.fee()).isEqualTo("무료");
             assertThat(result.festivalType()).isEqualTo("문화관광축제");
+            assertThat(result.category()).isEqualTo("문화관광");
         }
 
         @Test
         @DisplayName("TourAPI가 빈 문자열이나 공백만 내려준 필드는 null로 저장된다")
         void blankFieldsAreNormalizedToNull() {
             given(tourApiClient.getContentDetail(126516L))
-                    .willReturn(response(festivalContent("  ", "")));
+                    .willReturn(response(festivalContent("  ", "", "  ")));
             given(tourApiClient.getFestivalIntro(126516L)).willReturn(festivalIntro(
                     " ", "", "   ", "  "
             ));
@@ -123,15 +124,17 @@ class TourApiServiceTest {
             assertThat(result.holiday()).isNull();
             assertThat(result.fee()).isNull();
             assertThat(result.festivalType()).isNull();
+            // category는 다른 필드와 달리 blank/미매핑 코드여도 null이 아니라 "기타"로 저장된다
+            assertThat(result.category()).isEqualTo("기타");
         }
     }
 
-    // tel, homepage 외 나머지 필드는 이 테스트들에서 의미가 없어 고정값을 사용한다
-    private TourApiResponseDTO.TourContentDTO festivalContent(String tel, String homepage) {
+    // tel, homepage, lclsSystem3 외 나머지 필드는 이 테스트들에서 의미가 없어 고정값을 사용한다
+    private TourApiResponseDTO.TourContentDTO festivalContent(String tel, String homepage, String lclsSystem3) {
         return new TourApiResponseDTO.TourContentDTO(
                 126516L, 15, "강경 국가유산야행", homepage, "충청남도 논산시 강경읍 중앙리", null, tel,
                 "https://tong.visitkorea.or.kr/cms/resource/94/3519794_image2_1.jpg", null,
-                "127.02", "36.16", null, null, "44", "44230", "AA002-001", null, null,
+                "127.02", "36.16", null, null, "44", "44230", "EV", "EV01", lclsSystem3,
                 "강경 국가유산 야행은 보존에 치중하던 기존 틀에서 벗어난다", null, null, null, null, null, null
         );
     }

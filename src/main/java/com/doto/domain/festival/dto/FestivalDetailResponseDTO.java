@@ -12,7 +12,7 @@ public record FestivalDetailResponseDTO(
         @Schema(description = "개최 상태")
         FestivalStatus status,
 
-        @Schema(description = "축제 카테고리", example = "축제공연행사")
+        @Schema(description = "축제 카테고리(lclsSystm3 소분류 라벨)", example = "문화관광")
         String category,
 
         @Schema(description = "주소", example = "전남광주통합특별시 여수시 삼산면 삼호교길 50")

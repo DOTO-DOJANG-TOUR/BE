@@ -1,5 +1,6 @@
 package com.doto.domain.tourex.service;
 
+import com.doto.domain.festival.entity.enums.FestivalCategory;
 import com.doto.domain.stamp.dto.TourSpotDetailResponseDTO;
 import com.doto.domain.stamp.dto.TourSpotItemResponseDTO;
 import com.doto.domain.tourex.client.TourApiClient;
@@ -55,7 +56,7 @@ public class TourApiService {
                 .mapX(festival.mapx())
                 .mapY(festival.mapy())
                 .overview(festival.overview())
-                .category(festival.lclsSystem1())
+                .category(toCategoryLabel(festival.lclsSystem3()))
                 .festivalType(festivalType)
                 .legalDongRegionCode(festival.legalDongRegionCode())
                 .legalDongSigunguCode(festival.legalDongSigunguCode())
@@ -169,6 +170,12 @@ public class TourApiService {
         } catch (NumberFormatException exception) {
             throw new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR);
         }
+    }
+
+    // 축제 소분류(lclsSystm3) 코드를 저장용 카테고리 라벨로 변환, 매핑되지 않는 코드는 기타로 저장
+    private String toCategoryLabel(String lclsSystem3) {
+        FestivalCategory category = FestivalCategory.fromLclsSystem3Code(lclsSystem3);
+        return category != null ? category.name() : FestivalCategory.기타.name();
     }
 
     // 특정 contentId 단건 조회용, 알려지지 않은 대분류면 데이터 오류로 보고 예외 발생

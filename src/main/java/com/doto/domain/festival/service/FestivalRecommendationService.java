@@ -15,7 +15,6 @@ import com.doto.domain.festival.entity.enums.RegionGroup;
 import com.doto.domain.festival.exception.FestivalErrorCode;
 import com.doto.domain.festival.exception.FestivalException;
 import com.doto.domain.festival.repository.FestivalRepository;
-import com.doto.domain.tourex.enums.TourApiCategory;
 import com.doto.global.util.DateTimeUtils;
 import java.time.Clock;
 import java.time.Duration;
@@ -123,7 +122,7 @@ public class FestivalRecommendationService {
                 festival.getImageUrl(),
                 festival.getTitle(),
                 toDetailStatus(festival, now),
-                toCategoryLabel(festival.getCategory()),
+                festival.getCategory(),
                 festival.getAddress(),
                 festival.getPhone(),
                 festival.getHomepageUrl(),
@@ -169,7 +168,7 @@ public class FestivalRecommendationService {
                 GunguCodes.findName(festival.getLegalRegion(), festival.getLegalGungu()),
                 DateTimeUtils.toDateString(festival.getEventStartDate(), zone),
                 DateTimeUtils.toDateString(festival.getEventEndDate(), zone),
-                toCategoryLabel(festival.getCategory())
+                festival.getCategory()
         );
     }
 
@@ -188,11 +187,6 @@ public class FestivalRecommendationService {
             return PARKING_UNAVAILABLE_KEYWORD;
         }
         return festival.getParkingFee();
-    }
-
-    private String toCategoryLabel(String lclsSystem1) {
-        TourApiCategory category = TourApiCategory.fromLclsSystem1Code(lclsSystem1);
-        return category != null ? category.name() : null;
     }
 
 }
