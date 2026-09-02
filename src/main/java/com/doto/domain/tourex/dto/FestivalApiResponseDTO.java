@@ -4,7 +4,7 @@ import lombok.Builder;
 
 /**
  * TourAPI에서 조회한 축제 콘텐츠 응답
- * category는 lclsSystm1(분류체계 대분류) 원본 코드, festivalType은 searchFestival2에만 있는 축제유형명(비어있을 수 있음)
+ * category는 lclsSystm3(축제 소분류)를 FestivalCategory 라벨로 변환한 값(예: "문화관광", 매핑되지 않으면 "기타"), festivalType은 searchFestival2에만 있는 축제유형명(비어있을 수 있음)
  */
 @Builder
 public record FestivalApiResponseDTO(

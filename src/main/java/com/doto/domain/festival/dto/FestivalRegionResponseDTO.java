@@ -24,7 +24,7 @@ public record FestivalRegionResponseDTO(
         @Schema(description = "행사 종료일", example = "2026.08.24")
         String eventEndDate,
 
-        @Schema(description = "축제 카테고리(lclsSystm1 원본 코드)", example = "EV")
+        @Schema(description = "축제 카테고리(lclsSystm3 소분류 라벨)", example = "문화관광")
         String category
 ) {
 }
