@@ -26,9 +26,6 @@ public record TourSpotDetailResponseDTO(
         @Schema(description = "관광지 카테고리", example = "문화")
         TourSpotCategory category,
 
-        @Schema(description = "법정동 시도 코드", example = "44")
-        String legalDongRegionCode,
-
         @Schema(description = "법정동 시군구 코드", example = "451")
         String legalDongSigunguCode,
 

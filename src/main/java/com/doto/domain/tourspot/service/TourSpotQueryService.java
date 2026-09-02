@@ -45,7 +45,6 @@ public class TourSpotQueryService {
                 String.valueOf(tourSpot.getLocation().getX()),
                 String.valueOf(tourSpot.getLocation().getY()),
                 TourSpotCategory.valueOf(tourSpot.getCategory()),
-                tourSpot.getLegalDongRegionCode(),
                 tourSpot.getLegalDongSigunguCode(),
                 tourSpot.getPhone(),
                 tourSpot.getApiModifiedAt()
