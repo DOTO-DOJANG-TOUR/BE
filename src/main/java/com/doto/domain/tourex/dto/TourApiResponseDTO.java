@@ -3,7 +3,12 @@ package com.doto.domain.tourex.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
 /**
  * 한국관광공사 TourAPI 응답을 위한 외부 API 전용 DTO
@@ -37,6 +42,7 @@ public record TourApiResponseDTO(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Body(
+            @JsonDeserialize(using = ItemsDeserializer.class)
             Items items,
             Integer numOfRows,
             Integer pageNo,
@@ -48,6 +54,33 @@ public record TourApiResponseDTO(
     public record Items(
             List<TourContentDTO> item
     ) {
+    }
+
+    // TourAPI가 조회 결과가 없을 때 items를 빈 문자열 또는 배열로 내려주는 경우를 빈 목록으로 처리
+    public static class ItemsDeserializer extends StdDeserializer<Items> {
+
+        public ItemsDeserializer() {
+            super(Items.class);
+        }
+
+        @Override
+        public Items deserialize(JsonParser parser, tools.jackson.databind.DeserializationContext context)
+                throws tools.jackson.core.JacksonException {
+            JsonNode itemsNode = context.readTree(parser);
+            if (itemsNode == null || itemsNode.isNull() || itemsNode.isArray()
+                    || (itemsNode.isTextual() && itemsNode.asText().isBlank())) {
+                return new Items(List.of());
+            }
+
+            JsonNode itemNode = itemsNode.get("item");
+            if (itemNode == null || itemNode.isNull()) {
+                return new Items(List.of());
+            }
+            if (itemNode.isArray()) {
+                return new Items(Arrays.asList(context.readTreeAsValue(itemNode, TourContentDTO[].class)));
+            }
+            return new Items(List.of(context.readTreeAsValue(itemNode, TourContentDTO.class)));
+        }
     }
 
     //관광지와 축제 목록·상세 조회에서 공통으로 사용하는 콘텐츠 정보

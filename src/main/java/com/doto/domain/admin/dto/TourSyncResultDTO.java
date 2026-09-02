@@ -7,8 +7,11 @@ import java.util.List;
 // 관리자 수동 동기화 결과, TourSyncAdminService 참고
 @Schema(description = "관리자 축제·관광지 동기화 결과")
 public record TourSyncResultDTO(
-        @Schema(description = "동기화 기준일(eventStartDate)", example = "2026-08-19")
+        @Schema(description = "동기화 대상 축제 시작일", example = "2026-08-19")
         LocalDate eventStartDate,
+
+        @Schema(description = "동기화 대상 축제 종료일", example = "2026-09-18")
+        LocalDate eventEndDate,
 
         @Schema(description = "동기화 대상 축제 수", example = "23")
         int requestedCount,

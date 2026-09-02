@@ -1,7 +1,8 @@
 package com.doto.domain.tourex.service;
 
 import com.doto.domain.stamp.dto.TourSpotDetailResponseDTO;
-import com.doto.domain.stamp.dto.TourSpotItemResponseDTO;
+import com.doto.domain.stamp.dto.TourSpotItemDetailResponseDTO;
+import com.doto.domain.tourspot.entity.enums.TourSpotCategory;
 import com.doto.domain.tourex.client.TourApiClient;
 import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
 import com.doto.domain.tourex.dto.FestivalIntroApiResponseDTO;
@@ -84,12 +85,12 @@ public class TourApiService {
     }
 
     // 축제 좌표를 기준으로 주변 관광지만 조회
-    public List<TourSpotItemResponseDTO> getNearbyTourSpots(Long festivalContentId) {
+    public List<TourSpotItemDetailResponseDTO> getNearbyTourSpots(Long festivalContentId) {
         TourApiResponseDTO.TourContentDTO festival = getContent(festivalContentId);
         return getNearbyTourSpots(festival.mapx(), festival.mapy());
     }
 
-    public List<TourSpotItemResponseDTO> getNearbyTourSpots(String mapX, String mapY) {
+    public List<TourSpotItemDetailResponseDTO> getNearbyTourSpots(String mapX, String mapY) {
         BigDecimal longitude = toCoordinate(mapX);
         BigDecimal latitude = toCoordinate(mapY);
         return toTourSpotItems(tourApiClient.getNearbyTourSpots(longitude, latitude, TOUR_SPOT_SEARCH_RADIUS_METERS));
@@ -97,11 +98,19 @@ public class TourApiService {
 
     // 스케줄러 동기화 대상 축제 목록을 조회, 각 항목에 festivalType(festivaltype) 포함
     public List<TourApiResponseDTO.TourContentDTO> getFestivalsForSync(LocalDate eventStartDate) {
-        return getContents(tourApiClient.searchFestivals(eventStartDate, null, null, null));
+        return getFestivalsForSync(eventStartDate, eventStartDate);
+    }
+
+    // 축제 시작일 범위로 동기화 대상을 조회
+    public List<TourApiResponseDTO.TourContentDTO> getFestivalsForSync(
+            LocalDate eventStartDate,
+            LocalDate eventEndDate
+    ) {
+        return getContents(tourApiClient.searchFestivals(eventStartDate, eventEndDate, null, null));
     }
 
     // 주변 검색 결과에는 숙박/음식/쇼핑/축제 등 다양한 대분류가 섞여 있어 항목별 카테고리 매핑 후 목록 구성
-    private List<TourSpotItemResponseDTO> toTourSpotItems(List<TourApiResponseDTO.TourContentDTO> tourSpots) {
+    private List<TourSpotItemDetailResponseDTO> toTourSpotItems(List<TourApiResponseDTO.TourContentDTO> tourSpots) {
         return tourSpots
                 .stream()
                 .map(this::toTourSpotItemOrNull)
@@ -109,12 +118,14 @@ public class TourApiService {
                 .toList();
     }
 
-    private TourSpotItemResponseDTO toTourSpotItemOrNull(TourApiResponseDTO.TourContentDTO tourSpot) {
-        TourApiCategory category = TourApiCategory.fromLclsSystem1Code(tourSpot.lclsSystem1());
+    private TourSpotItemDetailResponseDTO toTourSpotItemOrNull(TourApiResponseDTO.TourContentDTO tourSpot) {
+        TourSpotCategory category = TourSpotCategory.from(
+                TourApiCategory.fromLclsSystem1Code(tourSpot.lclsSystem1())
+        );
         if (category == null) {
             return null;
         }
-        return new TourSpotItemResponseDTO(
+        return new TourSpotItemDetailResponseDTO(
                 null,
                 tourSpot.contentId(),
                 tourSpot.title(),
@@ -123,7 +134,6 @@ public class TourApiService {
                 tourSpot.mapx(),
                 tourSpot.mapy(),
                 category,
-                tourSpot.legalDongRegionCode(),
                 tourSpot.legalDongSigunguCode(),
                 tourSpot.tel(),
                 tourSpot.modifiedtime()

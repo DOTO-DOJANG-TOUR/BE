@@ -27,7 +27,8 @@ public interface TourSyncAdminApi {
                     한국관광공사 TourAPI에서 축제 목록을 조회한 뒤 축제와 주변 관광지를 저장합니다.
                     - 매일 새벽 자동 실행되는 배치와 동일한 로직을 관리자가 즉시 수동으로 실행할 때 사용합니다.
                     - 대상 축제를 10건씩 배치로 나누어 순차 저장합니다.
-                    - eventStartDate를 입력하지 않으면 오늘 날짜를 기준으로 동기화합니다.
+                    - 날짜를 입력하지 않으면 오늘부터 30일 뒤까지의 축제를 동기화합니다.
+                    - eventStartDate와 eventEndDate를 함께 입력하면 해당 축제 시작일 범위를 동기화합니다.
                     - 개별 축제 동기화가 실패해도 나머지 건은 계속 진행하며, 실패 건은 응답의 failedFestivalContentIds에서 확인할 수 있습니다.
                     """
     )
@@ -35,9 +36,14 @@ public interface TourSyncAdminApi {
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     @PostMapping("/api/v1/admin/tour-sync")
     ResponseEntity<CommonResponse<TourSyncResultDTO>> synchronizeFestivals(
-            @Parameter(description = "동기화 기준 축제 시작일(YYYY-MM-DD), 미입력 시 오늘 날짜")
+            @Parameter(description = "동기화 대상 축제 시작일(YYYY-MM-DD), eventEndDate와 함께 입력")
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate eventStartDate
+            LocalDate eventStartDate,
+
+            @Parameter(description = "동기화 대상 축제 종료일(YYYY-MM-DD), eventStartDate와 함께 입력")
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate eventEndDate
     );
 }

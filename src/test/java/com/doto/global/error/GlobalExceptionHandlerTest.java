@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,6 +51,28 @@ class GlobalExceptionHandlerTest {
             assertThat(response.getStatusCode()).isEqualTo(CommonErrorCode.INVALID_INPUT.getStatus());
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().code()).isEqualTo(CommonErrorCode.INVALID_INPUT.getCode());
+        }
+
+        @Test
+        void DB_제약_위반을_409_응답으로_변환한다() {
+            ResponseEntity<CommonResponse<Void>> response = handler.handleDataIntegrityViolation(
+                    new DataIntegrityViolationException("unique constraint violation")
+            );
+
+            assertThat(response.getStatusCode()).isEqualTo(CommonErrorCode.CONFLICT.getStatus());
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().code()).isEqualTo(CommonErrorCode.CONFLICT.getCode());
+        }
+
+        @Test
+        void 낙관적_락_충돌을_409_응답으로_변환한다() {
+            ResponseEntity<CommonResponse<Void>> response = handler.handleOptimisticLockingFailure(
+                    new OptimisticLockingFailureException("version conflict")
+            );
+
+            assertThat(response.getStatusCode()).isEqualTo(CommonErrorCode.CONFLICT.getStatus());
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().code()).isEqualTo(CommonErrorCode.CONFLICT.getCode());
         }
     }
 

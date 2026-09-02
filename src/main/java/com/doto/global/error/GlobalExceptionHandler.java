@@ -8,6 +8,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +37,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<CommonResponse<Void>> handleDomainException(DomainException exception) {
         ErrorCode errorCode = exception.getErrorCode();
+        if (errorCode.getStatus().is5xxServerError()) {
+            log.error("[DOMAIN_ERROR] code={}, status={}", errorCode.getCode(), errorCode.getStatus(), exception);
+        } else {
+            log.warn("[DOMAIN_ERROR] code={}, status={}, message={}",
+                    errorCode.getCode(), errorCode.getStatus(), exception.getMessage());
+        }
         return ResponseEntity.status(errorCode.getStatus()).body(CommonResponse.error(errorCode));
     }
 
@@ -50,6 +58,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         ErrorCode errorCode = CommonErrorCode.INVALID_INPUT;
         return ResponseEntity.status(errorCode.getStatus()).body(CommonResponse.error(errorCode, fieldErrors));
+    }
+
+    // DB 제약 조건 위반은 클라이언트 요청 간 상태 충돌로 변환
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<CommonResponse<Void>> handleDataIntegrityViolation(
+            DataIntegrityViolationException exception
+    ) {
+        ErrorCode errorCode = CommonErrorCode.CONFLICT;
+        return ResponseEntity.status(errorCode.getStatus()).body(CommonResponse.error(errorCode));
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<CommonResponse<Void>> handleOptimisticLockingFailure(
+            OptimisticLockingFailureException exception
+    ) {
+        ErrorCode errorCode = CommonErrorCode.CONFLICT;
+        return ResponseEntity.status(errorCode.getStatus()).body(CommonResponse.error(errorCode));
     }
 
     // 처리되지 않은 예외는 내부 정보를 숨기고 500으로 변환

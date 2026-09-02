@@ -4,11 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
-import com.doto.domain.tourex.enums.TourApiCategory;
+import com.doto.domain.tourspot.entity.enums.TourSpotCategory;
 import com.doto.domain.tourex.client.TourApiClient;
 import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
 import com.doto.domain.tourex.dto.FestivalIntroApiResponseDTO;
 import com.doto.domain.tourex.dto.TourApiResponseDTO;
+import com.doto.domain.tourex.enums.TourApiCategory;
 import com.doto.domain.tourex.exception.TourApiException;
 import java.math.BigDecimal;
 import java.util.List;
@@ -69,7 +70,7 @@ class TourApiServiceTest {
             var result = tourApiService.getNearbyTourSpots("126.97", "37.56");
 
             assertThat(result).singleElement().satisfies(tourSpot -> {
-                assertThat(tourSpot.tourSpotCategory()).isEqualTo(TourApiCategory.역사관광);
+                assertThat(tourSpot.tourSpotCategory()).isEqualTo(TourSpotCategory.역사);
                 assertThat(tourSpot.imageUrl()).isEqualTo("image.jpg");
             });
         }

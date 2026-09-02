@@ -30,7 +30,7 @@ public interface MemberApi {
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     @GetMapping("/api/v1/members/me")
     ResponseEntity<CommonResponse<UserResponseDTO>> getMyInfo(
-            @Parameter(hidden = true) @CurrentMember CustomMemberDetails memberDetails
+            @CurrentMember CustomMemberDetails memberDetails
     );
 
     @Operation(
@@ -46,7 +46,7 @@ public interface MemberApi {
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     @PatchMapping("/api/v1/members/me")
     ResponseEntity<CommonResponse<UserUpdateResponseDTO>> updateMyInfo(
-            @Parameter(hidden = true) @CurrentMember CustomMemberDetails memberDetails,
+            @CurrentMember CustomMemberDetails memberDetails,
             @Valid @RequestBody UserUpdateRequestDTO request
     );
 

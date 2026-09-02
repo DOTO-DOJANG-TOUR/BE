@@ -2,7 +2,7 @@ package com.doto.domain.admin.service;
 
 import com.doto.domain.admin.dto.TourSyncResultDTO;
 import com.doto.domain.festival.service.FestivalCommandService;
-import com.doto.domain.stamp.dto.TourSpotItemResponseDTO;
+import com.doto.domain.stamp.dto.TourSpotItemDetailResponseDTO;
 import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
 import com.doto.domain.tourex.dto.TourApiResponseDTO;
 import com.doto.domain.tourex.service.TourApiService;
@@ -21,15 +21,21 @@ import org.springframework.stereotype.Service;
 public class TourSyncAdminService {
 
     private static final int BATCH_SIZE = 10;
+    private static final int DEFAULT_SYNC_RANGE_DAYS = 30;
 
     private final TourApiService tourApiService;
     private final FestivalCommandService festivalCommandService;
     private final TourSpotCommandService tourSpotCommandService;
 
-    public TourSyncResultDTO synchronizeFestivals(LocalDate eventStartDate) {
-        LocalDate targetDate = eventStartDate != null ? eventStartDate : LocalDate.now();
-        List<TourApiResponseDTO.TourContentDTO> festivals = tourApiService.getFestivalsForSync(targetDate);
-        log.info("[관리자] 축제 동기화 시작: 대상일={}, 대상 {}건", targetDate, festivals.size());
+    public TourSyncResultDTO synchronizeFestivals(LocalDate eventStartDate, LocalDate eventEndDate) {
+        LocalDate startDate = eventStartDate != null ? eventStartDate : LocalDate.now();
+        LocalDate endDate = eventEndDate != null ? eventEndDate : startDate.plusDays(DEFAULT_SYNC_RANGE_DAYS);
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("축제 종료일은 시작일보다 빠를 수 없습니다.");
+        }
+
+        List<TourApiResponseDTO.TourContentDTO> festivals = tourApiService.getFestivalsForSync(startDate, endDate);
+        log.info("[관리자] 축제 동기화 시작: 대상기간={}~{}, 대상 {}건", startDate, endDate, festivals.size());
 
         List<List<TourApiResponseDTO.TourContentDTO>> batches = partition(festivals, BATCH_SIZE);
         List<TourSyncResultDTO.BatchResultDTO> batchResults = new ArrayList<>();
@@ -52,7 +58,8 @@ public class TourSyncAdminService {
                 festivals.size(), successCount, failedFestivalContentIds.size());
 
         return new TourSyncResultDTO(
-                targetDate,
+                startDate,
+                endDate,
                 festivals.size(),
                 BATCH_SIZE,
                 successCount,
@@ -82,7 +89,7 @@ public class TourSyncAdminService {
                 festival.contentId(), festival.festivalType());
         festivalCommandService.saveFestival(festivalDetail);
 
-        List<TourSpotItemResponseDTO> tourSpots = tourApiService.getNearbyTourSpots(
+        List<TourSpotItemDetailResponseDTO> tourSpots = tourApiService.getNearbyTourSpots(
                 festivalDetail.mapX(), festivalDetail.mapY());
         tourSpotCommandService.saveTourSpots(festival.contentId(), tourSpots);
     }

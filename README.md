@@ -156,7 +156,7 @@ docker compose -f docker-compose.yml up -d
 ./gradlew bootRun
 ```
 
-`local` profile이 기본으로 활성화됩니다. 운영에서는 `SPRING_PROFILES_ACTIVE=prod`와 DB 접속 환경 변수를 반드시 주입합니다.
+`local` profile이 기본으로 활성화되며 프로젝트 루트의 `.env`를 읽습니다. 운영에서는 `SPRING_PROFILES_ACTIVE=prod`로 실행하면 `/app/config/.env`를 읽으므로, 해당 경로에 파일을 마운트하고 DB 접속 환경 변수를 주입해야 합니다.
 
 ### 접속 주소
 

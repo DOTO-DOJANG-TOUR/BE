@@ -2,6 +2,7 @@ spring:
   config:
     activate:
       on-profile: prod
+    import: optional:file:/app/config/.env[.properties]
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
