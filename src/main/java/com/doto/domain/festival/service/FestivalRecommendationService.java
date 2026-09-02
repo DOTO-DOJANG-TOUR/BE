@@ -5,19 +5,16 @@ import com.doto.domain.festival.dto.FestivalEndDateCursor;
 import com.doto.domain.festival.dto.FestivalPageResponseDTO;
 import com.doto.domain.festival.dto.FestivalRegionPageResponseDTO;
 import com.doto.domain.festival.dto.FestivalRegionResponseDTO;
-import com.doto.domain.festival.dto.FestivalSearchCursor;
 import com.doto.domain.festival.dto.FestivalShortResponseDTO;
 import com.doto.domain.festival.dto.FestivalStatus;
 import com.doto.domain.festival.dto.FestivalUpcomingCursor;
 import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.festival.entity.code.GunguCodes;
 import com.doto.domain.festival.entity.enums.FestivalSort;
-import com.doto.domain.festival.entity.enums.Region;
 import com.doto.domain.festival.entity.enums.RegionGroup;
 import com.doto.domain.festival.exception.FestivalErrorCode;
 import com.doto.domain.festival.exception.FestivalException;
 import com.doto.domain.festival.repository.FestivalRepository;
-import com.doto.domain.festival.repository.FestivalSearchRow;
 import com.doto.global.util.DateTimeUtils;
 import java.time.Clock;
 import java.time.Duration;
@@ -36,8 +33,6 @@ public class FestivalRecommendationService {
     private static final Long FIRST_PAGE_ID = 0L;
     // duration 첫 페이지 sentinel, 실제 축제 기간은 항상 0 이상이라 -1초면 항상 첫 분기로 통과
     private static final Duration FIRST_PAGE_DURATION = Duration.ofSeconds(-1);
-    // 유사도 첫 페이지 sentinel, 실제 유사도는 0~1 사이라 2.0이면 항상 첫 분기로 통과
-    private static final double FIRST_PAGE_SIMILARITY = 2.0;
     // parking 값에 이 문구가 포함되면 parkingFee도 불가능으로 덮어씀
     private static final String PARKING_UNAVAILABLE_KEYWORD = "불가능";
     // 검색어에 포함되면 상태 필터로 취급하는 키워드
@@ -123,29 +118,28 @@ public class FestivalRecommendationService {
         );
     }
 
-    // 통합 검색: query에서 상태 키워드(진행/오늘, 예정/내일)를 뽑아 status 필터로, 나머지 텍스트를 키워드로 사용
-    // title 제목 유사도(pg_trgm) 높은 순으로 정렬(주소/지역/카테고리는 인덱스가 없어 매칭 대상에서 제외)
+    // 통합 검색: query에서 상태 키워드(진행/오늘, 예정/내일)를 뽑아 status 필터로, 나머지 텍스트를 title 키워드로 사용(pg_trgm 없이 단순 포함 검색)
+    // 정렬은 다른 목록 API와 동일하게 종료임박순이라 커서/응답 변환도 그대로 재사용한다.
     public FestivalRegionPageResponseDTO searchFestivals(String query, String cursor, int size) {
         ParsedSearchQuery parsed = parseSearchQuery(query);
-        FestivalSearchCursor decoded = FestivalSearchCursor.decode(cursor);
+        FestivalEndDateCursor decoded = FestivalEndDateCursor.decode(cursor);
         Instant now = applicationClock.instant();
 
-        List<FestivalSearchRow> rows = festivalRepository.searchFestivals(
+        List<Festival> festivals = festivalRepository.searchFestivals(
                 parsed.keyword(),
                 parsed.includeOngoing(),
                 parsed.includeUpcoming(),
                 now,
-                decoded != null ? decoded.similarity() : FIRST_PAGE_SIMILARITY,
                 decoded != null ? decoded.eventEndDate() : Instant.EPOCH,
                 decoded != null ? decoded.id() : FIRST_PAGE_ID,
-                size + 1
+                PageRequest.ofSize(size + 1)
         );
 
-        boolean hasNext = rows.size() > size;
-        List<FestivalSearchRow> page = hasNext ? rows.subList(0, size) : rows;
-        String nextCursor = hasNext ? toSearchCursor(page.get(page.size() - 1)) : null;
+        boolean hasNext = festivals.size() > size;
+        List<Festival> page = hasNext ? festivals.subList(0, size) : festivals;
+        String nextCursor = hasNext ? toEndDateCursor(page.get(page.size() - 1)) : null;
         List<FestivalRegionResponseDTO> responses = page.stream()
-                .map(row -> toSearchResponse(row, now))
+                .map(festival -> toRegionResponse(festival, now))
                 .toList();
         return new FestivalRegionPageResponseDTO(responses, nextCursor);
     }
@@ -233,27 +227,6 @@ public class FestivalRecommendationService {
                 DateTimeUtils.toDateString(festival.getEventStartDate(), zone),
                 DateTimeUtils.toDateString(festival.getEventEndDate(), zone),
                 festival.getCategory()
-        );
-    }
-
-    private String toSearchCursor(FestivalSearchRow row) {
-        return new FestivalSearchCursor(row.getSimilarityScore(), row.getEventEndDate(), row.getFestivalId()).encode();
-    }
-
-    // 검색 결과도 필터상 진행중/개최전만 나오므로 지역별 조회와 동일하게 eventStartDate 기준으로만 판단
-    private FestivalRegionResponseDTO toSearchResponse(FestivalSearchRow row, Instant now) {
-        ZoneId zone = applicationClock.getZone();
-        FestivalStatus status = !row.getEventStartDate().isAfter(now) ? FestivalStatus.ONGOING : FestivalStatus.UPCOMING;
-        Region region = row.getRegion() != null ? Region.valueOf(row.getRegion()) : null;
-        return new FestivalRegionResponseDTO(
-                String.valueOf(row.getFestivalId()),
-                row.getImageUrl(),
-                status,
-                row.getTitle(),
-                GunguCodes.findName(region, row.getGungu()),
-                DateTimeUtils.toDateString(row.getEventStartDate(), zone),
-                DateTimeUtils.toDateString(row.getEventEndDate(), zone),
-                row.getCategory()
         );
     }
 

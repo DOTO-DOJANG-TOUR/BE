@@ -57,9 +57,9 @@ public interface FestivalApi {
     @Operation(
             summary = "축제 검색",
             description = """
-                    축제 제목을 검색합니다.
+                    축제 제목을 검색합니다(제목에 검색어가 포함된 축제만).
                     query에 "진행" 또는 "오늘"이 포함되면 진행 중인 축제만, "예정" 또는 "내일"이 포함되면 개최 예정 축제만 필터링하고, 둘 다 없으면 진행중+개최예정 전체를 대상으로 합니다.
-                    남은 검색어와 제목의 유사도가 높은 순으로 보여줍니다."""
+                    정렬은 다른 목록 API와 동일하게 종료임박순입니다."""
     )
     @ApiResponse(responseCode = "200", description = "축제 검색 성공")
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
