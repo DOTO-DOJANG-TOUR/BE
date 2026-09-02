@@ -6,6 +6,8 @@ import static org.mockito.BDDMockito.given;
 
 import com.doto.domain.tourex.enums.TourApiCategory;
 import com.doto.domain.tourex.client.TourApiClient;
+import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
+import com.doto.domain.tourex.dto.FestivalIntroApiResponseDTO;
 import com.doto.domain.tourex.dto.TourApiResponseDTO;
 import com.doto.domain.tourex.exception.TourApiException;
 import java.math.BigDecimal;
@@ -78,6 +80,77 @@ class TourApiServiceTest {
             assertThatThrownBy(() -> tourApiService.getNearbyTourSpots("invalid", "37.56"))
                     .isInstanceOf(TourApiException.class);
         }
+    }
+
+    @Nested
+    @DisplayName("축제 상세 조회")
+    class GetFestivalInfo {
+
+        @Test
+        @DisplayName("TourAPI 콘텐츠와 소개 정보를 축제 응답으로 변환한다")
+        void mapsFestivalInfo() {
+            given(tourApiClient.getContentDetail(126516L))
+                    .willReturn(response(festivalContent("041-730-2971,3", "https://example.com")));
+            given(tourApiClient.getFestivalIntro(126516L)).willReturn(festivalIntro(
+                    "18:00~22:00", "없음", "무료", null
+            ));
+
+            FestivalApiResponseDTO result = tourApiService.getFestivalInfo(126516L, "문화관광축제");
+
+            assertThat(result.title()).isEqualTo("강경 국가유산야행");
+            assertThat(result.phone()).isEqualTo("041-730-2971,3");
+            assertThat(result.homepageUrl()).isEqualTo("https://example.com");
+            assertThat(result.operationHours()).isEqualTo("18:00~22:00");
+            assertThat(result.holiday()).isEqualTo("없음");
+            assertThat(result.fee()).isEqualTo("무료");
+            assertThat(result.festivalType()).isEqualTo("문화관광축제");
+        }
+
+        @Test
+        @DisplayName("TourAPI가 빈 문자열이나 공백만 내려준 필드는 null로 저장된다")
+        void blankFieldsAreNormalizedToNull() {
+            given(tourApiClient.getContentDetail(126516L))
+                    .willReturn(response(festivalContent("  ", "")));
+            given(tourApiClient.getFestivalIntro(126516L)).willReturn(festivalIntro(
+                    " ", "", "   ", "  "
+            ));
+
+            FestivalApiResponseDTO result = tourApiService.getFestivalInfo(126516L, "  ");
+
+            assertThat(result.phone()).isNull();
+            assertThat(result.homepageUrl()).isNull();
+            assertThat(result.operationHours()).isNull();
+            assertThat(result.holiday()).isNull();
+            assertThat(result.fee()).isNull();
+            assertThat(result.festivalType()).isNull();
+        }
+    }
+
+    // tel, homepage 외 나머지 필드는 이 테스트들에서 의미가 없어 고정값을 사용한다
+    private TourApiResponseDTO.TourContentDTO festivalContent(String tel, String homepage) {
+        return new TourApiResponseDTO.TourContentDTO(
+                126516L, 15, "강경 국가유산야행", homepage, "충청남도 논산시 강경읍 중앙리", null, tel,
+                "https://tong.visitkorea.or.kr/cms/resource/94/3519794_image2_1.jpg", null,
+                "127.02", "36.16", null, null, "44", "44230", "AA002-001", null, null,
+                "강경 국가유산 야행은 보존에 치중하던 기존 틀에서 벗어난다", null, null, null, null, null, null
+        );
+    }
+
+    // usetimefestival, restdate, usefee, eventhomepage 외 나머지 필드는 이 테스트들에서 의미가 없어 고정값을 사용한다
+    private FestivalIntroApiResponseDTO festivalIntro(
+            String usetimefestival, String restdate, String usefee, String eventhomepage
+    ) {
+        return new FestivalIntroApiResponseDTO(new FestivalIntroApiResponseDTO.Response(
+                new FestivalIntroApiResponseDTO.Header("0000", "OK"),
+                new FestivalIntroApiResponseDTO.Body(new FestivalIntroApiResponseDTO.Items(List.of(
+                        new FestivalIntroApiResponseDTO.FestivalIntroDTO(
+                                "20261010", "20261011", usetimefestival, null, null,
+                                restdate, usefee, null, null, null,
+                                null, eventhomepage, null, null, null,
+                                null, null, null, null, null, null
+                        )
+                )))
+        ));
     }
 
     private TourApiResponseDTO response(TourApiResponseDTO.TourContentDTO... contents) {
