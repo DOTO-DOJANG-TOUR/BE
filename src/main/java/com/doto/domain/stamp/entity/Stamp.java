@@ -19,6 +19,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Entity
@@ -39,6 +41,7 @@ public class Stamp extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "stamp_tour_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private StampTour stampTour;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

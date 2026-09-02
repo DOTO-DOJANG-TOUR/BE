@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.doto.domain.member.entity.Member;
+import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.stamp.entity.enums.TourSpotVisitStatus;
 import com.doto.domain.tourspot.entity.TourSpot;
 import java.time.Instant;
@@ -19,12 +20,14 @@ class TourSpotVisitTest {
         @Test
         void 회원과_관광지_및_만료_시각으로_VISITING_상태의_방문을_생성한다() {
             Member member = Mockito.mock(Member.class);
+            Festival festival = Mockito.mock(Festival.class);
             TourSpot tourSpot = Mockito.mock(TourSpot.class);
             Instant expiresAt = Instant.now().plusSeconds(7 * 60);
 
-            TourSpotVisit visit = TourSpotVisit.start(member, tourSpot, expiresAt);
+            TourSpotVisit visit = TourSpotVisit.start(member, festival, tourSpot, expiresAt);
 
             assertThat(visit.getMember()).isEqualTo(member);
+            assertThat(visit.getFestival()).isEqualTo(festival);
             assertThat(visit.getTourSpot()).isEqualTo(tourSpot);
             assertThat(visit.getStatus()).isEqualTo(TourSpotVisitStatus.VISITING);
             assertThat(visit.getExpiresAt()).isEqualTo(expiresAt);
@@ -76,6 +79,11 @@ class TourSpotVisitTest {
     }
 
     private TourSpotVisit createVisitingVisit() {
-        return TourSpotVisit.start(Mockito.mock(Member.class), Mockito.mock(TourSpot.class), Instant.now().plusSeconds(420));
+        return TourSpotVisit.start(
+                Mockito.mock(Member.class),
+                Mockito.mock(Festival.class),
+                Mockito.mock(TourSpot.class),
+                Instant.now().plusSeconds(420)
+        );
     }
 }

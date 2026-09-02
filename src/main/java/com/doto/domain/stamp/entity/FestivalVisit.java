@@ -2,7 +2,7 @@ package com.doto.domain.stamp.entity;
 
 import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.member.entity.Member;
-import com.doto.domain.stamp.entity.enums.StampTourStatus;
+import com.doto.domain.stamp.entity.enums.FestivalVisitStatus;
 import com.doto.global.common.BaseTimeEntity;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;
@@ -21,15 +21,13 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "stamp_tours")
+@Table(name = "festival_visits")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class StampTour extends BaseTimeEntity {
-
-    private static final int REQUIRED_STAMP_COUNT = 3;
+public class FestivalVisit extends BaseTimeEntity {
 
     @Id
     @Tsid
-    @Column(name = "stamp_tour_id")
+    @Column(name = "festival_visit_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -40,47 +38,33 @@ public class StampTour extends BaseTimeEntity {
     @JoinColumn(name = "festival_id", nullable = false)
     private Festival festival;
 
-    @Column(name = "started_at")
-    private Instant startedAt;
-
-    @Column(name = "completed_at")
-    private Instant completedAt;
-
-    @Column(name = "completed_stamp_count", nullable = false)
-    private int completedStampCount;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 10)
-    private StampTourStatus status;
+    private FestivalVisitStatus status;
 
-    private StampTour(Member member, Festival festival) {
+    @Column(name = "started_at", nullable = false)
+    private Instant startedAt;
+
+    @Column(name = "ended_at")
+    private Instant endedAt;
+
+    private FestivalVisit(Member member, Festival festival) {
         this.member = member;
         this.festival = festival;
+        this.status = FestivalVisitStatus.VISITING;
         this.startedAt = Instant.now();
-        this.status = StampTourStatus.PROGRESS;
     }
 
-    public static StampTour create(Member member, Festival festival) {
-        return new StampTour(member, festival);
+    public static FestivalVisit start(Member member, Festival festival) {
+        return new FestivalVisit(member, festival);
     }
 
-    public void complete() {
-        this.status = StampTourStatus.COMPLETED;
-        this.completedAt = Instant.now();
-    }
-
-    public void completeStamp() {
-        if (status != StampTourStatus.PROGRESS || completedStampCount >= REQUIRED_STAMP_COUNT) {
-            throw new IllegalStateException("Stamp tour cannot accept another completed stamp.");
+    public void end(Instant endedAt) {
+        if (status != FestivalVisitStatus.VISITING) {
+            return;
         }
 
-        completedStampCount++;
-        if (completedStampCount == REQUIRED_STAMP_COUNT) {
-            complete();
-        }
-    }
-
-    public void reward() {
-        this.status = StampTourStatus.REWARDED;
+        this.status = FestivalVisitStatus.ENDED;
+        this.endedAt = endedAt;
     }
 }
