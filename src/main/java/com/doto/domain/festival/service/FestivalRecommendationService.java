@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,9 @@ public class FestivalRecommendationService {
     private static final Duration FIRST_PAGE_DURATION = Duration.ofSeconds(-1);
     // parking 값에 이 문구가 포함되면 parkingFee도 불가능으로 덮어씀
     private static final String PARKING_UNAVAILABLE_KEYWORD = "불가능";
+    // 검색어에 포함되면 상태 필터로 취급하는 키워드
+    private static final Set<String> ONGOING_KEYWORDS = Set.of("진행", "오늘");
+    private static final Set<String> UPCOMING_KEYWORDS = Set.of("예정", "내일");
 
     private final FestivalRepository festivalRepository;
     private final Clock applicationClock;
@@ -112,6 +116,60 @@ public class FestivalRecommendationService {
                 decoded != null ? decoded.id() : FIRST_PAGE_ID,
                 PageRequest.ofSize(size + 1)
         );
+    }
+
+    // 통합 검색: query에서 상태 키워드(진행/오늘, 예정/내일)를 뽑아 status 필터로, 나머지 텍스트를 title 키워드로 사용(pg_trgm 없이 단순 포함 검색)
+    // 정렬은 다른 목록 API와 동일하게 종료임박순이라 커서/응답 변환도 그대로 재사용한다.
+    public FestivalRegionPageResponseDTO searchFestivals(String query, String cursor, int size) {
+        ParsedSearchQuery parsed = parseSearchQuery(query);
+        FestivalEndDateCursor decoded = FestivalEndDateCursor.decode(cursor);
+        Instant now = applicationClock.instant();
+
+        List<Festival> festivals = festivalRepository.searchFestivals(
+                parsed.keyword(),
+                parsed.includeOngoing(),
+                parsed.includeUpcoming(),
+                now,
+                decoded != null ? decoded.eventEndDate() : Instant.EPOCH,
+                decoded != null ? decoded.id() : FIRST_PAGE_ID,
+                PageRequest.ofSize(size + 1)
+        );
+
+        boolean hasNext = festivals.size() > size;
+        List<Festival> page = hasNext ? festivals.subList(0, size) : festivals;
+        String nextCursor = hasNext ? toEndDateCursor(page.get(page.size() - 1)) : null;
+        List<FestivalRegionResponseDTO> responses = page.stream()
+                .map(festival -> toRegionResponse(festival, now))
+                .toList();
+        return new FestivalRegionPageResponseDTO(responses, nextCursor);
+    }
+
+    // query에서 상태 키워드를 제거하고 남은 텍스트를 검색 키워드로 사용, 상태 키워드가 하나도 없으면 진행중+개최전 전체를 대상으로 함
+    private ParsedSearchQuery parseSearchQuery(String query) {
+        String remaining = query == null ? "" : query;
+        boolean includeOngoing = false;
+        boolean includeUpcoming = false;
+        for (String keyword : ONGOING_KEYWORDS) {
+            if (remaining.contains(keyword)) {
+                includeOngoing = true;
+                remaining = remaining.replace(keyword, "");
+            }
+        }
+        for (String keyword : UPCOMING_KEYWORDS) {
+            if (remaining.contains(keyword)) {
+                includeUpcoming = true;
+                remaining = remaining.replace(keyword, "");
+            }
+        }
+        if (!includeOngoing && !includeUpcoming) {
+            includeOngoing = true;
+            includeUpcoming = true;
+        }
+        String keyword = remaining.isBlank() ? null : remaining.trim();
+        return new ParsedSearchQuery(keyword, includeOngoing, includeUpcoming);
+    }
+
+    private record ParsedSearchQuery(String keyword, boolean includeOngoing, boolean includeUpcoming) {
     }
 
     public FestivalDetailResponseDTO getFestivalDetail(Long festivalId) {

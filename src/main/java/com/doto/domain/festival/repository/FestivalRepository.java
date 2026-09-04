@@ -89,4 +89,26 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             @Param("cursorId") Long cursorId,
             Pageable pageable
     );
+
+    // 통합 검색: title만 매칭(주소/지역/카테고리는 인덱스가 없어 성능상 제외). status는 query에 포함된 진행/오늘·예정/내일 키워드로 서비스에서 판단해 넘겨받는다.
+    // pg_trgm 없이 단순 포함 검색만 하고, 정렬은 다른 목록 API와 동일하게 종료임박순(eventEndDate)을 그대로 사용한다.
+    @Query("SELECT f FROM Festival f "
+            + "WHERE f.imageUrl IS NOT NULL "
+            + "AND f.imageUrl <> '' "
+            + "AND ( (:includeOngoing = true AND f.eventStartDate <= :now AND f.eventEndDate >= :now) "
+            + "      OR (:includeUpcoming = true AND f.eventStartDate > :now) ) "
+            + "AND (:keyword IS NULL OR LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%'))) "
+            + "AND (f.eventEndDate > :cursorEventEndDate "
+            + "     OR (f.eventEndDate = :cursorEventEndDate "
+            + "         AND f.id > :cursorId)) "
+            + "ORDER BY f.eventEndDate ASC, f.id ASC")
+    List<Festival> searchFestivals(
+            @Param("keyword") String keyword,
+            @Param("includeOngoing") boolean includeOngoing,
+            @Param("includeUpcoming") boolean includeUpcoming,
+            @Param("now") Instant now,
+            @Param("cursorEventEndDate") Instant cursorEventEndDate,
+            @Param("cursorId") Long cursorId,
+            Pageable pageable
+    );
 }

@@ -32,6 +32,13 @@ public class FestivalController implements FestivalApi {
     }
 
     @Override
+    public ResponseEntity<CommonResponse<FestivalRegionPageResponseDTO>> searchFestivals(String query, String cursor, int size) {
+        return ResponseEntity.ok(
+                CommonResponse.success(festivalRecommendationService.searchFestivals(query, cursor, size))
+        );
+    }
+
+    @Override
     public ResponseEntity<CommonResponse<FestivalRegionPageResponseDTO>> getFestivalsByRegion(
             RegionGroup regionGroup, FestivalSort sort, String cursor, int size
     ) {
