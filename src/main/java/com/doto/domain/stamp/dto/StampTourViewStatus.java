@@ -3,6 +3,8 @@ package com.doto.domain.stamp.dto;
 import com.doto.domain.stamp.entity.enums.StampTourStatus;
 
 public enum StampTourViewStatus {
+    FESTIVAL_ENDED,
+    PARTICIPATING_IN_ANOTHER_TOUR,
     NOT_STARTED,
     PROGRESS,
     COMPLETED,

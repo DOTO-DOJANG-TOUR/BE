@@ -10,6 +10,7 @@ import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.festival.repository.FestivalRepository;
 import com.doto.domain.member.entity.Member;
 import com.doto.domain.member.repository.MemberRepository;
+import com.doto.domain.stamp.dto.StampTourViewStatus;
 import com.doto.domain.stamp.entity.FestivalVisit;
 import com.doto.domain.stamp.entity.StampTour;
 import com.doto.domain.stamp.entity.enums.FestivalVisitStatus;
@@ -23,6 +24,8 @@ import com.doto.fixture.FestivalFixture;
 import com.doto.fixture.FestivalVisitFixture;
 import com.doto.fixture.MemberFixture;
 import com.doto.fixture.StampTourFixture;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -51,6 +54,9 @@ class StampTourServiceTest {
 
     @Mock
     private FestivalTourSpotRepository festivalTourSpotRepository;
+
+    @Mock
+    private Clock applicationClock;
 
     @InjectMocks
     private StampTourService stampTourService;
@@ -170,6 +176,50 @@ class StampTourServiceTest {
             then(stampTourRepository).should().delete(stampTour);
             assertThat(festivalVisit.getStatus()).isEqualTo(FestivalVisitStatus.ENDED);
             assertThat(festivalVisit.getEndedAt()).isNotNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("스탬프 투어 상태 조회")
+    class GetStampTourStatus {
+
+        @Test
+        @DisplayName("종료된 축제는 다른 투어 참여 여부보다 FESTIVAL_ENDED를 우선 반환한다")
+        void returnsFestivalEndedBeforeAnotherTourStatus() {
+            Long memberId = 1L;
+            Long festivalId = 10L;
+            Festival festival = festivalWithId(festivalId);
+            Member member = MemberFixture.create(memberId);
+            FestivalVisit anotherFestivalVisit = FestivalVisitFixture.create(member, festivalWithId(20L));
+            given(festivalRepository.findById(festivalId)).willReturn(Optional.of(festival));
+            given(applicationClock.instant()).willReturn(Instant.parse("2026-08-21T00:00:00Z"));
+            org.mockito.Mockito.lenient().when(festivalVisitRepository.findByMember_IdAndStatus(memberId, FestivalVisitStatus.VISITING))
+                    .thenReturn(Optional.of(anotherFestivalVisit));
+
+            StampTourViewStatus result = stampTourService.getStampTourStatus(memberId, festivalId);
+
+            assertThat(result).isEqualTo(StampTourViewStatus.FESTIVAL_ENDED);
+            then(festivalVisitRepository).should(never()).findByMember_IdAndStatus(memberId, FestivalVisitStatus.VISITING);
+            then(stampTourRepository).should(never()).findByMember_IdAndFestival_Id(memberId, festivalId);
+        }
+
+        @Test
+        @DisplayName("종료되지 않은 축제에서 다른 투어 참여 중이면 PARTICIPATING_IN_ANOTHER_TOUR를 반환한다")
+        void returnsParticipatingInAnotherTour() {
+            Long memberId = 1L;
+            Long festivalId = 10L;
+            Festival festival = festivalWithId(festivalId);
+            Member member = MemberFixture.create(memberId);
+            FestivalVisit anotherFestivalVisit = FestivalVisitFixture.create(member, festivalWithId(20L));
+            given(festivalRepository.findById(festivalId)).willReturn(Optional.of(festival));
+            given(applicationClock.instant()).willReturn(Instant.parse("2026-08-19T00:00:00Z"));
+            given(festivalVisitRepository.findByMember_IdAndStatus(memberId, FestivalVisitStatus.VISITING))
+                    .willReturn(Optional.of(anotherFestivalVisit));
+
+            StampTourViewStatus result = stampTourService.getStampTourStatus(memberId, festivalId);
+
+            assertThat(result).isEqualTo(StampTourViewStatus.PARTICIPATING_IN_ANOTHER_TOUR);
+            then(stampTourRepository).should(never()).findByMember_IdAndFestival_Id(memberId, festivalId);
         }
     }
 
