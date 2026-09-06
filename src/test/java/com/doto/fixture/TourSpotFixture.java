@@ -1,8 +1,10 @@
 package com.doto.fixture;
 
+import com.doto.domain.stamp.dto.TourSpotImageDTO;
 import com.doto.domain.stamp.dto.TourSpotItemDetailResponseDTO;
 import com.doto.domain.tourspot.entity.enums.TourSpotCategory;
 import com.doto.domain.tourspot.entity.TourSpot;
+import java.util.List;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
@@ -38,6 +40,10 @@ public final class TourSpotFixture {
     }
 
     public static TourSpotItemDetailResponseDTO createResponseDTO(Long contentId) {
+        return createResponseDTO(contentId, List.of());
+    }
+
+    public static TourSpotItemDetailResponseDTO createResponseDTO(Long contentId, List<TourSpotImageDTO> images) {
         return new TourSpotItemDetailResponseDTO(
                 null,
                 contentId,
@@ -49,7 +55,17 @@ public final class TourSpotFixture {
                 TourSpotCategory.문화,
                 "11000",
                 "02-9876-5432",
-                "20260819090000"
+                "20260819090000",
+                images
+        );
+    }
+
+    public static TourSpotImageDTO createImageDTO() {
+        return new TourSpotImageDTO(
+                "https://doto.example.com/tour-spots-1.jpg",
+                "https://doto.example.com/tour-spots-1-thumb.jpg",
+                "도토 광장 전경",
+                1
         );
     }
 }

@@ -9,7 +9,9 @@ import com.doto.domain.tourex.client.TourApiClient;
 import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
 import com.doto.domain.tourex.dto.FestivalIntroApiResponseDTO;
 import com.doto.domain.tourex.dto.TourApiResponseDTO;
+import com.doto.domain.tourex.dto.TourImageApiResponseDTO;
 import com.doto.domain.tourex.enums.TourApiCategory;
+import com.doto.domain.tourex.exception.TourApiErrorCode;
 import com.doto.domain.tourex.exception.TourApiException;
 import java.math.BigDecimal;
 import java.util.List;
@@ -66,6 +68,7 @@ class TourApiServiceTest {
         void mapsNearbyTourSpots() {
             given(tourApiClient.getNearbyTourSpots(new BigDecimal("126.97"), new BigDecimal("37.56"), 5_000))
                     .willReturn(List.of(content("HS", "image.jpg", null)));
+            given(tourApiClient.getContentImages(126516L)).willReturn(List.of());
 
             var result = tourApiService.getNearbyTourSpots("126.97", "37.56");
 
@@ -73,6 +76,40 @@ class TourApiServiceTest {
                 assertThat(tourSpot.tourSpotCategory()).isEqualTo(TourSpotCategory.역사);
                 assertThat(tourSpot.imageUrl()).isEqualTo("image.jpg");
             });
+        }
+
+        @Test
+        @DisplayName("관광지별 이미지 갤러리를 함께 조회해 응답 DTO에 포함한다")
+        void mapsTourSpotImages() {
+            given(tourApiClient.getNearbyTourSpots(new BigDecimal("126.97"), new BigDecimal("37.56"), 5_000))
+                    .willReturn(List.of(content("HS", "image.jpg", null)));
+            given(tourApiClient.getContentImages(126516L)).willReturn(List.of(
+                    new TourImageApiResponseDTO.TourImageDTO(
+                            126516L, "https://example.com/origin.jpg", "https://example.com/small.jpg", "정문", "1")
+            ));
+
+            var result = tourApiService.getNearbyTourSpots("126.97", "37.56");
+
+            assertThat(result).singleElement().satisfies(tourSpot ->
+                    assertThat(tourSpot.images()).singleElement().satisfies(image -> {
+                        assertThat(image.imageUrl()).isEqualTo("https://example.com/origin.jpg");
+                        assertThat(image.thumbnailUrl()).isEqualTo("https://example.com/small.jpg");
+                        assertThat(image.imageName()).isEqualTo("정문");
+                        assertThat(image.serialNumber()).isEqualTo(1);
+                    }));
+        }
+
+        @Test
+        @DisplayName("이미지 갤러리 조회가 실패해도 관광지 목록 조회는 계속 진행한다")
+        void continuesWhenImageLookupFails() {
+            given(tourApiClient.getNearbyTourSpots(new BigDecimal("126.97"), new BigDecimal("37.56"), 5_000))
+                    .willReturn(List.of(content("HS", "image.jpg", null)));
+            given(tourApiClient.getContentImages(126516L))
+                    .willThrow(new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR));
+
+            var result = tourApiService.getNearbyTourSpots("126.97", "37.56");
+
+            assertThat(result).singleElement().satisfies(tourSpot -> assertThat(tourSpot.images()).isEmpty());
         }
 
         @Test

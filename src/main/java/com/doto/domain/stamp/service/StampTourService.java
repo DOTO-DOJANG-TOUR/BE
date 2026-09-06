@@ -24,6 +24,7 @@ import com.doto.domain.tourspot.entity.TourSpot;
 import com.doto.domain.tourspot.entity.enums.TourSpotCategoryFilter;
 import com.doto.domain.tourspot.repository.FestivalTourSpotRepository;
 import com.doto.global.util.DistanceUtils;
+import java.time.Clock;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,7 @@ public class StampTourService {
     private final StampTourRepository stampTourRepository;
     private final FestivalVisitRepository festivalVisitRepository;
     private final FestivalTourSpotRepository festivalTourSpotRepository;
+    private final Clock applicationClock;
 
     // 스탬프 투어 시작
     @Transactional
@@ -82,6 +84,20 @@ public class StampTourService {
 
     // 스탬프 투어 상태 조회
     public StampTourViewStatus getStampTourStatus(Long memberId, Long festivalId) {
+        Festival festival = festivalRepository.findById(festivalId)
+                .orElseThrow(() -> new FestivalException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
+        if (festival.getEventEndDate().isBefore(applicationClock.instant())) {
+            return StampTourViewStatus.FESTIVAL_ENDED;
+        }
+
+        boolean isParticipatingInAnotherTour = festivalVisitRepository
+                .findByMember_IdAndStatus(memberId, FestivalVisitStatus.VISITING)
+                .map(festivalVisit -> !festivalVisit.getFestival().getId().equals(festivalId))
+                .orElse(false);
+        if (isParticipatingInAnotherTour) {
+            return StampTourViewStatus.PARTICIPATING_IN_ANOTHER_TOUR;
+        }
+
         StampTourStatus status = stampTourRepository.findByMember_IdAndFestival_Id(memberId, festivalId)
                 .map(StampTour::getStatus)
                 .orElse(null);

@@ -64,12 +64,14 @@ public interface StampTourApi {
             summary = "스탬프 투어 상태 조회",
             description = """
                     로그인한 사용자의 선택한 축제에 대한 스탬프 투어 상태를 조회합니다.
+                    - 요청한 축제가 종료되었으면 FESTIVAL_ENDED를 우선 반환합니다.
+                    - 종료되지 않은 축제에서 다른 스탬프 투어 참여 중이면 PARTICIPATING_IN_ANOTHER_TOUR를 반환합니다.
                     - 스탬프 투어를 시작한 적이 없으면 NOT_STARTED를 반환합니다.
                     - 진행 중이면 PROGRESS, 모든 스팟을 방문 완료했으면 COMPLETED, 보상까지 수령했으면 REWARDED를 반환합니다.
                     """
     )
     @ApiResponse(responseCode = "200", description = "스탬프 투어 상태 조회 성공")
-    @ApiErrorCodeExamples({})
+    @ApiErrorCodeExamples({FestivalErrorCode.class})
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     @GetMapping("/api/v1/festival/{festivalId}/stamp-tour")
     ResponseEntity<CommonResponse<StampTourStatusResponseDTO>> getStampTourStatus(

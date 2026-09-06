@@ -73,6 +73,38 @@ class TourApiClientTest {
     }
 
     @Test
+    @DisplayName("관광지 이미지 갤러리 요청에 공통 파라미터와 서비스 키를 포함한다")
+    void requestsContentImagesWithCommonParameters() {
+        server.expect(once(), request -> assertThat(request.getURI().getPath()).isEqualTo("/detailImage2"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess("""
+                        {"response":{"header":{"resultCode":"0000","resultMsg":"OK"},"body":{"items":{"item":[
+                        {"contentid":"126516","originimgurl":"https://example.com/origin.jpg",
+                        "smallimageurl":"https://example.com/small.jpg","imgname":"정문","serialnum":"1"}
+                        ]}}}}
+                        """, MediaType.APPLICATION_JSON));
+
+        var images = tourApiClient.getContentImages(126516L);
+
+        assertThat(images).singleElement().satisfies(image -> {
+            assertThat(image.originImageUrl()).isEqualTo("https://example.com/origin.jpg");
+            assertThat(image.smallImageUrl()).isEqualTo("https://example.com/small.jpg");
+        });
+        server.verify();
+    }
+
+    @Test
+    @DisplayName("관광지 이미지가 없을 때 items 빈 문자열을 빈 목록으로 처리한다")
+    void returnsEmptyListWhenContentImagesIsBlankString() {
+        server.expect(request -> assertThat(request.getURI().getPath()).isEqualTo("/detailImage2"))
+                .andRespond(withSuccess("""
+                        {"response":{"header":{"resultCode":"0000","resultMsg":"OK"},"body":{"items":""}}}
+                        """, MediaType.APPLICATION_JSON));
+
+        assertThat(tourApiClient.getContentImages(126516L)).isEmpty();
+    }
+
+    @Test
     @DisplayName("축제 범위 조회 결과가 100건을 넘으면 다음 페이지도 조회한다")
     void retrievesAllFestivalPages() {
         server.expect(once(), request -> assertThat(request.getURI().getRawQuery()).contains("pageNo=1"))

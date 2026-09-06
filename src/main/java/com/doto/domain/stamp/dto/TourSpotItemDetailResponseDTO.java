@@ -2,6 +2,7 @@ package com.doto.domain.stamp.dto;
 
 import com.doto.domain.tourspot.entity.enums.TourSpotCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 
 public record TourSpotItemDetailResponseDTO(
         @Schema(description = "관광지 ID", example = "1234567890123456789")
@@ -35,6 +36,9 @@ public record TourSpotItemDetailResponseDTO(
         String phone,
 
         @Schema(description = "TourAPI 수정 일시", example = "20260830120000")
-        String apiModifiedAt
+        String apiModifiedAt,
+
+        @Schema(description = "관광지 이미지 갤러리")
+        List<TourSpotImageDTO> images
 ) {
 }
