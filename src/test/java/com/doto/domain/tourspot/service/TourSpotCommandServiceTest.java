@@ -14,7 +14,9 @@ import com.doto.domain.festival.repository.FestivalRepository;
 import com.doto.domain.stamp.dto.TourSpotItemDetailResponseDTO;
 import com.doto.domain.tourspot.entity.FestivalTourSpot;
 import com.doto.domain.tourspot.entity.TourSpot;
+import com.doto.domain.tourspot.entity.TourSpotImage;
 import com.doto.domain.tourspot.repository.FestivalTourSpotRepository;
+import com.doto.domain.tourspot.repository.TourSpotImageRepository;
 import com.doto.domain.tourspot.repository.TourSpotRepository;
 import com.doto.fixture.FestivalFixture;
 import com.doto.fixture.TourSpotFixture;
@@ -41,6 +43,9 @@ class TourSpotCommandServiceTest {
 
     @Mock
     private FestivalTourSpotRepository festivalTourSpotRepository;
+
+    @Mock
+    private TourSpotImageRepository tourSpotImageRepository;
 
     @InjectMocks
     private TourSpotCommandService tourSpotCommandService;
@@ -124,6 +129,28 @@ class TourSpotCommandServiceTest {
             then(festivalTourSpotRepository).should().saveAll(org.mockito.ArgumentMatchers.argThat(relations -> {
                 FestivalTourSpot relation = relations.iterator().next();
                 return relation.getFestival() == festival && relation.getTourSpot() == existingTourSpot;
+            }));
+        }
+
+        @Test
+        @DisplayName("이미지 갤러리를 함께 전달하면 기존 이미지를 교체 저장한다")
+        void replacesTourSpotImagesWithLatestGallery() {
+            Festival festival = festivalWithId(1L);
+            TourSpot existingTourSpot = tourSpotWithId(2L, 125405L);
+            TourSpotItemDetailResponseDTO dto = TourSpotFixture.createResponseDTO(
+                    125405L, List.of(TourSpotFixture.createImageDTO()));
+            given(festivalRepository.findByContentId(festival.getContentId())).willReturn(java.util.Optional.of(festival));
+            given(tourSpotRepository.findByContentId(dto.contentId())).willReturn(java.util.Optional.of(existingTourSpot));
+            given(festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(1L, 2L)).willReturn(true);
+            givenSaveAllReturnsInput();
+
+            tourSpotCommandService.saveTourSpots(festival.getContentId(), List.of(dto));
+
+            then(tourSpotImageRepository).should().deleteAllByTourSpot_IdIn(List.of(2L));
+            then(tourSpotImageRepository).should().saveAll(org.mockito.ArgumentMatchers.argThat(images -> {
+                TourSpotImage image = images.iterator().next();
+                return image.getTourSpot() == existingTourSpot
+                        && image.getImageUrl().equals(TourSpotFixture.createImageDTO().imageUrl());
             }));
         }
 

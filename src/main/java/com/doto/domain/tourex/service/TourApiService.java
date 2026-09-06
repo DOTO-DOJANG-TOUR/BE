@@ -1,12 +1,14 @@
 package com.doto.domain.tourex.service;
 
 import com.doto.domain.stamp.dto.TourSpotDetailResponseDTO;
+import com.doto.domain.stamp.dto.TourSpotImageDTO;
 import com.doto.domain.stamp.dto.TourSpotItemDetailResponseDTO;
 import com.doto.domain.tourspot.entity.enums.TourSpotCategory;
 import com.doto.domain.tourex.client.TourApiClient;
 import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
 import com.doto.domain.tourex.dto.FestivalIntroApiResponseDTO;
 import com.doto.domain.tourex.dto.TourApiResponseDTO;
+import com.doto.domain.tourex.dto.TourImageApiResponseDTO;
 import com.doto.domain.tourex.enums.TourApiCategory;
 import com.doto.domain.tourex.exception.TourApiErrorCode;
 import com.doto.domain.tourex.exception.TourApiException;
@@ -15,8 +17,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TourApiService {
@@ -136,8 +140,41 @@ public class TourApiService {
                 category,
                 tourSpot.legalDongSigunguCode(),
                 tourSpot.tel(),
-                tourSpot.modifiedtime()
+                tourSpot.modifiedtime(),
+                getTourSpotImages(tourSpot.contentId())
         );
+    }
+
+    // 이미지 갤러리 조회 실패가 관광지 동기화 전체를 막지 않도록 실패 시 빈 목록으로 처리
+    private List<TourSpotImageDTO> getTourSpotImages(Long contentId) {
+        try {
+            return tourApiClient.getContentImages(contentId).stream()
+                    .map(this::toTourSpotImage)
+                    .toList();
+        } catch (TourApiException exception) {
+            log.warn("관광지 이미지 조회 실패: contentId={}", contentId, exception);
+            return List.of();
+        }
+    }
+
+    private TourSpotImageDTO toTourSpotImage(TourImageApiResponseDTO.TourImageDTO image) {
+        return new TourSpotImageDTO(
+                image.originImageUrl(),
+                image.smallImageUrl(),
+                image.imageName(),
+                toSerialNumber(image.serialNumber())
+        );
+    }
+
+    private Integer toSerialNumber(String serialNumber) {
+        if (serialNumber == null || serialNumber.isBlank()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(serialNumber);
+        } catch (NumberFormatException exception) {
+            return null;
+        }
     }
 
     private TourApiResponseDTO.TourContentDTO getContent(Long contentId) {

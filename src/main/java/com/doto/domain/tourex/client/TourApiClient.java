@@ -2,6 +2,7 @@ package com.doto.domain.tourex.client;
 
 import com.doto.domain.tourex.dto.FestivalIntroApiResponseDTO;
 import com.doto.domain.tourex.dto.TourApiResponseDTO;
+import com.doto.domain.tourex.dto.TourImageApiResponseDTO;
 import com.doto.domain.tourex.exception.TourApiErrorCode;
 import com.doto.domain.tourex.exception.TourApiException;
 import java.math.BigDecimal;
@@ -37,6 +38,17 @@ public class TourApiClient {
                 Map.of("contentId", contentId),
                 FestivalIntroApiResponseDTO.class
         );
+    }
+
+    // 관광지 상세 이미지 갤러리 조회, 원본 이미지가 없는 관광지도 있어 빈 목록을 그대로 반환
+    public List<TourImageApiResponseDTO.TourImageDTO> getContentImages(Long contentId) {
+        TourImageApiResponseDTO response = get(
+                "/detailImage2?contentId={contentId}&imageYN=Y&numOfRows=100&pageNo=1"
+                        + "&MobileOS=ETC&MobileApp=DOTO&_type=json&serviceKey={serviceKey}",
+                Map.of("contentId", contentId),
+                TourImageApiResponseDTO.class
+        );
+        return response.itemsOrEmpty();
     }
 
     public List<TourApiResponseDTO.TourContentDTO> getNearbyTourSpots(
@@ -138,6 +150,7 @@ public class TourApiClient {
         String resultCode = switch (response) {
             case TourApiResponseDTO tourApiResponse -> getResultCode(tourApiResponse.response());
             case FestivalIntroApiResponseDTO festivalIntroResponse -> getResultCode(festivalIntroResponse.response());
+            case TourImageApiResponseDTO tourImageResponse -> getResultCode(tourImageResponse.response());
             case null, default -> null;
         };
 
@@ -151,6 +164,10 @@ public class TourApiClient {
     }
 
     private String getResultCode(FestivalIntroApiResponseDTO.Response response) {
+        return response == null || response.header() == null ? null : response.header().resultCode();
+    }
+
+    private String getResultCode(TourImageApiResponseDTO.Response response) {
         return response == null || response.header() == null ? null : response.header().resultCode();
     }
 }

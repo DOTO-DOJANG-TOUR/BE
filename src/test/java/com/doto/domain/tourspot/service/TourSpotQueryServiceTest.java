@@ -9,8 +9,10 @@ import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.stamp.dto.StampTourSpotItemResponseDTO;
 import com.doto.domain.tourspot.entity.FestivalTourSpot;
 import com.doto.domain.tourspot.entity.TourSpot;
+import com.doto.domain.tourspot.entity.TourSpotImage;
 import com.doto.domain.tourspot.exception.TourException;
 import com.doto.domain.tourspot.repository.FestivalTourSpotRepository;
+import com.doto.domain.tourspot.repository.TourSpotImageRepository;
 import com.doto.domain.tourspot.repository.TourSpotRepository;
 import com.doto.fixture.FestivalFixture;
 import com.doto.fixture.TourSpotFixture;
@@ -35,6 +37,9 @@ class TourSpotQueryServiceTest {
 
     @Mock
     private TourSpotRepository tourSpotRepository;
+
+    @Mock
+    private TourSpotImageRepository tourSpotImageRepository;
 
     @InjectMocks
     private TourSpotQueryService tourSpotQueryService;
@@ -89,6 +94,81 @@ class TourSpotQueryServiceTest {
 
             assertThat(result.tourSpotId()).isEqualTo("2");
             assertThat(result.title()).isEqualTo("도토 광장");
+            assertThat(result.imageList()).containsExactly(tourSpot.getImageUrl());
+        }
+
+        @Test
+        @DisplayName("대표 이미지가 있으면 대표 이미지 1장과 세부 이미지 최대 3장을 imageList로 반환한다")
+        void returnsRepresentativeImageWithUpToThreeDetailImages() {
+            TourSpot tourSpot = TourSpotFixture.create();
+            ReflectionTestUtils.setField(tourSpot, "id", 2L);
+            given(festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(1L, 2L)).willReturn(true);
+            given(tourSpotRepository.findById(2L)).willReturn(Optional.of(tourSpot));
+            given(tourSpotImageRepository.findAllByTourSpot_IdOrderBySerialNumberAsc(2L)).willReturn(List.of(
+                    TourSpotImage.create(tourSpot, "https://doto.example.com/1.jpg", null, "정문", 1),
+                    TourSpotImage.create(tourSpot, "https://doto.example.com/2.jpg", null, "야경", 2),
+                    TourSpotImage.create(tourSpot, "https://doto.example.com/3.jpg", null, "내부", 3),
+                    TourSpotImage.create(tourSpot, "https://doto.example.com/4.jpg", null, "출구", 4)
+            ));
+
+            var result = tourSpotQueryService.getTourSpotDetail(1L, 2L);
+
+            assertThat(result.imageList()).containsExactly(
+                    tourSpot.getImageUrl(),
+                    "https://doto.example.com/1.jpg",
+                    "https://doto.example.com/2.jpg",
+                    "https://doto.example.com/3.jpg"
+            );
+        }
+
+        @Test
+        @DisplayName("세부 이미지에 대표 이미지와 같은 URL이 있으면 제외하고 채운다")
+        void excludesDetailImageMatchingRepresentativeImage() {
+            TourSpot tourSpot = TourSpotFixture.create();
+            ReflectionTestUtils.setField(tourSpot, "id", 2L);
+            given(festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(1L, 2L)).willReturn(true);
+            given(tourSpotRepository.findById(2L)).willReturn(Optional.of(tourSpot));
+            given(tourSpotImageRepository.findAllByTourSpot_IdOrderBySerialNumberAsc(2L)).willReturn(List.of(
+                    TourSpotImage.create(tourSpot, tourSpot.getImageUrl(), null, "대표 이미지와 동일", 1),
+                    TourSpotImage.create(tourSpot, "https://doto.example.com/1.jpg", null, "정문", 2),
+                    TourSpotImage.create(tourSpot, "https://doto.example.com/2.jpg", null, "야경", 3),
+                    TourSpotImage.create(tourSpot, "https://doto.example.com/3.jpg", null, "내부", 4)
+            ));
+
+            var result = tourSpotQueryService.getTourSpotDetail(1L, 2L);
+
+            assertThat(result.imageList()).containsExactly(
+                    tourSpot.getImageUrl(),
+                    "https://doto.example.com/1.jpg",
+                    "https://doto.example.com/2.jpg",
+                    "https://doto.example.com/3.jpg"
+            );
+        }
+
+        @Test
+        @DisplayName("대표 이미지가 없으면 세부 이미지 최대 4장을 imageList로 반환한다")
+        void returnsUpToFourDetailImagesWhenNoRepresentativeImage() {
+            TourSpot tourSpot = TourSpotFixture.create();
+            ReflectionTestUtils.setField(tourSpot, "id", 2L);
+            ReflectionTestUtils.setField(tourSpot, "imageUrl", null);
+            given(festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(1L, 2L)).willReturn(true);
+            given(tourSpotRepository.findById(2L)).willReturn(Optional.of(tourSpot));
+            given(tourSpotImageRepository.findAllByTourSpot_IdOrderBySerialNumberAsc(2L)).willReturn(List.of(
+                    TourSpotImage.create(tourSpot, "https://doto.example.com/1.jpg", null, "정문", 1),
+                    TourSpotImage.create(tourSpot, "https://doto.example.com/2.jpg", null, "야경", 2),
+                    TourSpotImage.create(tourSpot, "https://doto.example.com/3.jpg", null, "내부", 3),
+                    TourSpotImage.create(tourSpot, "https://doto.example.com/4.jpg", null, "출구", 4),
+                    TourSpotImage.create(tourSpot, "https://doto.example.com/5.jpg", null, "야외", 5)
+            ));
+
+            var result = tourSpotQueryService.getTourSpotDetail(1L, 2L);
+
+            assertThat(result.imageList()).containsExactly(
+                    "https://doto.example.com/1.jpg",
+                    "https://doto.example.com/2.jpg",
+                    "https://doto.example.com/3.jpg",
+                    "https://doto.example.com/4.jpg"
+            );
         }
 
         @Test

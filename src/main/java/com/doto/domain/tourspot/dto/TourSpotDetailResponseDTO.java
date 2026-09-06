@@ -2,6 +2,7 @@ package com.doto.domain.tourspot.dto;
 
 import com.doto.domain.tourspot.entity.enums.TourSpotCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 
 @Schema(description = "관광지 상세 정보")
 public record TourSpotDetailResponseDTO(
@@ -13,6 +14,9 @@ public record TourSpotDetailResponseDTO(
 
         @Schema(description = "관광지 대표 이미지 URL")
         String imageUrl,
+
+        @Schema(description = "관광지 이미지 목록(최대 10장)")
+        List<String> imageList,
 
         @Schema(description = "관광지 주소")
         String address,
