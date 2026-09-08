@@ -8,6 +8,7 @@ import com.doto.global.config.SwaggerConfig;
 import com.doto.global.swagger.ApiErrorCodeExamples;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,7 +34,7 @@ public interface TourSpotApi {
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     @GetMapping("/api/v1/festival/{festivalId}/tour-spots")
     ResponseEntity<CommonResponse<List<StampTourSpotItemResponseDTO>>> searchTourSpots(
-            @Parameter(description = "축제 ID") @PathVariable Long festivalId,
+            @Parameter(description = "축제 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long festivalId,
             @Parameter(description = "관광지명 검색 키워드. 생략 시 전체 조회", example = "해수욕장")
             @RequestParam(required = false) String keyword
     );
@@ -43,7 +44,7 @@ public interface TourSpotApi {
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     @GetMapping("/api/v1/festival/{festivalId}/tour-spots/{tourSpotId}")
     ResponseEntity<CommonResponse<TourSpotDetailResponseDTO>> getTourSpotDetail(
-            @Parameter(description = "축제 ID") @PathVariable Long festivalId,
-            @Parameter(description = "관광지 ID") @PathVariable Long tourSpotId
+            @Parameter(description = "축제 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long festivalId,
+            @Parameter(description = "관광지 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long tourSpotId
     );
 }

@@ -9,6 +9,7 @@ import com.doto.global.api.CommonResponse;
 import com.doto.global.config.SwaggerConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -105,7 +106,7 @@ public interface FestivalApi {
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     @GetMapping("/api/v1/festival/{festivalId}")
     ResponseEntity<CommonResponse<FestivalDetailResponseDTO>> getFestivalDetail(
-            @Parameter(description = "축제 ID")
+            @Parameter(description = "축제 ID", schema = @Schema(type = "string", example = "1234567890123456789"))
             @PathVariable Long festivalId
     );
 

@@ -13,6 +13,7 @@ import com.doto.global.security.CustomMemberDetails;
 import com.doto.global.swagger.ApiErrorCodeExamples;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,7 +41,7 @@ public interface StampTourApi {
     @PostMapping("/api/v1/festival/{festivalId}/stamp-tour")
     ResponseEntity<Void> startStampTour(
             @CurrentMember CustomMemberDetails memberDetails,
-            @Parameter(description = "축제 ID") @PathVariable Long festivalId
+            @Parameter(description = "축제 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long festivalId
     );
 
     @Operation(
@@ -57,7 +58,7 @@ public interface StampTourApi {
     @DeleteMapping("/api/v1/festival/{festivalId}/stamp-tour")
     ResponseEntity<Void> endStampTour(
             @CurrentMember CustomMemberDetails memberDetails,
-            @Parameter(description = "축제 ID") @PathVariable Long festivalId
+            @Parameter(description = "축제 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long festivalId
     );
 
     @Operation(
@@ -76,7 +77,7 @@ public interface StampTourApi {
     @GetMapping("/api/v1/festival/{festivalId}/stamp-tour")
     ResponseEntity<CommonResponse<StampTourStatusResponseDTO>> getStampTourStatus(
             @CurrentMember CustomMemberDetails memberDetails,
-            @Parameter(description = "축제 ID") @PathVariable Long festivalId
+            @Parameter(description = "축제 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long festivalId
     );
 
     @Operation(
