@@ -12,25 +12,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TourApiClient {
 
-    // TourAPI 초당 요청 제한(429) 대응을 위한 최소 호출 간격 및 재시도 설정
-    private static final long MIN_REQUEST_INTERVAL_MILLIS = 120L;
-    private static final int MAX_RATE_LIMIT_RETRY_ATTEMPTS = 3;
-    private static final long RATE_LIMIT_RETRY_BACKOFF_MILLIS = 400L;
-
     private final RestClient tourApiRestClient;
-    private final Object requestPacingLock = new Object();
-    private long lastRequestAtMillis = 0L;
 
     public TourApiResponseDTO getContentDetail(Long contentId) {
         return get(
@@ -140,51 +131,18 @@ public class TourApiClient {
         }
     }
 
-    // 429(요청 한도 초과)는 호출 간격을 두고 재시도, 그 외 오류는 즉시 전파
     private <T> T get(String uri, Map<String, ?> uriVariables, Class<T> responseType) {
-        TourApiException rateLimitException = null;
-        for (int attempt = 1; attempt <= MAX_RATE_LIMIT_RETRY_ATTEMPTS; attempt++) {
-            awaitRequestInterval();
-            try {
-                T response = tourApiRestClient.get()
-                        .uri(uri, uriVariables)
-                        .retrieve()
-                        .body(responseType);
-                validateResponse(response);
-                return response;
-            } catch (ResourceAccessException exception) {
-                throw new TourApiException(TourApiErrorCode.TOUR_API_UNAVAILABLE, exception);
-            } catch (TourApiException exception) {
-                if (exception.getErrorCode() != TourApiErrorCode.TOUR_API_RATE_LIMITED) {
-                    throw exception;
-                }
-                rateLimitException = exception;
-                log.warn("TourAPI 요청 한도 초과로 재시도합니다: attempt={}/{}", attempt, MAX_RATE_LIMIT_RETRY_ATTEMPTS);
-                sleep(RATE_LIMIT_RETRY_BACKOFF_MILLIS * attempt);
-            } catch (RestClientException exception) {
-                throw new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR, exception);
-            }
-        }
-        throw rateLimitException;
-    }
-
-    // 연속 호출 사이 최소 간격을 보장해 초당 요청 제한(429) 발생 자체를 줄인다
-    private void awaitRequestInterval() {
-        synchronized (requestPacingLock) {
-            long waitMillis = MIN_REQUEST_INTERVAL_MILLIS - (System.currentTimeMillis() - lastRequestAtMillis);
-            if (waitMillis > 0) {
-                sleep(waitMillis);
-            }
-            lastRequestAtMillis = System.currentTimeMillis();
-        }
-    }
-
-    private void sleep(long millis) {
         try {
-            Thread.sleep(millis);
-        } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
+            T response = tourApiRestClient.get()
+                    .uri(uri, uriVariables)
+                    .retrieve()
+                    .body(responseType);
+            validateResponse(response);
+            return response;
+        } catch (ResourceAccessException exception) {
             throw new TourApiException(TourApiErrorCode.TOUR_API_UNAVAILABLE, exception);
+        } catch (RestClientException exception) {
+            throw new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR, exception);
         }
     }
 
