@@ -130,7 +130,7 @@ class TourApiServiceTest {
             given(tourApiClient.getContentDetail(126516L))
                     .willReturn(response(festivalContent("041-730-2971,3", "https://example.com", "EV010100")));
             given(tourApiClient.getFestivalIntro(126516L)).willReturn(festivalIntro(
-                    "행사기간 상시", "없음", "무료", null, "18:00~22:00"
+                    "R석 35,000원", "없음", "무료", null, "18:00~22:00"
             ));
 
             FestivalApiResponseDTO result = tourApiService.getFestivalInfo(126516L, "문화관광축제");
@@ -143,6 +143,20 @@ class TourApiServiceTest {
             assertThat(result.fee()).isEqualTo("무료");
             assertThat(result.festivalType()).isEqualTo("문화관광축제");
             assertThat(result.category()).isEqualTo("문화관광");
+        }
+
+        @Test
+        @DisplayName("usefee가 비어있으면 usetimefestival을 이용요금으로 사용한다")
+        void fallsBackToUseTimeFestivalWhenUseFeeIsBlank() {
+            given(tourApiClient.getContentDetail(126516L))
+                    .willReturn(response(festivalContent("041-730-2971,3", "https://example.com", "EV010100")));
+            given(tourApiClient.getFestivalIntro(126516L)).willReturn(festivalIntro(
+                    "R석 35,000원", "없음", "", null, "18:00~22:00"
+            ));
+
+            FestivalApiResponseDTO result = tourApiService.getFestivalInfo(126516L, "문화관광축제");
+
+            assertThat(result.fee()).isEqualTo("R석 35,000원");
         }
 
         @Test
