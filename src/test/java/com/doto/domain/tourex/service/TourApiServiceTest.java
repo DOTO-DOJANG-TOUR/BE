@@ -130,7 +130,7 @@ class TourApiServiceTest {
             given(tourApiClient.getContentDetail(126516L))
                     .willReturn(response(festivalContent("041-730-2971,3", "https://example.com", "EV010100")));
             given(tourApiClient.getFestivalIntro(126516L)).willReturn(festivalIntro(
-                    "18:00~22:00", "없음", "무료", null
+                    "행사기간 상시", "없음", "무료", null, "18:00~22:00"
             ));
 
             FestivalApiResponseDTO result = tourApiService.getFestivalInfo(126516L, "문화관광축제");
@@ -151,7 +151,7 @@ class TourApiServiceTest {
             given(tourApiClient.getContentDetail(126516L))
                     .willReturn(response(festivalContent("  ", "", "  ")));
             given(tourApiClient.getFestivalIntro(126516L)).willReturn(festivalIntro(
-                    " ", "", "   ", "  "
+                    " ", "", "   ", "  ", " "
             ));
 
             FestivalApiResponseDTO result = tourApiService.getFestivalInfo(126516L, "  ");
@@ -172,7 +172,7 @@ class TourApiServiceTest {
             given(tourApiClient.getContentDetail(126516L))
                     .willReturn(response(festivalContent("041-730-2971,3", "https://example.com", "EV020100")));
             given(tourApiClient.getFestivalIntro(126516L)).willReturn(festivalIntro(
-                    "18:00~22:00", "없음", "무료", null
+                    "행사기간 상시", "없음", "무료", null, "18:00~22:00"
             ));
 
             FestivalApiResponseDTO result = tourApiService.getFestivalInfo(126516L, "공연");
@@ -191,9 +191,9 @@ class TourApiServiceTest {
         );
     }
 
-    // usetimefestival, restdate, usefee, eventhomepage 외 나머지 필드는 이 테스트들에서 의미가 없어 고정값을 사용한다
+    // usetimefestival, restdate, usefee, eventhomepage, opentime 외 나머지 필드는 이 테스트들에서 의미가 없어 고정값을 사용한다
     private FestivalIntroApiResponseDTO festivalIntro(
-            String usetimefestival, String restdate, String usefee, String eventhomepage
+            String usetimefestival, String restdate, String usefee, String eventhomepage, String opentime
     ) {
         return new FestivalIntroApiResponseDTO(new FestivalIntroApiResponseDTO.Response(
                 new FestivalIntroApiResponseDTO.Header("0000", "OK"),
@@ -202,7 +202,8 @@ class TourApiServiceTest {
                                 "20261010", "20261011", usetimefestival, null, null,
                                 restdate, usefee, null, null, null,
                                 null, eventhomepage, null, null, null,
-                                null, null, null, null, null, null
+                                null, null, null, null, null, null,
+                                opentime
                         )
                 )))
         ));

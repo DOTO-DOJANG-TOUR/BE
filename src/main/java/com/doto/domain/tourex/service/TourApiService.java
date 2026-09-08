@@ -67,7 +67,7 @@ public class TourApiService {
                 .legalDongSigunguCode(festival.legalDongSigunguCode())
                 .eventStartDate(intro.eventstartdate())
                 .eventEndDate(intro.eventenddate())
-                .operationHours(intro.usetimefestival())
+                .operationHours(intro.opentime())
                 .playTime(intro.playtime())
                 .spendTime(intro.spendtimefestival())
                 .holiday(intro.restdate())
