@@ -67,11 +67,11 @@ public class TourApiService {
                 .legalDongSigunguCode(festival.legalDongSigunguCode())
                 .eventStartDate(intro.eventstartdate())
                 .eventEndDate(intro.eventenddate())
-                .operationHours(intro.opentime())
+                .operationHours(intro.playtime())
                 .playTime(intro.playtime())
                 .spendTime(intro.spendtimefestival())
                 .holiday(intro.restdate())
-                .fee(firstNonBlank(intro.usefee(), intro.usetimefestival()))
+                .fee(intro.usetimefestival())
                 .discountInfo(intro.discountinfofestival())
                 .parkingInfo(intro.parking())
                 .parkingFee(intro.parkingfee())
@@ -206,11 +206,6 @@ public class TourApiService {
 
     private String getHomepageUrl(String homepage, String eventHomepage) {
         return eventHomepage == null || eventHomepage.isBlank() ? homepage : eventHomepage;
-    }
-
-    // 첫 번째 값이 비어있으면 두 번째 값을 사용
-    private String firstNonBlank(String first, String second) {
-        return first == null || first.isBlank() ? second : first;
     }
 
     private BigDecimal toCoordinate(String coordinate) {

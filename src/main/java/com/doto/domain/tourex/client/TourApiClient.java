@@ -89,7 +89,7 @@ public class TourApiClient {
         if (legalDongSigunguCode != null && legalDongRegionCode == null) {
             throw new IllegalArgumentException("법정동 시군구 코드는 시도 코드와 함께 입력해야 합니다.");
         }
-
+        //행사정보조회 EV 만 뽑아옴
         StringBuilder uri = new StringBuilder(
                 "/searchFestival2?eventStartDate={eventStartDate}&numOfRows=100&pageNo={pageNo}"
                         + "&MobileOS=ETC&MobileApp=DOTO&_type=json&serviceKey={serviceKey}"
