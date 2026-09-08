@@ -46,6 +46,10 @@ public class TourApiClientConfig {
                             String responseBody = StreamUtils.copyToString(response.getBody(), StandardCharsets.UTF_8);
                             log.warn("TourAPI HTTP 오류: status={}, uri={}, body={}",
                                     response.getStatusCode(), maskServiceKey(request.getURI().toString()), responseBody);
+                            // 429는 재시도가 가능하도록 별도 에러코드로 구분
+                            if (response.getStatusCode().value() == 429) {
+                                throw new TourApiException(TourApiErrorCode.TOUR_API_RATE_LIMITED);
+                            }
                             throw new TourApiException(TourApiErrorCode.TOUR_API_RESPONSE_ERROR);
                         }
                 )
