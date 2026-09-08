@@ -27,6 +27,26 @@ class StampTourTest {
 
             assertThat(stampTour.getStatus()).isEqualTo(StampTourStatus.PROGRESS);
             assertThat(stampTour.getStartedAt()).isNotNull();
+            assertThat(stampTour.getQrToken()).matches("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
+        }
+
+        @Test
+        void 같은_회원이_같은_축제의_새_투어를_시작하면_서로_다른_QR_토큰을_발급한다() {
+            Member member = Member.register("홍길동");
+            Festival festival = createFestival();
+            StampTour firstTour = StampTour.create(member, festival);
+            StampTour secondTour = StampTour.create(member, festival);
+
+            assertThat(firstTour.getQrToken()).isNotEqualTo(secondTour.getQrToken());
+        }
+
+        @Test
+        void 서로_다른_회원의_투어에는_서로_다른_QR_토큰을_발급한다() {
+            Festival festival = createFestival();
+            StampTour firstMemberTour = StampTour.create(Member.register("홍길동"), festival);
+            StampTour secondMemberTour = StampTour.create(Member.register("김도토"), festival);
+
+            assertThat(firstMemberTour.getQrToken()).isNotEqualTo(secondMemberTour.getQrToken());
         }
     }
 
@@ -58,11 +78,14 @@ class StampTourTest {
     }
 
     private StampTour createStampTour() {
-        Festival festival = Festival.create(
+        return StampTour.create(Member.register("홍길동"), createFestival());
+    }
+
+    private Festival createFestival() {
+        return Festival.create(
                 2515245L, "도토 축제", null, null, null, null, null, null, null, null, null, null, null, null, Region.서울특별시, "680",
                 Instant.parse("2026-08-15T00:00:00Z"), Instant.parse("2026-08-20T00:00:00Z"),
                 GEOMETRY_FACTORY.createPoint(new Coordinate(127.0276, 37.4979))
         );
-        return StampTour.create(Member.register("홍길동"), festival);
     }
 }
