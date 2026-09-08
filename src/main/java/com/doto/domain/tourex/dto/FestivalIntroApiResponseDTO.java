@@ -49,8 +49,7 @@ public record FestivalIntroApiResponseDTO(
             String sponsor1,
             String sponsor1tel,
             String infocenter,
-            String agelimit,
-            String opentime
+            String agelimit
     ) {
     }
 }
