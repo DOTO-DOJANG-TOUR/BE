@@ -42,7 +42,6 @@ public record TourApiResponseDTO(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Body(
-            @JsonDeserialize(using = ItemsDeserializer.class)
             Items items,
             Integer numOfRows,
             Integer pageNo,
@@ -50,7 +49,9 @@ public record TourApiResponseDTO(
     ) {
     }
 
+
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonDeserialize(using = ItemsDeserializer.class)
     public record Items(
             List<TourContentDTO> item
     ) {

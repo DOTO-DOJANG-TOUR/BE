@@ -17,11 +17,11 @@
 ├── legalGungu (legalRegion → RegionGroup.from(legalRegion): RegionGroup.JEONNAM)
 ├── location (축제 공통 mapx/mapy: "127.3099", "34.0244" → Point)
 ├── playTime (축제소개 playtime: "60분")
-├── operationHours (축제소개 usetimefestival: "10:00~18:00")
-├── restDate (축제소개 restdate: "월요일")
-├── useFee (축제소개 usefee: "무료")
-├── parking (축제소개 parking: "가능")
-├── parkingFee (축제소개 parkingfee: "무료")
+├── operationHours (축제소개 playtime: "18:00~22:00")
+├── restDate (축제소개 restdate: "월요일" - 축제 담당자가 입력안하는 경우가 많음)
+├── useFee (축제소개 usetimefestival: "무료")
+├── parking (축제소개 parking: "가능" - 축제 담당자가 입력안하는 경우가 많음)
+├── parkingFee (축제소개 parkingfee: "무료" - 축제 담당자가 입력안하는 경우가 많음)
 ├── eventStartDate (축제소개 eventstartdate: "20260731")
 └── eventEndDate (축제소개 eventenddate: "20260801")
 ```
@@ -580,3 +580,516 @@
 | 코드 | 이름 |
 | --- | --- |
 | 36110 | 세종특별자치시 |
+
+
+### searchFestival2에서 얻은 contentid로 -> 
+
+ ## /detailIntro2 반환값
+```
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  <response>
+    <header>
+      <resultCode>0000</resultCode>
+      <resultMsg>OK</resultMsg>
+    </header>
+    <body>
+      <items>
+        <item>
+          <contentid>2614762</contentid>
+          <contenttypeid>15</contenttypeid>
+          <sponsor1>거제해양관광개발공사</sponsor1>
+          <sponsor1tel>055-639-8193</sponsor1tel>
+          <sponsor2>
+          </sponsor2>
+          <sponsor2tel>
+          </sponsor2tel>
+          <eventenddate>20260912</eventenddate>
+          <playtime>18:00~22:00</playtime>
+          <eventplace>장승포 수변공원</eventplace>
+          <eventhomepage>
+          </eventhomepage>
+          <agelimit>
+          </agelimit>
+          <bookingplace>
+          </bookingplace>
+          <placeinfo>
+          </placeinfo>
+          <subevent>
+          </subevent>
+          <program>1. 메인 공연 : 지역가수 및 전문팀 공연(EDM·댄스·7080·K-POP), 시민 참여 이벤트
+2. 맥주존 : 생맥주 무제한 제공
+3. 먹거리존 : 푸드트럭, 장승포동 주민자치회 먹거리 부스
+4. 체험 프로그램 : 지역 막걸리 전시·홍보·시음 체험, 거제 관광 홍보부스
+5. 부대행사 : 포토존, 외국인 통역 지원 부스, 베리어프리존, 무더위 쉼터, 친환경 캠페인
+
+[이용요금]
+- 1차 사전예매(8.7.~23.) 12,000원(20%할인)
+- 2차 사전예매(8.24~9.10.) 13,500원(10%할인)</program>
+  <eventstartdate>20260911</eventstartdate>
+  <usetimefestival>유료</usetimefestival>
+  <discountinfofestival>
+  </discountinfofestival>
+  <spendtimefestival>
+  </spendtimefestival>
+  <festivalgrade>
+  </festivalgrade>
+  <progresstype>선택안함</progresstype>
+  <festivaltype>
+  </festivaltype>
+  </item>
+  </items>
+  <numOfRows>1</numOfRows>
+  <pageNo>1</pageNo>
+  <totalCount>1</totalCount>
+    </body>
+  </response>
+```
+
+## /detailCommon2
+```
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  <response>
+    <header>
+      <resultCode>0000</resultCode>
+      <resultMsg>OK</resultMsg>
+    </header>
+    <body>
+      <items>
+        <item>
+          <contentid>141105</contentid>
+          <contenttypeid>15</contenttypeid>
+          <title>경남고성공룡세계엑스포</title>
+          <createdtime>20060414090000</createdtime>
+          <modifiedtime>20260803143202</modifiedtime>
+          <tel>055-670-7400</tel>
+          <telname>경남 고성군</telname>
+          <homepage>www.gngsctf.or.kr</homepage>
+          <firstimage>https://tong.visitkorea.or.kr/cms/resource/32/4084832_image2_1.jpg</firstimage>
+          <firstimage2>https://tong.visitkorea.or.kr/cms/resource/32/4084832_image3_1.jpg</firstimage2>
+          <cpyrhtDivCd>Type3</cpyrhtDivCd>
+          <areacode>
+          </areacode>
+          <sigungucode>
+          </sigungucode>
+          <lDongRegnCd>48</lDongRegnCd>
+          <lDongSignguCd>820</lDongSignguCd>
+          <lclsSystm1>EV</lclsSystm1>
+          <lclsSystm2>EV01</lclsSystm2>
+          <lclsSystm3>EV010600</lclsSystm3>
+          <cat1>
+          </cat1>
+          <cat2>
+          </cat2>
+          <cat3>
+          </cat3>
+          <addr1>경상남도 고성군 당항만로 1116</addr1>
+          <addr2>당항포관광지</addr2>
+          <zipcode>52915</zipcode>
+          <mapx>128.3915143393</mapx>
+          <mapy>35.0533072967</mapy>
+          <mlevel>6</mlevel>
+          <overview>경남고성공룡세계엑스포는 대한민국 경상남도 고성군 회화면 당항포관광지에서 개최되는 공룡을 주제로 한 축제이다. 고성군은 세계 3대 공룡발자국 화석 원산지로 널리 알려진 지역으로 여러 지역에서 발견된 크고 작은 공룡화석의 가치를 알리고 관광산업을 알리기 위하여 2006년부터 개최되어 왔다. 행사장인 당항포관광지는 공룡테마존과 이순신테마존으로 구성되어 있며, 해안산책로, 등산로, 공룡 발자국 탐방로 등의 야외 테마 공원을 갖추고 있다. 행사의 주최는 경상남도 고성군이며, 2026년 현재 (재)고성문화관광재단에서 경남고성공룡세계엑스포를 운영하고 있다. 2026년 엑스포는 10회째, 20주년을 맞았으며 &apos;공룡과 떠나는 신나는 모험&apos;을 주제로 개최된다. 또한, 매회 다양한 전시·체험 프로그램과 공연을 통해 국내 대표 공룡 테마 축제로 자리매김하고 있다.</overview>
+        </item>
+      </items>
+      <numOfRows>1</numOfRows>
+      <pageNo>1</pageNo>
+      <totalCount>1</totalCount>
+    </body>
+  </response>
+
+```
+
+## /searchFestival2
+```
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  <response>
+    <header>
+      <resultCode>0000</resultCode>
+      <resultMsg>OK</resultMsg>
+    </header>
+    <body>
+      <items>
+        <item>
+          <addr1>서울특별시 강남구 도산대로 320 (논현동)</addr1>
+          <addr2>
+          </addr2>
+          <zipcode>06054</zipcode>
+          <cat1>
+          </cat1>
+          <cat2>
+          </cat2>
+          <cat3>
+          </cat3>
+          <contentid>737479</contentid>
+          <contenttypeid>15</contenttypeid>
+          <createdtime>20090521185913</createdtime>
+          <eventstartdate>20261003</eventstartdate>
+          <eventenddate>20261005</eventenddate>
+          <firstimage>https://tong.visitkorea.or.kr/cms/resource/43/4101843_image2_1.jpg</firstimage>
+          <firstimage2>https://tong.visitkorea.or.kr/cms/resource/43/4101843_image3_1.jpg</firstimage2>
+          <cpyrhtDivCd>Type3</cpyrhtDivCd>
+          <mapx>127.0369343307</mapx>
+          <mapy>37.5221428648</mapy>
+          <mlevel>6</mlevel>
+          <modifiedtime>20260826183754</modifiedtime>
+          <areacode>
+          </areacode>
+          <sigungucode>
+          </sigungucode>
+          <tel>02-3423-5543</tel>
+          <title>강남페스티벌</title>
+          <lDongRegnCd>11</lDongRegnCd>
+          <lDongSignguCd>680</lDongSignguCd>
+          <lclsSystm1>EV</lclsSystm1>
+          <lclsSystm2>EV01</lclsSystm2>
+          <lclsSystm3>EV010200</lclsSystm3>
+          <progresstype>선택안함</progresstype>
+          <festivaltype>
+          </festivaltype>
+        </item>
+        <item>
+          <addr1>서울특별시 강동구 올림픽로 875 (암사동)</addr1>
+          <addr2>
+          </addr2>
+          <zipcode>05239</zipcode>
+          <cat1>
+          </cat1>
+          <cat2>
+          </cat2>
+          <cat3>
+          </cat3>
+          <contentid>1307813</contentid>
+          <contenttypeid>15</contenttypeid>
+          <createdtime>20110615014707</createdtime>
+          <eventstartdate>20261016</eventstartdate>
+          <eventenddate>20261018</eventenddate>
+          <firstimage>https://tong.visitkorea.or.kr/cms/resource/77/3541977_image2_1.jpg</firstimage>
+          <firstimage2>https://tong.visitkorea.or.kr/cms/resource/77/3541977_image3_1.jpg</firstimage2>
+          <cpyrhtDivCd>Type3</cpyrhtDivCd>
+          <mapx>127.13060065465167</mapx>
+          <mapy>37.55906143476573</mapy>
+          <mlevel>6</mlevel>
+          <modifiedtime>20260227174111</modifiedtime>
+          <areacode>
+          </areacode>
+          <sigungucode>
+          </sigungucode>
+          <tel>02-3425-5240</tel>
+          <title>강동선사문화축제</title>
+          <lDongRegnCd>11</lDongRegnCd>
+          <lDongSignguCd>740</lDongSignguCd>
+          <lclsSystm1>EV</lclsSystm1>
+          <lclsSystm2>EV01</lclsSystm2>
+          <lclsSystm3>EV010100</lclsSystm3>
+          <progresstype>선택안함</progresstype>
+          <festivaltype>
+          </festivaltype>
+        </item>
+        <item>
+          <addr1>강원특별자치도 강릉시 창해로14번길 20-1 (견소동)</addr1>
+          <addr2>
+          </addr2>
+          <zipcode>25556</zipcode>
+          <cat1>
+          </cat1>
+          <cat2>
+          </cat2>
+          <cat3>
+          </cat3>
+          <contentid>825295</contentid>
+          <contenttypeid>15</contenttypeid>
+          <createdtime>20091022232428</createdtime>
+          <eventstartdate>20261021</eventstartdate>
+          <eventenddate>20261025</eventenddate>
+          <firstimage>https://tong.visitkorea.or.kr/cms/resource/24/3546224_image2_1.JPG</firstimage>
+          <firstimage2>https://tong.visitkorea.or.kr/cms/resource/24/3546224_image3_1.JPG</firstimage2>
+          <cpyrhtDivCd>Type3</cpyrhtDivCd>
+          <mapx>128.9473094259</mapx>
+          <mapy>37.7726104945</mapy>
+          <mlevel>6</mlevel>
+          <modifiedtime>20260618175538</modifiedtime>
+          <areacode>
+          </areacode>
+          <sigungucode>
+          </sigungucode>
+          <tel>033-647-6802</tel>
+          <title>강릉커피축제</title>
+          <lDongRegnCd>51</lDongRegnCd>
+          <lDongSignguCd>150</lDongSignguCd>
+          <lclsSystm1>EV</lclsSystm1>
+          <lclsSystm2>EV01</lclsSystm2>
+          <lclsSystm3>EV010100</lclsSystm3>
+          <progresstype>선택안함</progresstype>
+          <festivaltype>
+          </festivaltype>
+        </item>
+        <item>
+          <addr1>경상남도 거제시 장승로 138 (장승포동)</addr1>
+          <addr2>
+          </addr2>
+          <zipcode>53322</zipcode>
+          <cat1>
+          </cat1>
+          <cat2>
+          </cat2>
+          <cat3>
+          </cat3>
+          <contentid>2614762</contentid>
+          <contenttypeid>15</contenttypeid>
+          <createdtime>20190809184709</createdtime>
+          <eventstartdate>20260911</eventstartdate>
+          <eventenddate>20260912</eventenddate>
+          <firstimage>https://tong.visitkorea.or.kr/cms/resource/11/4097611_image2_1.jpg</firstimage>
+          <firstimage2>https://tong.visitkorea.or.kr/cms/resource/11/4097611_image3_1.jpg</firstimage2>
+          <cpyrhtDivCd>Type3</cpyrhtDivCd>
+          <mapx>128.7245993248</mapx>
+          <mapy>34.8663308815</mapy>
+          <mlevel>6</mlevel>
+          <modifiedtime>20260825103422</modifiedtime>
+          <areacode>
+          </areacode>
+          <sigungucode>
+          </sigungucode>
+          <tel>055-639-8193</tel>
+          <title>거제맥주축제</title>
+          <lDongRegnCd>48</lDongRegnCd>
+          <lDongSignguCd>310</lDongSignguCd>
+          <lclsSystm1>EV</lclsSystm1>
+          <lclsSystm2>EV01</lclsSystm2>
+          <lclsSystm3>EV010200</lclsSystm3>
+          <progresstype>선택안함</progresstype>
+          <festivaltype>
+          </festivaltype>
+        </item>
+        <item>
+          <addr1>경기도 수원시 권선구 세화로134번길 37 (서둔동)</addr1>
+          <addr2>
+          </addr2>
+          <zipcode>16621</zipcode>
+          <cat1>
+          </cat1>
+          <cat2>
+          </cat2>
+          <cat3>
+          </cat3>
+          <contentid>3368470</contentid>
+          <contenttypeid>15</contenttypeid>
+          <createdtime>20240913144625</createdtime>
+          <eventstartdate>20261121</eventstartdate>
+          <eventenddate>20261122</eventenddate>
+          <firstimage>https://tong.visitkorea.or.kr/cms/resource/09/4106209_image2_1.jpg</firstimage>
+          <firstimage2>https://tong.visitkorea.or.kr/cms/resource/09/4106209_image3_1.jpg</firstimage2>
+          <cpyrhtDivCd>Type3</cpyrhtDivCd>
+          <mapx>126.9971816138</mapx>
+          <mapy>37.2668071001</mapy>
+          <mlevel>6</mlevel>
+          <modifiedtime>20260831163507</modifiedtime>
+          <areacode>
+          </areacode>
+          <sigungucode>
+          </sigungucode>
+          <tel>031-774-3312</tel>
+          <title>경기미 디저트 페스타</title>
+          <lDongRegnCd>41</lDongRegnCd>
+          <lDongSignguCd>113</lDongSignguCd>
+          <lclsSystm1>EV</lclsSystm1>
+          <lclsSystm2>EV03</lclsSystm2>
+          <lclsSystm3>EV030200</lclsSystm3>
+          <progresstype>선택안함</progresstype>
+          <festivaltype>
+          </festivaltype>
+        </item>
+        <item>
+          <addr1>경상남도 고성군 당항만로 1116</addr1>
+          <addr2>당항포관광지</addr2>
+          <zipcode>52915</zipcode>
+          <cat1>
+          </cat1>
+          <cat2>
+          </cat2>
+          <cat3>
+          </cat3>
+          <contentid>141105</contentid>
+          <contenttypeid>15</contenttypeid>
+          <createdtime>20060414090000</createdtime>
+          <eventstartdate>20260922</eventstartdate>
+          <eventenddate>20261101</eventenddate>
+          <firstimage>https://tong.visitkorea.or.kr/cms/resource/32/4084832_image2_1.jpg</firstimage>
+          <firstimage2>https://tong.visitkorea.or.kr/cms/resource/32/4084832_image3_1.jpg</firstimage2>
+          <cpyrhtDivCd>Type3</cpyrhtDivCd>
+          <mapx>128.3915143393</mapx>
+          <mapy>35.0533072967</mapy>
+          <mlevel>6</mlevel>
+          <modifiedtime>20260803143202</modifiedtime>
+          <areacode>
+          </areacode>
+          <sigungucode>
+          </sigungucode>
+          <tel>055-670-7400</tel>
+          <title>경남고성공룡세계엑스포</title>
+          <lDongRegnCd>48</lDongRegnCd>
+          <lDongSignguCd>820</lDongSignguCd>
+          <lclsSystm1>EV</lclsSystm1>
+          <lclsSystm2>EV01</lclsSystm2>
+          <lclsSystm3>EV010600</lclsSystm3>
+          <progresstype>선택안함</progresstype>
+          <festivaltype>
+          </festivaltype>
+        </item>
+        <item>
+          <addr1>서울특별시 종로구 사직로 161 (세종로)</addr1>
+          <addr2>경복궁</addr2>
+          <zipcode>03045</zipcode>
+          <cat1>
+          </cat1>
+          <cat2>
+          </cat2>
+          <cat3>
+          </cat3>
+          <contentid>2648460</contentid>
+          <contenttypeid>15</contenttypeid>
+          <createdtime>20200224192834</createdtime>
+          <eventstartdate>20260902</eventstartdate>
+          <eventenddate>20261024</eventenddate>
+          <firstimage>https://tong.visitkorea.or.kr/cms/resource/35/4100435_image2_1.jpg</firstimage>
+          <firstimage2>https://tong.visitkorea.or.kr/cms/resource/35/4100435_image3_1.jpg</firstimage2>
+          <cpyrhtDivCd>Type3</cpyrhtDivCd>
+          <mapx>126.9767218661</mapx>
+          <mapy>37.5760307000</mapy>
+          <mlevel>6</mlevel>
+          <modifiedtime>20260819091218</modifiedtime>
+          <areacode>
+          </areacode>
+          <sigungucode>
+          </sigungucode>
+          <tel>1522-2295</tel>
+          <title>경복궁 별빛야행</title>
+          <lDongRegnCd>11</lDongRegnCd>
+          <lDongSignguCd>110</lDongSignguCd>
+          <lclsSystm1>EV</lclsSystm1>
+          <lclsSystm2>EV01</lclsSystm2>
+          <lclsSystm3>EV010200</lclsSystm3>
+          <progresstype>선택안함</progresstype>
+          <festivaltype>
+          </festivaltype>
+        </item>
+        <item>
+          <addr1>경상북도 경산시 남매로 100 (상방동)</addr1>
+          <addr2>경산생활체육공원 온마루광장(구 어귀마당)</addr2>
+          <zipcode>38637</zipcode>
+          <cat1>
+          </cat1>
+          <cat2>
+          </cat2>
+          <cat3>
+          </cat3>
+          <contentid>140897</contentid>
+          <contenttypeid>15</contenttypeid>
+          <createdtime>20050915090000</createdtime>
+          <eventstartdate>20260919</eventstartdate>
+          <eventenddate>20260920</eventenddate>
+          <firstimage>https://tong.visitkorea.or.kr/cms/resource/14/4102114_image2_1.jpg</firstimage>
+          <firstimage2>https://tong.visitkorea.or.kr/cms/resource/14/4102114_image3_1.jpg</firstimage2>
+          <cpyrhtDivCd>Type3</cpyrhtDivCd>
+          <mapx>128.7437733447</mapx>
+          <mapy>35.8211171309</mapy>
+          <mlevel>6</mlevel>
+          <modifiedtime>20260907132402</modifiedtime>
+          <areacode>
+          </areacode>
+          <sigungucode>
+          </sigungucode>
+          <tel>053-819-0334</tel>
+          <title>경산 갓바위소원성취축제</title>
+          <lDongRegnCd>47</lDongRegnCd>
+          <lDongSignguCd>290</lDongSignguCd>
+          <lclsSystm1>EV</lclsSystm1>
+          <lclsSystm2>EV01</lclsSystm2>
+          <lclsSystm3>EV010200</lclsSystm3>
+          <progresstype>선택안함</progresstype>
+          <festivaltype>
+          </festivaltype>
+        </item>
+        <item>
+          <addr1>경상북도 경주시 인왕동 839-1</addr1>
+          <addr2>
+          </addr2>
+          <zipcode>780150</zipcode>
+          <cat1>
+          </cat1>
+          <cat2>
+          </cat2>
+          <cat3>
+          </cat3>
+          <contentid>2614760</contentid>
+          <contenttypeid>15</contenttypeid>
+          <createdtime>20190809184135</createdtime>
+          <eventstartdate>20260918</eventstartdate>
+          <eventenddate>20260920</eventenddate>
+          <firstimage>https://tong.visitkorea.or.kr/cms/resource/20/4107120_image2_1.JPG</firstimage>
+          <firstimage2>https://tong.visitkorea.or.kr/cms/resource/20/4107120_image3_1.JPG</firstimage2>
+          <cpyrhtDivCd>Type3</cpyrhtDivCd>
+          <mapx>129.2188486000</mapx>
+          <mapy>35.8346809000</mapy>
+          <mlevel>6</mlevel>
+          <modifiedtime>20260904112229</modifiedtime>
+          <areacode>
+          </areacode>
+          <sigungucode>
+          </sigungucode>
+          <tel>054-743-7182</tel>
+          <title>경주 국가유산야행</title>
+          <lDongRegnCd>47</lDongRegnCd>
+          <lDongSignguCd>130</lDongSignguCd>
+          <lclsSystm1>EV</lclsSystm1>
+          <lclsSystm2>EV01</lclsSystm2>
+          <lclsSystm3>EV010400</lclsSystm3>
+          <progresstype>선택안함</progresstype>
+          <festivaltype>
+          </festivaltype>
+        </item>
+        <item>
+          <addr1>충청남도 계룡시 신도안면 석계리 계룡대 활주로</addr1>
+          <addr2>
+          </addr2>
+          <zipcode>32800</zipcode>
+          <cat1>
+          </cat1>
+          <cat2>
+          </cat2>
+          <cat3>
+          </cat3>
+          <contentid>2992940</contentid>
+          <contenttypeid>15</contenttypeid>
+          <createdtime>20230707171713</createdtime>
+          <eventstartdate>20261001</eventstartdate>
+          <eventenddate>20261005</eventenddate>
+          <firstimage>https://tong.visitkorea.or.kr/cms/resource/51/4106751_image2_1.JPG</firstimage>
+          <firstimage2>https://tong.visitkorea.or.kr/cms/resource/51/4106751_image3_1.JPG</firstimage2>
+          <cpyrhtDivCd>Type3</cpyrhtDivCd>
+          <mapx>127.2366628000</mapx>
+          <mapy>36.3083994000</mapy>
+          <mlevel>6</mlevel>
+          <modifiedtime>20260903170934</modifiedtime>
+          <areacode>
+          </areacode>
+          <sigungucode>
+          </sigungucode>
+          <tel>042-840-2621~4</tel>
+          <title>계룡軍문화축제</title>
+          <lDongRegnCd>44</lDongRegnCd>
+          <lDongSignguCd>250</lDongSignguCd>
+          <lclsSystm1>EV</lclsSystm1>
+          <lclsSystm2>EV01</lclsSystm2>
+          <lclsSystm3>EV010100</lclsSystm3>
+          <progresstype>선택안함</progresstype>
+          <festivaltype>
+          </festivaltype>
+        </item>
+      </items>
+      <numOfRows>10</numOfRows>
+      <pageNo>1</pageNo>
+      <totalCount>259</totalCount>
+    </body>
+  </response>
+  ```
