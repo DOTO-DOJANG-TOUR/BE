@@ -13,6 +13,7 @@ import com.doto.global.security.CustomMemberDetails;
 import com.doto.global.swagger.ApiErrorCodeExamples;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,8 +41,8 @@ public interface StampApi {
     @PostMapping("/api/v1/festival/{festivalId}/tour-spots/{tourSpotId}/visit")
     ResponseEntity<CommonResponse<CurrentVisitTourSpotResponseDTO>> startTourSpotVisit(
             @CurrentMember CustomMemberDetails memberDetails,
-            @Parameter(description = "축제 ID") @PathVariable Long festivalId,
-            @Parameter(description = "관광지 ID") @PathVariable Long tourSpotId
+            @Parameter(description = "축제 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long festivalId,
+            @Parameter(description = "관광지 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long tourSpotId
     );
 
     @Operation(
@@ -54,8 +55,8 @@ public interface StampApi {
     @DeleteMapping("/api/v1/festival/{festivalId}/tour-spots/{tourSpotId}/visit")
     ResponseEntity<Void> stopTourSpotVisit(
             @CurrentMember CustomMemberDetails memberDetails,
-            @Parameter(description = "축제 ID") @PathVariable Long festivalId,
-            @Parameter(description = "관광지 ID") @PathVariable Long tourSpotId
+            @Parameter(description = "축제 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long festivalId,
+            @Parameter(description = "관광지 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long tourSpotId
     );
 
     @Operation(
@@ -72,8 +73,8 @@ public interface StampApi {
     @PostMapping("/api/v1/festival/{festivalId}/tour-spots/{tourSpotId}/stamps")
     ResponseEntity<CommonResponse<StampResponseDTO>> completeStamp(
             @CurrentMember CustomMemberDetails memberDetails,
-            @Parameter(description = "축제 ID") @PathVariable Long festivalId,
-            @Parameter(description = "관광지 ID") @PathVariable Long tourSpotId,
+            @Parameter(description = "축제 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long festivalId,
+            @Parameter(description = "관광지 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long tourSpotId,
             @RequestBody StampLocationRequestDTO request
     );
 
