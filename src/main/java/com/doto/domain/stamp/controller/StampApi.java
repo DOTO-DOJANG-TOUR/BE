@@ -1,8 +1,11 @@
 package com.doto.domain.stamp.controller;
 
 import com.doto.domain.stamp.dto.CurrentVisitTourSpotResponseDTO;
+import com.doto.domain.stamp.dto.MyStampResponseDTO;
+import com.doto.domain.stamp.dto.MyStampTourResponseDTO;
 import com.doto.domain.stamp.dto.StampLocationRequestDTO;
 import com.doto.domain.stamp.dto.StampResponseDTO;
+import com.doto.domain.stamp.dto.TourQRCodeResponseDTO;
 import com.doto.domain.stamp.exception.StampErrorCode;
 import com.doto.domain.stamp.exception.StampTourErrorCode;
 import com.doto.domain.stamp.exception.TourSpotVisitErrorCode;
@@ -87,4 +90,44 @@ public interface StampApi {
     ResponseEntity<CommonResponse<CurrentVisitTourSpotResponseDTO>> getCurrentVisitTourSpot(
             @CurrentMember CustomMemberDetails memberDetails
     );
+
+
+    // 내 투어 현황 조회
+    @Operation(
+            summary = "내 도장 현황 조회",
+            description = "현재 진행 중인 투어와 보상 받은 투어 목록을 조회합니다."
+    )
+    @ApiResponse(responseCode = "200", description = "내 도장 현황 조회 성공")
+    @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
+    @GetMapping("/api/v1/stamps/my-tours")
+    ResponseEntity<CommonResponse<MyStampTourResponseDTO>> getMyStampTours(
+            @CurrentMember CustomMemberDetails memberDetails
+    );
+
+    // 개별 도장 현황 조회
+    @Operation(
+            summary = "개별 투어 도장 현황 조회",
+            description = "선택한 스탬프 투어의 도장 획득 현황을 조회합니다."
+    )
+    @ApiResponse(responseCode = "200", description = "개별 투어 도장 현황 조회 성공")
+    @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
+    @GetMapping("/api/v1/stamps/my-tours/{festivalId}")
+    ResponseEntity<CommonResponse<MyStampResponseDTO>> getMyStamp(
+            @CurrentMember CustomMemberDetails memberDetails,
+            @Parameter(description = "축제 ID") @PathVariable Long festivalId
+    );
+
+    // 투어 QR코드 조회
+    @Operation(
+            summary = "투어 QR코드 조회",
+            description = "선택한 스탬프 투어의 QR코드를 조회합니다."
+    )
+    @ApiResponse(responseCode = "200", description = "투어 QR코드 조회 성공")
+    @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
+    @GetMapping("/api/v1/stamps/my-tours/{festivalId}/qr-code")
+    ResponseEntity<CommonResponse<TourQRCodeResponseDTO>> getTourQRCode(
+            @CurrentMember CustomMemberDetails memberDetails,
+            @Parameter(description = "축제 ID") @PathVariable Long festivalId
+    );
+
 }

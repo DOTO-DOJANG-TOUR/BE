@@ -1,8 +1,11 @@
 package com.doto.domain.stamp.controller;
 
 import com.doto.domain.stamp.dto.CurrentVisitTourSpotResponseDTO;
+import com.doto.domain.stamp.dto.MyStampResponseDTO;
+import com.doto.domain.stamp.dto.MyStampTourResponseDTO;
 import com.doto.domain.stamp.dto.StampLocationRequestDTO;
 import com.doto.domain.stamp.dto.StampResponseDTO;
+import com.doto.domain.stamp.dto.TourQRCodeResponseDTO;
 import com.doto.domain.stamp.service.StampService;
 import com.doto.global.api.CommonResponse;
 import com.doto.global.api.CommonSuccessCode;
@@ -61,5 +64,28 @@ public class StampController implements StampApi {
             CustomMemberDetails memberDetails
     ) {
         return ResponseEntity.ok(CommonResponse.success(stampService.getCurrentVisitTourSpot(memberDetails.getMemberId())));
+    }
+
+    @Override
+    public ResponseEntity<CommonResponse<MyStampTourResponseDTO>> getMyStampTours(
+            CustomMemberDetails memberDetails
+    ) {
+        return ResponseEntity.ok(CommonResponse.success(stampService.getMyStampTours(memberDetails.getMemberId())));
+    }
+
+    @Override
+    public ResponseEntity<CommonResponse<MyStampResponseDTO>> getMyStamp(
+            CustomMemberDetails memberDetails,
+            Long festivalId
+    ) {
+        return ResponseEntity.ok(CommonResponse.success(stampService.getMyStamp(memberDetails.getMemberId(), festivalId)));
+    }
+
+    @Override
+    public ResponseEntity<CommonResponse<TourQRCodeResponseDTO>> getTourQRCode(
+            CustomMemberDetails memberDetails,
+            Long festivalId
+    ) {
+        return ResponseEntity.ok(CommonResponse.success(stampService.getTourQRCode(memberDetails.getMemberId(), festivalId)));
     }
 }
