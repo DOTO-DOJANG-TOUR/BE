@@ -10,7 +10,9 @@ import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.member.repository.MemberRepository;
 import com.doto.domain.stamp.entity.TourSpotVisit;
 import com.doto.domain.stamp.entity.Stamp;
+import com.doto.domain.stamp.entity.StampTour;
 import com.doto.domain.stamp.dto.StampLocationRequestDTO;
+import com.doto.domain.stamp.dto.TourQRCodeResponseDTO;
 import com.doto.domain.stamp.entity.enums.StampStatus;
 import com.doto.domain.stamp.entity.enums.TourSpotVisitStatus;
 import com.doto.domain.stamp.entity.enums.StampTourStatus;
@@ -28,6 +30,8 @@ import com.doto.domain.tourspot.entity.TourSpot;
 import com.doto.domain.tourspot.repository.FestivalTourSpotRepository;
 import com.doto.domain.tourspot.repository.TourSpotRepository;
 import com.doto.fixture.MemberFixture;
+import com.doto.fixture.FestivalFixture;
+import com.doto.fixture.StampTourFixture;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
@@ -260,6 +264,22 @@ class StampServiceTest {
 
             assertThat(activeVisit.getStatus()).isEqualTo(TourSpotVisitStatus.ENDED);
             then(stamp).should().complete();
+        }
+    }
+
+    @Nested
+    @DisplayName("투어 QR코드 조회")
+    class GetTourQRCode {
+
+        @Test
+        @DisplayName("투어 생성 시 발급된 랜덤 토큰으로 PNG QR코드를 반환한다")
+        void returnsQrCodeForTourToken() {
+            StampTour stampTour = StampTourFixture.create(MemberFixture.create(1L), FestivalFixture.create());
+            given(stampTourRepository.findByMember_IdAndFestival_Id(1L, 100L)).willReturn(Optional.of(stampTour));
+
+            TourQRCodeResponseDTO response = stampService.getTourQRCode(1L, 100L);
+
+            assertThat(response.qrCodeImageUrl()).startsWith("data:image/png;base64,");
         }
     }
 

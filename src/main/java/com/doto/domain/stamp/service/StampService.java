@@ -1,12 +1,22 @@
 package com.doto.domain.stamp.service;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import com.doto.domain.member.entity.Member;
 import com.doto.domain.member.exception.MemberErrorCode;
 import com.doto.domain.member.exception.MemberException;
 import com.doto.domain.member.repository.MemberRepository;
+import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.stamp.dto.CurrentVisitTourSpotResponseDTO;
+import com.doto.domain.stamp.dto.MyStampResponseDTO;
+import com.doto.domain.stamp.dto.MyStampTourResponseDTO;
 import com.doto.domain.stamp.dto.StampLocationRequestDTO;
 import com.doto.domain.stamp.dto.StampResponseDTO;
+import com.doto.domain.stamp.dto.StampTourViewStatus;
+import com.doto.domain.stamp.dto.TourQRCodeResponseDTO;
 import com.doto.domain.stamp.entity.Stamp;
 import com.doto.domain.stamp.entity.StampTour;
 import com.doto.domain.stamp.entity.TourSpotVisit;
@@ -31,8 +41,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Base64;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +55,8 @@ import java.time.Instant;
 public class StampService {
 
     private static final Duration TOUR_SPOT_VISIT_DURATION = Duration.ofHours(7);
+    private static final int QR_CODE_SIZE = 300;
+    private static final String QR_CODE_IMAGE_DATA_URL_PREFIX = "data:image/png;base64,";
 
     private final MemberRepository memberRepository;
     private final StampTourRepository stampTourRepository;
@@ -47,6 +64,7 @@ public class StampService {
     private final TourSpotRepository tourSpotRepository;
     private final FestivalTourSpotRepository festivalTourSpotRepository;
     private final TourSpotVisitRepository tourSpotVisitRepository;
+    private final Clock applicationClock;
     private final FestivalVisitRepository festivalVisitRepository;
 
     // 관광지 도장 찍기 시작
@@ -183,5 +201,87 @@ public class StampService {
     private TourSpot findTourSpot(Long tourSpotId) {
         return tourSpotRepository.findById(tourSpotId)
                 .orElseThrow(() -> new StampException(StampErrorCode.TOUR_SPOT_NOT_IN_FESTIVAL));
+    }
+
+    // 내 도장 현황 조회
+    public MyStampTourResponseDTO getMyStampTours(Long memberId) {
+        List<StampTour> stampTours = stampTourRepository.findAllByMember_Id(memberId);
+        Instant now = applicationClock.instant();
+
+        List<MyStampTourResponseDTO.TourResponseDTO> tours = stampTours.stream()
+                .map(stampTour -> toTourResponse(stampTour, now))
+                .toList();
+        long rewardedTourCount = stampTours.stream()
+                .filter(stampTour -> stampTour.getStatus() == StampTourStatus.REWARDED)
+                .count();
+
+        return new MyStampTourResponseDTO((int) rewardedTourCount, tours);
+    }
+
+    // 진행 중인데 축제가 이미 끝났으면 FESTIVAL_ENDED로 매핑, DB 상태값은 건드리지 않고 조회 시점에만 계산
+    private MyStampTourResponseDTO.TourResponseDTO toTourResponse(StampTour stampTour, Instant now) {
+        Festival festival = stampTour.getFestival();
+        boolean isProgressPastFestivalEnd = stampTour.getStatus() == StampTourStatus.PROGRESS
+                && festival.getEventEndDate().isBefore(now);
+        StampTourViewStatus status = isProgressPastFestivalEnd
+                ? StampTourViewStatus.FESTIVAL_ENDED
+                : StampTourViewStatus.from(stampTour.getStatus());
+
+        return new MyStampTourResponseDTO.TourResponseDTO(
+                String.valueOf(festival.getId()),
+                festival.getTitle(),
+                festival.getImageUrl(),
+                stampTour.getCompletedStampCount(),
+                LocalDate.ofInstant(festival.getEventEndDate(), applicationClock.getZone()),
+                status
+        );
+    }
+
+    // 개별 투어 도장 현황 조회
+    public MyStampResponseDTO getMyStamp(Long memberId, Long festivalId) {
+        // 투어 조회
+        StampTour stampTour = stampTourRepository.findByMember_IdAndFestival_Id(memberId, festivalId)
+                .orElseThrow(() -> new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_FOUND));
+        // 개별 도장 조회
+        List<MyStampResponseDTO.StampResponseDTO> stamps = stampRepository.findByStampTour_Id(stampTour.getId())
+                .stream()
+                .map(stamp -> new MyStampResponseDTO.StampResponseDTO(
+                        stamp.getTourSpot().getTitle(),
+                        stamp.getCompletedAt()
+                ))
+                .toList();
+
+        Festival festival = stampTour.getFestival();
+        return new MyStampResponseDTO(
+                String.valueOf(festival.getId()),
+                festival.getImageUrl(),
+                festival.getTitle(),
+                stampTour.getCompletedStampCount(),
+                stamps,
+                stampTour.getStatus()
+        );
+    }
+
+    // 투어 QR코드 조회
+    public TourQRCodeResponseDTO getTourQRCode(Long memberId, Long festivalId) {
+        StampTour stampTour = stampTourRepository.findByMember_IdAndFestival_Id(memberId, festivalId)
+                .orElseThrow(() -> new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_FOUND));
+        return new TourQRCodeResponseDTO(createQrCodeImageDataUrl(stampTour.getQrToken()));
+    }
+
+    // QR코드 생성
+    private String createQrCodeImageDataUrl(String qrToken) {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            BitMatrix bitMatrix = new QRCodeWriter().encode(
+                    qrToken,
+                    BarcodeFormat.QR_CODE,
+                    QR_CODE_SIZE,
+                    QR_CODE_SIZE
+            );
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
+            return QR_CODE_IMAGE_DATA_URL_PREFIX + Base64.getEncoder().encodeToString(outputStream.toByteArray());
+        } catch (WriterException | java.io.IOException exception) {
+            throw new IllegalStateException("Failed to generate tour QR code.", exception);
+        }
     }
 }

@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,11 +54,15 @@ public class StampTour extends BaseTimeEntity {
     @Column(name = "status", nullable = false, length = 10)
     private StampTourStatus status;
 
+    @Column(name = "qr_token", nullable = false, unique = true, length = 36, updatable = false)
+    private String qrToken;
+
     private StampTour(Member member, Festival festival) {
         this.member = member;
         this.festival = festival;
         this.startedAt = Instant.now();
         this.status = StampTourStatus.PROGRESS;
+        this.qrToken = UUID.randomUUID().toString();
     }
 
     public static StampTour create(Member member, Festival festival) {
