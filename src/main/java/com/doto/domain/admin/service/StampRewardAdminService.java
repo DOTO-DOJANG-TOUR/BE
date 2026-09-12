@@ -12,7 +12,7 @@ public class StampRewardAdminService {
 
     private final StampTourService stampTourService;
 
-    public StampTourRewardResponseDTO rewardStampTour(String qrToken) {
-        return stampTourService.rewardStampTourByQrToken(qrToken);
+    public StampTourRewardResponseDTO rewardStampTour(String rewardCode) {
+        return stampTourService.rewardStampTourByRewardCode(rewardCode);
     }
 }

@@ -19,7 +19,7 @@ public class StampRewardAdminController implements StampRewardAdminApi {
     public ResponseEntity<CommonResponse<StampTourRewardResponseDTO>> rewardStampTour(
             @Valid StampTourRewardRequestDTO request
     ) {
-        StampTourRewardResponseDTO result = stampRewardAdminService.rewardStampTour(request.qrToken());
+        StampTourRewardResponseDTO result = stampRewardAdminService.rewardStampTour(request.rewardCode());
         return ResponseEntity.ok(CommonResponse.success(result));
     }
 }

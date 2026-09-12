@@ -22,10 +22,11 @@ public interface StampRewardAdminApi {
     @Operation(
             summary = "QR코드로 스탬프 투어 보상 처리",
             description = """
-                    사용자가 제시한 스탬프 투어 QR코드를 스캔해 얻은 토큰으로 보상 지급을 처리합니다.
+                    사용자가 제시한 스탬프 투어 QR코드를 스캔(또는 6자리 코드를 직접 입력)해 보상 지급을 처리합니다.
+                    - QR코드에는 6자리 보상 코드가 그대로 인코딩되어 있습니다.
                     - 모든 도장을 완료(COMPLETED)한 투어만 보상 처리할 수 있습니다.
                     - 이미 보상을 받은(REWARDED) 투어는 409로 실패합니다.
-                    - QR 토큰에 해당하는 스탬프 투어가 없으면 404로 실패합니다.
+                    - 보상 코드에 해당하는 스탬프 투어가 없으면 404로 실패합니다.
                     """
     )
     @ApiResponse(responseCode = "200", description = "스탬프 투어 보상 처리 성공")

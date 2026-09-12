@@ -95,6 +95,30 @@ class StampTourServiceTest {
         }
 
         @Test
+        @DisplayName("보상 코드가 다른 투어와 겹치면 겹치지 않을 때까지 재발급한 뒤 저장한다")
+        void regeneratesRewardCodeUntilUnique() {
+            Long memberId = 1L;
+            Long festivalId = 10L;
+            Festival festival = festivalWithId(festivalId);
+            Member member = MemberFixture.create(memberId);
+            given(festivalRepository.findById(festivalId)).willReturn(Optional.of(festival));
+            given(stampTourRepository.existsByMember_IdAndFestival_IdAndStatus(
+                    memberId, festivalId, StampTourStatus.PROGRESS
+            )).willReturn(false);
+            given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
+            given(festivalVisitRepository.findByMember_IdAndStatus(memberId, FestivalVisitStatus.VISITING))
+                    .willReturn(Optional.empty());
+            given(stampTourRepository.existsByRewardCode(org.mockito.ArgumentMatchers.anyString()))
+                    .willReturn(true, true, false);
+
+            stampTourService.startStampTour(memberId, festivalId);
+
+            then(stampTourRepository).should(org.mockito.Mockito.times(3))
+                    .existsByRewardCode(org.mockito.ArgumentMatchers.anyString());
+            then(stampTourRepository).should().save(org.mockito.ArgumentMatchers.any());
+        }
+
+        @Test
         @DisplayName("같은 축제에 진행 중인 투어가 있으면 생성하지 않고 409 예외를 던진다")
         void throwsConflictWhenActiveStampTourExists() {
             Long memberId = 1L;
@@ -225,21 +249,21 @@ class StampTourServiceTest {
 
     @Nested
     @DisplayName("QR코드로 스탬프 투어 보상 처리")
-    class RewardStampTourByQrToken {
+    class RewardStampTourByRewardCode {
 
         @Test
         @DisplayName("완료된 투어를 보상 처리하고 REWARDED 상태로 변경한다")
         void rewardsCompletedStampTour() {
-            String qrToken = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+            String rewardCode = "048213";
             Festival festival = festivalWithId(10L);
             Member member = MemberFixture.create(1L);
             StampTour stampTour = StampTourFixture.create(member, festival);
             stampTour.completeStamp();
             stampTour.completeStamp();
             stampTour.completeStamp();
-            given(stampTourRepository.findByQrTokenForUpdate(qrToken)).willReturn(Optional.of(stampTour));
+            given(stampTourRepository.findByRewardCodeForUpdate(rewardCode)).willReturn(Optional.of(stampTour));
 
-            var result = stampTourService.rewardStampTourByQrToken(qrToken);
+            var result = stampTourService.rewardStampTourByRewardCode(rewardCode);
 
             assertThat(stampTour.getStatus()).isEqualTo(StampTourStatus.REWARDED);
             assertThat(result.festivalId()).isEqualTo(String.valueOf(festival.getId()));
@@ -248,11 +272,11 @@ class StampTourServiceTest {
         }
 
         @Test
-        @DisplayName("QR 토큰에 해당하는 투어가 없으면 STAMP_TOUR_NOT_FOUND 예외를 던진다")
+        @DisplayName("보상 코드에 해당하는 투어가 없으면 STAMP_TOUR_NOT_FOUND 예외를 던진다")
         void throwsNotFoundWhenStampTourDoesNotExist() {
-            given(stampTourRepository.findByQrTokenForUpdate("invalid-token")).willReturn(Optional.empty());
+            given(stampTourRepository.findByRewardCodeForUpdate("000000")).willReturn(Optional.empty());
 
-            assertThatThrownBy(() -> stampTourService.rewardStampTourByQrToken("invalid-token"))
+            assertThatThrownBy(() -> stampTourService.rewardStampTourByRewardCode("000000"))
                     .isInstanceOf(StampTourException.class)
                     .satisfies(exception -> assertThat(((StampTourException) exception).getErrorCode())
                             .isEqualTo(StampTourErrorCode.STAMP_TOUR_NOT_FOUND));
@@ -261,11 +285,11 @@ class StampTourServiceTest {
         @Test
         @DisplayName("도장을 모두 완료하지 않았으면 STAMP_TOUR_NOT_COMPLETED 예외를 던진다")
         void throwsConflictWhenStampTourNotCompleted() {
-            String qrToken = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+            String rewardCode = "048213";
             StampTour stampTour = StampTourFixture.create(MemberFixture.create(1L), festivalWithId(10L));
-            given(stampTourRepository.findByQrTokenForUpdate(qrToken)).willReturn(Optional.of(stampTour));
+            given(stampTourRepository.findByRewardCodeForUpdate(rewardCode)).willReturn(Optional.of(stampTour));
 
-            assertThatThrownBy(() -> stampTourService.rewardStampTourByQrToken(qrToken))
+            assertThatThrownBy(() -> stampTourService.rewardStampTourByRewardCode(rewardCode))
                     .isInstanceOf(StampTourException.class)
                     .satisfies(exception -> assertThat(((StampTourException) exception).getErrorCode())
                             .isEqualTo(StampTourErrorCode.STAMP_TOUR_NOT_COMPLETED));
@@ -274,15 +298,15 @@ class StampTourServiceTest {
         @Test
         @DisplayName("이미 보상을 받은 투어면 STAMP_TOUR_ALREADY_REWARDED 예외를 던진다")
         void throwsConflictWhenAlreadyRewarded() {
-            String qrToken = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+            String rewardCode = "048213";
             StampTour stampTour = StampTourFixture.create(MemberFixture.create(1L), festivalWithId(10L));
             stampTour.completeStamp();
             stampTour.completeStamp();
             stampTour.completeStamp();
             stampTour.reward();
-            given(stampTourRepository.findByQrTokenForUpdate(qrToken)).willReturn(Optional.of(stampTour));
+            given(stampTourRepository.findByRewardCodeForUpdate(rewardCode)).willReturn(Optional.of(stampTour));
 
-            assertThatThrownBy(() -> stampTourService.rewardStampTourByQrToken(qrToken))
+            assertThatThrownBy(() -> stampTourService.rewardStampTourByRewardCode(rewardCode))
                     .isInstanceOf(StampTourException.class)
                     .satisfies(exception -> assertThat(((StampTourException) exception).getErrorCode())
                             .isEqualTo(StampTourErrorCode.STAMP_TOUR_ALREADY_REWARDED));
