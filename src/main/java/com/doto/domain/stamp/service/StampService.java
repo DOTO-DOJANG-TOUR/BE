@@ -266,14 +266,17 @@ public class StampService {
     public TourQRCodeResponseDTO getTourQRCode(Long memberId, Long festivalId) {
         StampTour stampTour = stampTourRepository.findByMember_IdAndFestival_Id(memberId, festivalId)
                 .orElseThrow(() -> new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_FOUND));
-        return new TourQRCodeResponseDTO(createQrCodeImageDataUrl(stampTour.getQrToken()));
+        return new TourQRCodeResponseDTO(
+                createQrCodeImageDataUrl(stampTour.getRewardCode()),
+                stampTour.getRewardCode()
+        );
     }
 
     // QR코드 생성
-    private String createQrCodeImageDataUrl(String qrToken) {
+    private String createQrCodeImageDataUrl(String rewardCode) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             BitMatrix bitMatrix = new QRCodeWriter().encode(
-                    qrToken,
+                    rewardCode,
                     BarcodeFormat.QR_CODE,
                     QR_CODE_SIZE,
                     QR_CODE_SIZE

@@ -9,6 +9,7 @@ import com.doto.domain.member.exception.MemberErrorCode;
 import com.doto.domain.member.exception.MemberException;
 import com.doto.domain.member.repository.MemberRepository;
 import com.doto.domain.stamp.dto.StampTourDetailResponseDTO;
+import com.doto.domain.stamp.dto.StampTourRewardResponseDTO;
 import com.doto.domain.stamp.dto.StampTourSpotItemResponseDTO;
 import com.doto.domain.stamp.dto.StampTourViewStatus;
 import com.doto.domain.stamp.entity.FestivalVisit;
@@ -34,6 +35,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StampTourService {
+
+    private static final int MAX_REWARD_CODE_GENERATION_ATTEMPTS = 5;
+
     private final FestivalRepository festivalRepository;
     private final MemberRepository memberRepository;
     private final StampTourRepository stampTourRepository;
@@ -61,7 +65,21 @@ public class StampTourService {
         }
 
         festivalVisitRepository.save(FestivalVisit.start(member, festival));
-        stampTourRepository.save(StampTour.create(member, festival));
+
+        StampTour stampTour = StampTour.create(member, festival);
+        ensureUniqueRewardCode(stampTour);
+        stampTourRepository.save(stampTour);
+    }
+
+    // QR코드에 담기는 6자리 보상 코드가 다른 투어와 겹치면 재발급 (극히 낮은 확률의 충돌 대비)
+    private void ensureUniqueRewardCode(StampTour stampTour) {
+        int attempts = 0;
+        while (stampTourRepository.existsByRewardCode(stampTour.getRewardCode())) {
+            if (++attempts >= MAX_REWARD_CODE_GENERATION_ATTEMPTS) {
+                throw new IllegalStateException("보상 코드 생성에 반복적으로 실패했습니다.");
+            }
+            stampTour.regenerateRewardCode();
+        }
     }
 
     // 스탬프 투어 중단하기
@@ -132,6 +150,29 @@ public class StampTourService {
     }
 
 
+
+    // QR코드(관리자 스캔)로 스탬프 투어 보상 처리
+    @Transactional
+    public StampTourRewardResponseDTO rewardStampTourByRewardCode(String rewardCode) {
+        StampTour stampTour = stampTourRepository.findByRewardCodeForUpdate(rewardCode)
+                .orElseThrow(() -> new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_FOUND));
+
+        if (stampTour.getStatus() == StampTourStatus.REWARDED) {
+            throw new StampTourException(StampTourErrorCode.STAMP_TOUR_ALREADY_REWARDED);
+        }
+        if (stampTour.getStatus() != StampTourStatus.COMPLETED) {
+            throw new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_COMPLETED);
+        }
+
+        stampTour.reward();
+
+        Festival festival = stampTour.getFestival();
+        return new StampTourRewardResponseDTO(
+                String.valueOf(festival.getId()),
+                festival.getTitle(),
+                stampTour.getMember().getNickname()
+        );
+    }
 
     private StampTourSpotItemResponseDTO toStampTourSpotItem(FestivalTourSpot festivalTourSpot) {
         TourSpot tourSpot = festivalTourSpot.getTourSpot();
