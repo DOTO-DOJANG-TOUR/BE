@@ -29,6 +29,11 @@ public interface StampTourRepository extends JpaRepository<StampTour, Long> {
 
     Optional<StampTour> findByMember_IdAndFestival_Id(Long memberId, Long festivalId);
 
+    // QR코드 스캔으로 보상 처리할 때 동시 요청으로 중복 보상되지 않도록 잠금 조회
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT stampTour FROM StampTour stampTour WHERE stampTour.qrToken = :qrToken")
+    Optional<StampTour> findByQrTokenForUpdate(@Param("qrToken") String qrToken);
+
     // 회원이 참여한 모든 스탬프 투어 조회 (내 도장 현황용) - 축제마다 하나씩 있어 여러 건일 수 있음
     List<StampTour> findAllByMember_Id(Long memberId);
 }

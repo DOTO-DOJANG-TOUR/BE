@@ -266,7 +266,10 @@ public class StampService {
     public TourQRCodeResponseDTO getTourQRCode(Long memberId, Long festivalId) {
         StampTour stampTour = stampTourRepository.findByMember_IdAndFestival_Id(memberId, festivalId)
                 .orElseThrow(() -> new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_FOUND));
-        return new TourQRCodeResponseDTO(createQrCodeImageDataUrl(stampTour.getQrToken()));
+        return new TourQRCodeResponseDTO(
+                createQrCodeImageDataUrl(stampTour.getQrToken()),
+                stampTour.getRewardCode()
+        );
     }
 
     // QR코드 생성

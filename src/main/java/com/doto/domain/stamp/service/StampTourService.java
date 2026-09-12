@@ -9,6 +9,7 @@ import com.doto.domain.member.exception.MemberErrorCode;
 import com.doto.domain.member.exception.MemberException;
 import com.doto.domain.member.repository.MemberRepository;
 import com.doto.domain.stamp.dto.StampTourDetailResponseDTO;
+import com.doto.domain.stamp.dto.StampTourRewardResponseDTO;
 import com.doto.domain.stamp.dto.StampTourSpotItemResponseDTO;
 import com.doto.domain.stamp.dto.StampTourViewStatus;
 import com.doto.domain.stamp.entity.FestivalVisit;
@@ -132,6 +133,29 @@ public class StampTourService {
     }
 
 
+
+    // QR코드(관리자 스캔)로 스탬프 투어 보상 처리
+    @Transactional
+    public StampTourRewardResponseDTO rewardStampTourByQrToken(String qrToken) {
+        StampTour stampTour = stampTourRepository.findByQrTokenForUpdate(qrToken)
+                .orElseThrow(() -> new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_FOUND));
+
+        if (stampTour.getStatus() == StampTourStatus.REWARDED) {
+            throw new StampTourException(StampTourErrorCode.STAMP_TOUR_ALREADY_REWARDED);
+        }
+        if (stampTour.getStatus() != StampTourStatus.COMPLETED) {
+            throw new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_COMPLETED);
+        }
+
+        stampTour.reward();
+
+        Festival festival = stampTour.getFestival();
+        return new StampTourRewardResponseDTO(
+                String.valueOf(festival.getId()),
+                festival.getTitle(),
+                stampTour.getMember().getNickname()
+        );
+    }
 
     private StampTourSpotItemResponseDTO toStampTourSpotItem(FestivalTourSpot festivalTourSpot) {
         TourSpot tourSpot = festivalTourSpot.getTourSpot();
