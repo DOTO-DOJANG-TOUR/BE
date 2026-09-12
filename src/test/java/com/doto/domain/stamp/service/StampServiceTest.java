@@ -280,6 +280,8 @@ class StampServiceTest {
             TourQRCodeResponseDTO response = stampService.getTourQRCode(1L, 100L);
 
             assertThat(response.qrCodeImageUrl()).startsWith("data:image/png;base64,");
+            assertThat(response.rewardCode()).isEqualTo(stampTour.getRewardCode());
+            assertThat(response.rewardCode()).matches("^[0-9]{6}$");
         }
     }
 

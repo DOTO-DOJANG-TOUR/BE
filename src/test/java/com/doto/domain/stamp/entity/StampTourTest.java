@@ -28,6 +28,7 @@ class StampTourTest {
             assertThat(stampTour.getStatus()).isEqualTo(StampTourStatus.PROGRESS);
             assertThat(stampTour.getStartedAt()).isNotNull();
             assertThat(stampTour.getQrToken()).matches("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
+            assertThat(stampTour.getRewardCode()).matches("^[0-9]{6}$");
         }
 
         @Test

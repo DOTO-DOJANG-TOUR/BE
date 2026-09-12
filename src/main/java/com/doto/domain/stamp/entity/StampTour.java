@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -27,6 +28,9 @@ import lombok.NoArgsConstructor;
 public class StampTour extends BaseTimeEntity {
 
     private static final int REQUIRED_STAMP_COUNT = 3;
+    private static final int REWARD_CODE_LENGTH = 6;
+    private static final int REWARD_CODE_BOUND = (int) Math.pow(10, REWARD_CODE_LENGTH);
+    private static final SecureRandom REWARD_CODE_RANDOM = new SecureRandom();
 
     @Id
     @Tsid
@@ -57,12 +61,21 @@ public class StampTour extends BaseTimeEntity {
     @Column(name = "qr_token", nullable = false, unique = true, length = 36, updatable = false)
     private String qrToken;
 
+    @Column(name = "reward_code", nullable = false, length = 6, updatable = false)
+    private String rewardCode;
+
     private StampTour(Member member, Festival festival) {
         this.member = member;
         this.festival = festival;
         this.startedAt = Instant.now();
         this.status = StampTourStatus.PROGRESS;
         this.qrToken = UUID.randomUUID().toString();
+        this.rewardCode = generateRewardCode();
+    }
+
+    // QR코드와 함께 제공할 6자리 보상 코드 생성 (숫자만, 앞자리 0 유지를 위해 문자열로 반환)
+    private static String generateRewardCode() {
+        return String.format("%0" + REWARD_CODE_LENGTH + "d", REWARD_CODE_RANDOM.nextInt(REWARD_CODE_BOUND));
     }
 
     public static StampTour create(Member member, Festival festival) {
