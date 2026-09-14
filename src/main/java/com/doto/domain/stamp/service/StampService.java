@@ -267,8 +267,8 @@ public class StampService {
         StampTour stampTour = stampTourRepository.findByMember_IdAndFestival_Id(memberId, festivalId)
                 .orElseThrow(() -> new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_FOUND));
         return new TourQRCodeResponseDTO(
-                createQrCodeImageDataUrl(stampTour.getRewardCode()),
-                stampTour.getRewardCode()
+                stampTour.getRewardCode(),
+                createQrCodeImageDataUrl(stampTour.getRewardCode())
         );
     }
 

@@ -26,6 +26,7 @@ import com.doto.fixture.MemberFixture;
 import com.doto.fixture.StampTourFixture;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -262,13 +263,16 @@ class StampTourServiceTest {
             stampTour.completeStamp();
             stampTour.completeStamp();
             given(stampTourRepository.findByRewardCodeForUpdate(rewardCode)).willReturn(Optional.of(stampTour));
+            given(applicationClock.instant()).willReturn(Instant.parse("2026-09-18T00:00:00Z"));
+            given(applicationClock.getZone()).willReturn(ZoneId.of("Asia/Seoul"));
 
             var result = stampTourService.rewardStampTourByRewardCode(rewardCode);
 
             assertThat(stampTour.getStatus()).isEqualTo(StampTourStatus.REWARDED);
-            assertThat(result.festivalId()).isEqualTo(String.valueOf(festival.getId()));
-            assertThat(result.festivalTitle()).isEqualTo(festival.getTitle());
             assertThat(result.memberNickname()).isEqualTo(member.getNickname());
+            assertThat(result.pinNumber()).isEqualTo(stampTour.getRewardCode());
+            assertThat(result.tourName()).isEqualTo(festival.getTitle());
+            assertThat(result.rewardedAt()).isEqualTo("2026.09.18 (금)");
         }
 
         @Test

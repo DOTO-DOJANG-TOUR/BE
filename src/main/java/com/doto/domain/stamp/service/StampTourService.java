@@ -24,6 +24,7 @@ import com.doto.domain.tourspot.entity.FestivalTourSpot;
 import com.doto.domain.tourspot.entity.TourSpot;
 import com.doto.domain.tourspot.entity.enums.TourSpotCategoryFilter;
 import com.doto.domain.tourspot.repository.FestivalTourSpotRepository;
+import com.doto.global.util.DateTimeUtils;
 import com.doto.global.util.DistanceUtils;
 import java.time.Clock;
 import java.util.List;
@@ -166,11 +167,11 @@ public class StampTourService {
 
         stampTour.reward();
 
-        Festival festival = stampTour.getFestival();
         return new StampTourRewardResponseDTO(
-                String.valueOf(festival.getId()),
-                festival.getTitle(),
-                stampTour.getMember().getNickname()
+                stampTour.getMember().getNickname(),
+                stampTour.getRewardCode(),
+                stampTour.getFestival().getTitle(),
+                DateTimeUtils.toKoreanDateWithWeekday(applicationClock.instant(), applicationClock.getZone())
         );
     }
 
