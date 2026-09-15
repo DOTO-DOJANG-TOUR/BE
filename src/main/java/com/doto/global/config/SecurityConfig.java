@@ -26,7 +26,10 @@ public class SecurityConfig {
 
     // 프론트엔드에서 직접 호출을 허용할 출처 목록
     private static final List<String> ALLOWED_ORIGINS = List.of(
-            "https://doto-reward.netlify.app"
+        "https://doto-reward.netlify.app",
+        "https://doto-app.cloud",
+        "http://localhost:5173",
+        "http://localhost:8080"
     );
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
