@@ -2,8 +2,10 @@ ALTER TABLE stamp_tours
     ADD COLUMN reward_code VARCHAR(6);
 
 -- 기존 행끼리 값이 겹치지 않도록 일련번호 기반으로 채운 뒤 유니크 제약을 건다
+-- row_number()는 1부터 시작하므로 1을 빼서 000000~999999(VARCHAR(6) 전체 범위)를 다 쓰도록 한다
+-- (그대로 두면 1,000,000번째 행에서 "1000000"이 만들어져 6자리를 넘겨 유니크 제약 충돌이 난다)
 WITH numbered_tours AS (
-    SELECT stamp_tour_id, row_number() OVER (ORDER BY stamp_tour_id) AS seq
+    SELECT stamp_tour_id, row_number() OVER (ORDER BY stamp_tour_id) - 1 AS seq
     FROM stamp_tours
 )
 UPDATE stamp_tours
