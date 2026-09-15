@@ -1,9 +1,9 @@
-package com.doto.domain.admin.controller;
+package com.doto.domain.stamp.controller;
 
-import com.doto.domain.admin.service.StampRewardAdminService;
 import com.doto.domain.stamp.dto.StampTourRewardPreviewResponseDTO;
 import com.doto.domain.stamp.dto.StampTourRewardRequestDTO;
 import com.doto.domain.stamp.dto.StampTourRewardResponseDTO;
+import com.doto.domain.stamp.service.StampTourService;
 import com.doto.global.api.CommonResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,15 +12,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-public class StampRewardAdminController implements StampRewardAdminApi {
+public class StampRewardController implements StampRewardApi {
 
-    private final StampRewardAdminService stampRewardAdminService;
+    private final StampTourService stampTourService;
 
     @Override
     public ResponseEntity<CommonResponse<StampTourRewardPreviewResponseDTO>> previewStampTourReward(
             String rewardCode
     ) {
-        StampTourRewardPreviewResponseDTO result = stampRewardAdminService.previewStampTourReward(rewardCode);
+        StampTourRewardPreviewResponseDTO result = stampTourService.previewStampTourReward(rewardCode);
         return ResponseEntity.ok(CommonResponse.success(result));
     }
 
@@ -28,7 +28,7 @@ public class StampRewardAdminController implements StampRewardAdminApi {
     public ResponseEntity<CommonResponse<StampTourRewardResponseDTO>> rewardStampTour(
             @Valid StampTourRewardRequestDTO request
     ) {
-        StampTourRewardResponseDTO result = stampRewardAdminService.rewardStampTour(request.rewardCode());
+        StampTourRewardResponseDTO result = stampTourService.rewardStampTourByRewardCode(request.rewardCode());
         return ResponseEntity.ok(CommonResponse.success(result));
     }
 }

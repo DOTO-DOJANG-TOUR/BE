@@ -153,7 +153,7 @@ public class StampTourService {
 
 
 
-    // QR코드(관리자 스캔) 조회 - 보상 지급 전 화면에 누구의 투어인지 보여주기 위한 조회 전용, 상태를 바꾸지 않는다
+    // QR코드(관리자 스캔) 조회 - 보상 지급 전 화면에 누구의 투어인지 보여주기 위한 조회 전용
     public StampTourRewardPreviewResponseDTO previewStampTourReward(String rewardCode) {
         StampTour stampTour = stampTourRepository.findByRewardCode(rewardCode)
                 .orElseThrow(() -> new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_FOUND));
@@ -166,7 +166,7 @@ public class StampTourService {
         );
     }
 
-    // QR코드(관리자 스캔)로 스탬프 투어 보상 처리 - 화면에서 미리보기 확인 후 "확인하기"를 눌렀을 때 호출
+    // QR코드(관리로 스탬프 투어 보상 처리, 웹 화면에서 보상받기 눌렀을 때 호출
     @Transactional
     public StampTourRewardResponseDTO rewardStampTourByRewardCode(String rewardCode) {
         StampTour stampTour = stampTourRepository.findByRewardCodeForUpdate(rewardCode)
@@ -183,6 +183,7 @@ public class StampTourService {
         );
     }
 
+    // 스탬프 투어 보상 지급 가능 여부 검증 메서드
     private void validateRewardable(StampTour stampTour) {
         if (stampTour.getStatus() == StampTourStatus.REWARDED) {
             throw new StampTourException(StampTourErrorCode.STAMP_TOUR_ALREADY_REWARDED);
