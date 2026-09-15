@@ -48,23 +48,26 @@ public class TourApiService {
         );
     }
 
-    // 축제 상세 조회, festivalType은 searchFestival2(목록 조회) 결과에만 있어 호출부에서 넘겨받음
-    public FestivalApiResponseDTO getFestivalInfo(Long festivalContentId, String festivalType) {
-        TourApiResponseDTO.TourContentDTO festival = getContent(festivalContentId);
+    // 축제 상세 조회. title/addr1/tel/mapx/mapy/firstimage/lclsSystm3/festivalType 등은
+    // searchFestival2(목록 조회) 결과에 이미 있으므로 detailCommon2 응답으로 덮어쓰지 않고 목록 값을 그대로 쓴다.
+    // detailCommon2는 목록에 없는 overview/homepage를 보충하기 위해서만 호출한다.
+    public FestivalApiResponseDTO getFestivalInfo(TourApiResponseDTO.TourContentDTO festivalListItem) {
+        Long festivalContentId = festivalListItem.contentId();
+        TourApiResponseDTO.TourContentDTO festivalDetail = getContent(festivalContentId);
         FestivalIntroApiResponseDTO.FestivalIntroDTO intro = getFestivalIntro(festivalContentId);
         return FestivalApiResponseDTO.builder()
-                .contentId(festival.contentId())
-                .title(festival.title())
-                .imageUrl(getImageUrl(festival))
-                .address(festival.addr1())
-                .phone(festival.tel())
-                .mapX(festival.mapx())
-                .mapY(festival.mapy())
-                .overview(festival.overview())
-                .category(toCategoryLabel(festival.lclsSystem3()))
-                .festivalType(festivalType)
-                .legalDongRegionCode(festival.legalDongRegionCode())
-                .legalDongSigunguCode(festival.legalDongSigunguCode())
+                .contentId(festivalListItem.contentId())
+                .title(festivalListItem.title())
+                .imageUrl(getImageUrl(festivalListItem))
+                .address(festivalListItem.addr1())
+                .phone(festivalListItem.tel())
+                .mapX(festivalListItem.mapx())
+                .mapY(festivalListItem.mapy())
+                .overview(festivalDetail.overview())
+                .category(toCategoryLabel(festivalListItem.lclsSystem3()))
+                .festivalType(festivalListItem.festivalType())
+                .legalDongRegionCode(festivalListItem.legalDongRegionCode())
+                .legalDongSigunguCode(festivalListItem.legalDongSigunguCode())
                 .eventStartDate(intro.eventstartdate())
                 .eventEndDate(intro.eventenddate())
                 .operationHours(intro.playtime())
@@ -76,7 +79,7 @@ public class TourApiService {
                 .parkingInfo(intro.parking())
                 .parkingFee(intro.parkingfee())
                 .eventPlace(intro.eventplace())
-                .homepageUrl(getHomepageUrl(festival.homepage(), intro.eventhomepage()))
+                .homepageUrl(getHomepageUrl(festivalDetail.homepage(), intro.eventhomepage()))
                 .reservationInfo(intro.reservation())
                 .reservationUrl(intro.reservationurl())
                 .program(intro.program())

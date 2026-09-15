@@ -36,8 +36,7 @@ public class TourApiSyncScheduler {
         int successCount = 0;
         for (TourApiResponseDTO.TourContentDTO festival : festivals) {
             try {
-                FestivalApiResponseDTO festivalDetail = tourApiService.getFestivalInfo(
-                        festival.contentId(), festival.festivalType());
+                FestivalApiResponseDTO festivalDetail = tourApiService.getFestivalInfo(festival);
                 festivalCommandService.saveFestival(festivalDetail);
 
                 List<TourSpotItemDetailResponseDTO> tourSpots = tourApiService.getNearbyTourSpots(
