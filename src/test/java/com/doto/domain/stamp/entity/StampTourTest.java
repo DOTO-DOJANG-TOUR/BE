@@ -27,26 +27,20 @@ class StampTourTest {
 
             assertThat(stampTour.getStatus()).isEqualTo(StampTourStatus.PROGRESS);
             assertThat(stampTour.getStartedAt()).isNotNull();
-            assertThat(stampTour.getQrToken()).matches("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
+            assertThat(stampTour.getRewardCode()).matches("^[0-9]{6}$");
         }
+    }
+
+    @Nested
+    class 보상코드_재발급 {
 
         @Test
-        void 같은_회원이_같은_축제의_새_투어를_시작하면_서로_다른_QR_토큰을_발급한다() {
-            Member member = Member.register("홍길동");
-            Festival festival = createFestival();
-            StampTour firstTour = StampTour.create(member, festival);
-            StampTour secondTour = StampTour.create(member, festival);
+        void 재발급하면_6자리_숫자_형식의_보상_코드를_유지한다() {
+            StampTour stampTour = createStampTour();
 
-            assertThat(firstTour.getQrToken()).isNotEqualTo(secondTour.getQrToken());
-        }
+            stampTour.regenerateRewardCode();
 
-        @Test
-        void 서로_다른_회원의_투어에는_서로_다른_QR_토큰을_발급한다() {
-            Festival festival = createFestival();
-            StampTour firstMemberTour = StampTour.create(Member.register("홍길동"), festival);
-            StampTour secondMemberTour = StampTour.create(Member.register("김도토"), festival);
-
-            assertThat(firstMemberTour.getQrToken()).isNotEqualTo(secondMemberTour.getQrToken());
+            assertThat(stampTour.getRewardCode()).matches("^[0-9]{6}$");
         }
     }
 

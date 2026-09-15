@@ -108,7 +108,10 @@ public interface StampApi {
     // 개별 도장 현황 조회
     @Operation(
             summary = "개별 투어 도장 현황 조회",
-            description = "선택한 스탬프 투어의 도장 획득 현황을 조회합니다."
+            description = """
+                    선택한 스탬프 투어의 도장 획득 현황을 조회합니다.
+                    - 진행 중(PROGRESS)인데 축제가 이미 종료되었으면 FESTIVAL_ENDED를 반환합니다.
+                    """
     )
     @ApiResponse(responseCode = "200", description = "개별 투어 도장 현황 조회 성공")
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
@@ -121,7 +124,12 @@ public interface StampApi {
     // 투어 QR코드 조회
     @Operation(
             summary = "투어 QR코드 조회",
-            description = "선택한 스탬프 투어의 QR코드를 조회합니다."
+            description = """
+                    선택한 스탬프 투어의 QR코드를 조회합니다.
+                    - QR코드 이미지에는 관리자 보상 처리 화면 URL(https://doto-reward.netlify.app/?code=보상코드)이 인코딩되어 있어,
+                      일반 카메라로 스캔하면 보상 코드가 담긴 채로 해당 화면으로 바로 이동합니다.
+                    - QR 스캔이 어려울 때 수기로 입력할 수 있도록 6자리 보상 코드(rewardCode)를 별도 필드로도 함께 반환합니다.
+                    """
     )
     @ApiResponse(responseCode = "200", description = "투어 QR코드 조회 성공")
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)

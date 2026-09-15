@@ -1,7 +1,5 @@
 package com.doto.domain.stamp.dto;
 
-import com.doto.domain.stamp.entity.enums.StampTourStatus;
-
 import java.time.Instant;
 import java.util.List;
 
@@ -10,10 +8,10 @@ public record MyStampResponseDTO(
         String festivalImgUrl,
         String tourName,
         Integer stampCount,
-        List<StampResponseDTO> stamps,
-        StampTourStatus status
+        List<StampItemResponseDTO> stamps,
+        StampTourViewStatus status
 ) {
-    public record StampResponseDTO(
+    public record StampItemResponseDTO(
             String tourSpotName,
             Instant stampedAt
     ){}
