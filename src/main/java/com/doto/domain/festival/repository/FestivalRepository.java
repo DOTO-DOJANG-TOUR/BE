@@ -51,45 +51,68 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             Pageable pageable
     );
 
-    // 지역별 축제(종료임박순), 올해 시작하는 축제만
+    // 지역별 축제(종료임박순), 상태 우선순위 개최중(0)->개최전(1)->종료(2), 오늘 기준 1년 범위
     @Query("SELECT f FROM Festival f "
             + "WHERE f.legalRegion IN :regions "
-            + "AND f.eventStartDate <= :now "
-            + "AND f.eventEndDate >= :now "
-            + "AND f.eventStartDate <= :yearEnd "
+            + "AND f.eventStartDate <= :until "
+            + "AND f.eventEndDate >= :since "
             + "AND f.imageUrl IS NOT NULL "
             + "AND f.imageUrl <> '' "
-            + "AND (f.eventEndDate > :cursorEventEndDate "
-            + "     OR (f.eventEndDate = :cursorEventEndDate "
-            + "         AND f.id > :cursorId)) "
-            + "ORDER BY f.eventEndDate ASC, f.id ASC")
+            + "AND ((CASE WHEN f.eventStartDate <= :now AND f.eventEndDate >= :now THEN 0 "
+            + "           WHEN f.eventStartDate > :now THEN 1 ELSE 2 END) > :cursorTier "
+            + "     OR ((CASE WHEN f.eventStartDate <= :now AND f.eventEndDate >= :now THEN 0 "
+            + "               WHEN f.eventStartDate > :now THEN 1 ELSE 2 END) = :cursorTier "
+            + "         AND ((CASE WHEN f.eventStartDate <= :now AND f.eventEndDate >= :now THEN f.eventEndDate "
+            + "                    WHEN f.eventStartDate > :now THEN f.eventStartDate ELSE f.eventEndDate END) > :cursorRankDate "
+            + "              OR ((CASE WHEN f.eventStartDate <= :now AND f.eventEndDate >= :now THEN f.eventEndDate "
+            + "                       WHEN f.eventStartDate > :now THEN f.eventStartDate ELSE f.eventEndDate END) = :cursorRankDate "
+            + "                  AND f.id > :cursorId)))) "
+            + "ORDER BY "
+            + "  (CASE WHEN f.eventStartDate <= :now AND f.eventEndDate >= :now THEN 0 "
+            + "        WHEN f.eventStartDate > :now THEN 1 ELSE 2 END) ASC, "
+            + "  (CASE WHEN f.eventStartDate <= :now AND f.eventEndDate >= :now THEN f.eventEndDate "
+            + "        WHEN f.eventStartDate > :now THEN f.eventStartDate ELSE f.eventEndDate END) ASC, "
+            + "  f.id ASC")
     List<Festival> findByRegionGroupOrderByEndDate(
             @Param("regions") Set<Region> regions,
             @Param("now") Instant now,
-            @Param("yearEnd") Instant yearEnd,
-            @Param("cursorEventEndDate") Instant cursorEventEndDate,
+            @Param("since") Instant since,
+            @Param("until") Instant until,
+            @Param("cursorTier") int cursorTier,
+            @Param("cursorRankDate") Instant cursorRankDate,
             @Param("cursorId") Long cursorId,
             Pageable pageable
     );
 
-    // 지역별 축제(개최임박순), 올해 시작하는 축제만
+    // 지역별 축제(개최임박순), 상태 우선순위 개최전(0)->개최중(1)->종료(2), 오늘 기준 1년 범위
     @Query("SELECT f FROM Festival f "
             + "WHERE f.legalRegion IN :regions "
-            + "AND f.eventStartDate > :now "
-            + "AND f.eventStartDate <= :yearEnd "
+            + "AND f.eventStartDate <= :until "
+            + "AND f.eventEndDate >= :since "
             + "AND f.imageUrl IS NOT NULL "
             + "AND f.imageUrl <> '' "
-            + "AND (f.eventStartDate > :cursorEventStartDate "
-            + "     OR (f.eventStartDate = :cursorEventStartDate AND (f.eventEndDate - f.eventStartDate) > :cursorDuration) "
-            + "     OR (f.eventStartDate = :cursorEventStartDate AND (f.eventEndDate - f.eventStartDate) = :cursorDuration "
-            + "         AND f.id > :cursorId)) "
-            + "ORDER BY f.eventStartDate ASC, (f.eventEndDate - f.eventStartDate) ASC, f.id ASC")
+            + "AND ((CASE WHEN f.eventStartDate > :now THEN 0 "
+            + "           WHEN f.eventStartDate <= :now AND f.eventEndDate >= :now THEN 1 ELSE 2 END) > :cursorTier "
+            + "     OR ((CASE WHEN f.eventStartDate > :now THEN 0 "
+            + "               WHEN f.eventStartDate <= :now AND f.eventEndDate >= :now THEN 1 ELSE 2 END) = :cursorTier "
+            + "         AND ((CASE WHEN f.eventStartDate > :now THEN f.eventStartDate "
+            + "                    WHEN f.eventStartDate <= :now AND f.eventEndDate >= :now THEN f.eventEndDate ELSE f.eventEndDate END) > :cursorRankDate "
+            + "              OR ((CASE WHEN f.eventStartDate > :now THEN f.eventStartDate "
+            + "                       WHEN f.eventStartDate <= :now AND f.eventEndDate >= :now THEN f.eventEndDate ELSE f.eventEndDate END) = :cursorRankDate "
+            + "                  AND f.id > :cursorId)))) "
+            + "ORDER BY "
+            + "  (CASE WHEN f.eventStartDate > :now THEN 0 "
+            + "        WHEN f.eventStartDate <= :now AND f.eventEndDate >= :now THEN 1 ELSE 2 END) ASC, "
+            + "  (CASE WHEN f.eventStartDate > :now THEN f.eventStartDate "
+            + "        WHEN f.eventStartDate <= :now AND f.eventEndDate >= :now THEN f.eventEndDate ELSE f.eventEndDate END) ASC, "
+            + "  f.id ASC")
     List<Festival> findByRegionGroupOrderByStartDate(
             @Param("regions") Set<Region> regions,
             @Param("now") Instant now,
-            @Param("yearEnd") Instant yearEnd,
-            @Param("cursorEventStartDate") Instant cursorEventStartDate,
-            @Param("cursorDuration") Duration cursorDuration,
+            @Param("since") Instant since,
+            @Param("until") Instant until,
+            @Param("cursorTier") int cursorTier,
+            @Param("cursorRankDate") Instant cursorRankDate,
             @Param("cursorId") Long cursorId,
             Pageable pageable
     );
