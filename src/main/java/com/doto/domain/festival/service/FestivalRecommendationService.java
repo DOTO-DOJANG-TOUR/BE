@@ -100,6 +100,7 @@ public class FestivalRecommendationService {
         return festivalRepository.findByRegionGroupOrderByEndDate(
                 regionGroup.getRegions(),
                 now,
+                DateTimeUtils.endOfYear(now, applicationClock.getZone()),
                 decoded != null ? decoded.eventEndDate() : Instant.EPOCH,
                 decoded != null ? decoded.id() : FIRST_PAGE_ID,
                 PageRequest.ofSize(size + 1)
@@ -111,6 +112,7 @@ public class FestivalRecommendationService {
         return festivalRepository.findByRegionGroupOrderByStartDate(
                 regionGroup.getRegions(),
                 now,
+                DateTimeUtils.endOfYear(now, applicationClock.getZone()),
                 decoded != null ? decoded.eventStartDate() : Instant.EPOCH,
                 decoded != null ? decoded.duration() : FIRST_PAGE_DURATION,
                 decoded != null ? decoded.id() : FIRST_PAGE_ID,

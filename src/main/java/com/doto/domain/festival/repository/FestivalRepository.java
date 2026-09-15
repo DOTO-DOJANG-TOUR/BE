@@ -51,11 +51,12 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             Pageable pageable
     );
 
-    // 지역별 축제(종료임박순): event_start_date<=오늘<=event_end_date인 진행중 축제만 대상(오늘의 축제와 필터 동일 + 지역 조건)
+    // 지역별 축제(종료임박순), 올해 시작하는 축제만
     @Query("SELECT f FROM Festival f "
             + "WHERE f.legalRegion IN :regions "
             + "AND f.eventStartDate <= :now "
             + "AND f.eventEndDate >= :now "
+            + "AND f.eventStartDate <= :yearEnd "
             + "AND f.imageUrl IS NOT NULL "
             + "AND f.imageUrl <> '' "
             + "AND (f.eventEndDate > :cursorEventEndDate "
@@ -65,15 +66,17 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     List<Festival> findByRegionGroupOrderByEndDate(
             @Param("regions") Set<Region> regions,
             @Param("now") Instant now,
+            @Param("yearEnd") Instant yearEnd,
             @Param("cursorEventEndDate") Instant cursorEventEndDate,
             @Param("cursorId") Long cursorId,
             Pageable pageable
     );
 
-    // 지역별 축제(개최임박순): event_start_date>오늘인 개최 전 축제만 대상(앞으로의 축제와 필터 동일 + 지역 조건)
+    // 지역별 축제(개최임박순), 올해 시작하는 축제만
     @Query("SELECT f FROM Festival f "
             + "WHERE f.legalRegion IN :regions "
             + "AND f.eventStartDate > :now "
+            + "AND f.eventStartDate <= :yearEnd "
             + "AND f.imageUrl IS NOT NULL "
             + "AND f.imageUrl <> '' "
             + "AND (f.eventStartDate > :cursorEventStartDate "
@@ -84,6 +87,7 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     List<Festival> findByRegionGroupOrderByStartDate(
             @Param("regions") Set<Region> regions,
             @Param("now") Instant now,
+            @Param("yearEnd") Instant yearEnd,
             @Param("cursorEventStartDate") Instant cursorEventStartDate,
             @Param("cursorDuration") Duration cursorDuration,
             @Param("cursorId") Long cursorId,

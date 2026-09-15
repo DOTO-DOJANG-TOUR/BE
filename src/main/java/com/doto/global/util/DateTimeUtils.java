@@ -32,6 +32,12 @@ public final class DateTimeUtils {
         return LocalDate.ofInstant(instant, zoneId).toString();
     }
 
+    // instant가 속한 연도의 12/31 23:59:59.999999999 (지정 타임존 기준)
+    public static Instant endOfYear(Instant instant, ZoneId zoneId) {
+        int year = LocalDate.ofInstant(instant, zoneId).getYear();
+        return LocalDate.of(year, 12, 31).atTime(LocalTime.MAX).atZone(zoneId).toInstant();
+    }
+
     // 날짜 -> 지정한 타임존 기준 "yyyy.MM.dd (요일)" 문자열 (관리자 화면 표시용)
     public static String toKoreanDateWithWeekday(Instant instant, ZoneId zoneId) {
         return LocalDate.ofInstant(instant, zoneId).format(KOREAN_DATE_WITH_WEEKDAY_FORMAT);
