@@ -1,91 +1,191 @@
 package com.doto.global.config;
 
-import com.doto.domain.member.entity.Authority;
-import com.doto.global.security.JsonAuthenticationEntryPoint;
-import com.doto.global.security.jwt.JwtAuthenticationFilter;
+import com.doto.global.api.CommonResponse;
+import com.doto.global.error.CommonErrorCode;
+import com.doto.global.error.ErrorCode;
+import com.doto.global.security.CurrentMember;
+import com.doto.global.swagger.ApiErrorCodeExamples;
+import io.swagger.v3.core.converter.AnnotatedType;
+import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.core.converter.ResolvedSchema;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.examples.Example;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
+import java.lang.reflect.Method;
+import java.util.LinkedHashMap;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
+import java.util.Map;
+import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.web.method.HandlerMethod;
 
 @Configuration
-@EnableWebSecurity
-@RequiredArgsConstructor
-public class SecurityConfig {
+public class SwaggerConfig {
 
-    // 프런트엔드에서 직접 호출을 허용할 출처 목록
-    private static final List<String> ALLOWED_ORIGINS = List.of(
-            "https://doto-reward.netlify.app"
-    );
+    public static final String BEARER_AUTH = "bearerAuth";
+    private static final String COMMON_RESPONSE_SCHEMA = "CommonResponse";
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final JsonAuthenticationEntryPoint jsonAuthenticationEntryPoint;
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/v1/auth/**",
-                                "/health",
-                                "/actuator/health",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**",
-                                // QR로 스캔한 방문객이 로그인 없이 바로 여는 보상 처리 화면에서 호출하는 API
-                                "/api/v1/stamp-tours/reward"
-                        ).permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasAuthority(Authority.ADMIN_ACCESS.name())
-                        .anyRequest().authenticated())
-                .exceptionHandling(exception ->
-                        exception.authenticationEntryPoint(jsonAuthenticationEntryPoint))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
+    static {
+        // @CurrentMember는 요청 파라미터로 노출하지 않는다
+        SpringDocUtils.getConfig().addAnnotationsToIgnore(CurrentMember.class);
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    public OpenAPI dotoOpenApi() {
+        ResolvedSchema resolvedSchema = ModelConverters.getInstance()
+                .resolveAsResolvedSchema(new AnnotatedType(CommonResponse.class));
 
-        // QR로 스캔한 방문객이 어떤 화면/출처에서 열든 호출 가능해야 하는 보상 처리 API는 모든 출처를 허용
-        CorsConfiguration rewardCorsConfiguration = new CorsConfiguration();
-        rewardCorsConfiguration.setAllowedOrigins(List.of("*"));
-        rewardCorsConfiguration.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
-        rewardCorsConfiguration.setAllowedHeaders(List.of("*"));
-        rewardCorsConfiguration.setAllowCredentials(false);
-        source.registerCorsConfiguration("/api/v1/stamp-tours/reward", rewardCorsConfiguration);
+        Components components = new Components()
+                .addSecuritySchemes(BEARER_AUTH, new SecurityScheme()
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT"));
+        components.addSchemas(COMMON_RESPONSE_SCHEMA, resolvedSchema.schema);
+        resolvedSchema.referencedSchemas.forEach(components::addSchemas);
 
-        // 나머지 API는 등록된 프론트엔드 출처만 허용
-        CorsConfiguration defaultCorsConfiguration = new CorsConfiguration();
-        defaultCorsConfiguration.setAllowedOrigins(ALLOWED_ORIGINS);
-        defaultCorsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        defaultCorsConfiguration.setAllowedHeaders(List.of("*"));
-        defaultCorsConfiguration.setAllowCredentials(true);
-        source.registerCorsConfiguration("/**", defaultCorsConfiguration);
-
-        return source;
+        return new OpenAPI()
+                .servers(List.of(new Server().url("/").description("현재 서버")))
+                .components(components)
+                .info(new Info()
+                        .title("DOTO API")
+                        .description("DOTO 백엔드 API 명세서")
+                        .version("v1"));
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public OperationCustomizer errorResponseCustomizer() {
+        return (operation, handlerMethod) -> {
+            addErrorExample(operation, CommonErrorCode.INVALID_INPUT);
+            addErrorExample(operation, CommonErrorCode.MALFORMED_REQUEST);
+            addErrorExample(operation, CommonErrorCode.INTERNAL_SERVER_ERROR);
+
+            ApiErrorCodeExamples annotation = findDomainErrorCodes(handlerMethod);
+            if (annotation != null) {
+                for (Class<? extends ErrorCode> errorCodeType : annotation.value()) {
+                    addErrorCodeType(operation, errorCodeType);
+                }
+            }
+            return operation;
+        };
     }
 
+    private ApiErrorCodeExamples findDomainErrorCodes(HandlerMethod handlerMethod) {
+        // 메서드 레벨 선언이 있으면 그 operation은 타입 레벨 선언보다 우선한다
+        ApiErrorCodeExamples methodLevel = findMethodErrorCodes(handlerMethod);
+        if (methodLevel != null) {
+            return methodLevel;
+        }
+        return findTypeErrorCodes(handlerMethod.getBeanType());
+    }
+
+    private ApiErrorCodeExamples findMethodErrorCodes(HandlerMethod handlerMethod) {
+        Method method = handlerMethod.getMethod();
+        ApiErrorCodeExamples annotation = AnnotatedElementUtils.findMergedAnnotation(
+                method,
+                ApiErrorCodeExamples.class
+        );
+        if (annotation != null) {
+            return annotation;
+        }
+
+        // Controller 구현체가 아니라 그게 구현하는 Api 인터페이스의 같은 메서드에 선언된 경우
+        for (Class<?> interfaceType : handlerMethod.getBeanType().getInterfaces()) {
+            Method interfaceMethod = findMatchingMethod(interfaceType, method);
+            if (interfaceMethod == null) {
+                continue;
+            }
+            annotation = AnnotatedElementUtils.findMergedAnnotation(interfaceMethod, ApiErrorCodeExamples.class);
+            if (annotation != null) {
+                return annotation;
+            }
+        }
+        return null;
+    }
+
+    private Method findMatchingMethod(Class<?> interfaceType, Method method) {
+        try {
+            return interfaceType.getMethod(method.getName(), method.getParameterTypes());
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+    }
+
+    private ApiErrorCodeExamples findTypeErrorCodes(Class<?> beanType) {
+        ApiErrorCodeExamples annotation = AnnotatedElementUtils.findMergedAnnotation(
+                beanType,
+                ApiErrorCodeExamples.class
+        );
+        if (annotation != null) {
+            return annotation;
+        }
+
+        for (Class<?> interfaceType : beanType.getInterfaces()) {
+            annotation = AnnotatedElementUtils.findMergedAnnotation(
+                    interfaceType,
+                    ApiErrorCodeExamples.class
+            );
+            if (annotation != null) {
+                return annotation;
+            }
+        }
+        return null;
+    }
+
+    private void addErrorCodeType(Operation operation, Class<? extends ErrorCode> errorCodeType) {
+        if (!errorCodeType.isEnum()) {
+            throw new IllegalArgumentException("ErrorCode 타입은 enum이어야 합니다: " + errorCodeType.getName());
+        }
+
+        Object[] constants = errorCodeType.getEnumConstants();
+        for (Object constant : constants) {
+            addErrorExample(operation, (ErrorCode) constant);
+        }
+    }
+
+    private void addErrorExample(Operation operation, ErrorCode errorCode) {
+        ApiResponses responses = operation.getResponses();
+        if (responses == null) {
+            responses = new ApiResponses();
+            operation.setResponses(responses);
+        }
+
+        String status = String.valueOf(errorCode.getStatus().value());
+        ApiResponse response = responses.computeIfAbsent(
+                status,
+                key -> new ApiResponse().description(errorCode.getStatus().getReasonPhrase())
+        );
+        if (response.getContent() == null) {
+            response.setContent(new Content());
+        }
+
+        MediaType mediaType = response.getContent().computeIfAbsent(
+                "application/json",
+                key -> new MediaType()
+        );
+        if (mediaType.getSchema() == null) {
+            mediaType.setSchema(new Schema<>().$ref("#/components/schemas/" + COMMON_RESPONSE_SCHEMA));
+        }
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("isSuccess", false);
+        body.put("code", errorCode.getCode());
+        body.put("message", errorCode.getMessage());
+        body.put("result", null);
+
+        mediaType.addExamples(errorCode.getCode(), new Example()
+                .summary(errorCode.getMessage())
+                .value(body));
+    }
 }
