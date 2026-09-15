@@ -123,7 +123,11 @@ public interface StampApi {
     // 투어 QR코드 조회
     @Operation(
             summary = "투어 QR코드 조회",
-            description = "선택한 스탬프 투어의 QR코드를 조회합니다."
+            description = """
+                    선택한 스탬프 투어의 QR코드를 조회합니다.
+                    - QR코드 이미지에는 6자리 보상 코드(rewardCode)가 그대로 인코딩되어 있습니다.
+                    - QR 스캔이 어려울 때 수기로 입력할 수 있도록 rewardCode를 별도 필드로도 함께 반환합니다.
+                    """
     )
     @ApiResponse(responseCode = "200", description = "투어 QR코드 조회 성공")
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
