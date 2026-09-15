@@ -107,7 +107,10 @@ public interface StampApi {
     // 개별 도장 현황 조회
     @Operation(
             summary = "개별 투어 도장 현황 조회",
-            description = "선택한 스탬프 투어의 도장 획득 현황을 조회합니다."
+            description = """
+                    선택한 스탬프 투어의 도장 획득 현황을 조회합니다.
+                    - 진행 중(PROGRESS)인데 축제가 이미 종료되었으면 FESTIVAL_ENDED를 반환합니다.
+                    """
     )
     @ApiResponse(responseCode = "200", description = "개별 투어 도장 현황 조회 성공")
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)

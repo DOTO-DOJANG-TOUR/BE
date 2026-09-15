@@ -33,6 +33,7 @@ import com.doto.fixture.MemberFixture;
 import com.doto.fixture.FestivalFixture;
 import com.doto.fixture.StampTourFixture;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -56,6 +57,7 @@ class StampServiceTest {
     @Mock private FestivalTourSpotRepository festivalTourSpotRepository;
     @Mock private TourSpotVisitRepository tourSpotVisitRepository;
     @Mock private FestivalVisitRepository festivalVisitRepository;
+    @Mock private Clock applicationClock;
 
     @InjectMocks private StampService stampService;
 
@@ -282,6 +284,53 @@ class StampServiceTest {
             assertThat(response.qrCodeImageUrl()).startsWith("data:image/png;base64,");
             assertThat(response.rewardCode()).isEqualTo(stampTour.getRewardCode());
             assertThat(response.rewardCode()).matches("^[0-9]{6}$");
+        }
+    }
+
+    @Nested
+    @DisplayName("개별 투어 도장 현황 조회")
+    class GetMyStamp {
+
+        @Test
+        @DisplayName("진행 중이고 축제가 아직 끝나지 않았으면 PROGRESS를 반환한다")
+        void returnsProgressWhenFestivalNotEnded() {
+            StampTour stampTour = StampTourFixture.create(MemberFixture.create(1L), FestivalFixture.create());
+            given(stampTourRepository.findByMember_IdAndFestival_Id(1L, 100L)).willReturn(Optional.of(stampTour));
+            given(stampRepository.findByStampTour_Id(stampTour.getId())).willReturn(java.util.List.of());
+            given(applicationClock.instant()).willReturn(Instant.parse("2026-08-19T00:00:00Z"));
+
+            var response = stampService.getMyStamp(1L, 100L);
+
+            assertThat(response.status()).isEqualTo(com.doto.domain.stamp.dto.StampTourViewStatus.PROGRESS);
+        }
+
+        @Test
+        @DisplayName("진행 중인데 축제가 이미 끝났으면 FESTIVAL_ENDED를 반환한다")
+        void returnsFestivalEndedWhenProgressPastFestivalEnd() {
+            StampTour stampTour = StampTourFixture.create(MemberFixture.create(1L), FestivalFixture.create());
+            given(stampTourRepository.findByMember_IdAndFestival_Id(1L, 100L)).willReturn(Optional.of(stampTour));
+            given(stampRepository.findByStampTour_Id(stampTour.getId())).willReturn(java.util.List.of());
+            given(applicationClock.instant()).willReturn(Instant.parse("2026-08-21T00:00:00Z"));
+
+            var response = stampService.getMyStamp(1L, 100L);
+
+            assertThat(response.status()).isEqualTo(com.doto.domain.stamp.dto.StampTourViewStatus.FESTIVAL_ENDED);
+        }
+
+        @Test
+        @DisplayName("완료된 투어는 축제가 끝났어도 COMPLETED를 반환한다")
+        void returnsCompletedRegardlessOfFestivalEnd() {
+            StampTour stampTour = StampTourFixture.create(MemberFixture.create(1L), FestivalFixture.create());
+            stampTour.completeStamp();
+            stampTour.completeStamp();
+            stampTour.completeStamp();
+            given(stampTourRepository.findByMember_IdAndFestival_Id(1L, 100L)).willReturn(Optional.of(stampTour));
+            given(stampRepository.findByStampTour_Id(stampTour.getId())).willReturn(java.util.List.of());
+            given(applicationClock.instant()).willReturn(Instant.parse("2026-08-21T00:00:00Z"));
+
+            var response = stampService.getMyStamp(1L, 100L);
+
+            assertThat(response.status()).isEqualTo(com.doto.domain.stamp.dto.StampTourViewStatus.COMPLETED);
         }
     }
 

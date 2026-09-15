@@ -218,23 +218,25 @@ public class StampService {
         return new MyStampTourResponseDTO((int) rewardedTourCount, tours);
     }
 
-    // 진행 중인데 축제가 이미 끝났으면 FESTIVAL_ENDED로 매핑, DB 상태값은 건드리지 않고 조회 시점에만 계산
     private MyStampTourResponseDTO.TourResponseDTO toTourResponse(StampTour stampTour, Instant now) {
         Festival festival = stampTour.getFestival();
-        boolean isProgressPastFestivalEnd = stampTour.getStatus() == StampTourStatus.PROGRESS
-                && festival.getEventEndDate().isBefore(now);
-        StampTourViewStatus status = isProgressPastFestivalEnd
-                ? StampTourViewStatus.FESTIVAL_ENDED
-                : StampTourViewStatus.from(stampTour.getStatus());
-
         return new MyStampTourResponseDTO.TourResponseDTO(
                 String.valueOf(festival.getId()),
                 festival.getTitle(),
                 festival.getImageUrl(),
                 stampTour.getCompletedStampCount(),
                 LocalDate.ofInstant(festival.getEventEndDate(), applicationClock.getZone()),
-                status
+                resolveViewStatus(stampTour, now)
         );
+    }
+
+    // 진행 중인데 축제가 이미 끝났으면 FESTIVAL_ENDED로 매핑, DB 상태값은 건드리지 않고 조회 시점에만 계산
+    private StampTourViewStatus resolveViewStatus(StampTour stampTour, Instant now) {
+        boolean isProgressPastFestivalEnd = stampTour.getStatus() == StampTourStatus.PROGRESS
+                && stampTour.getFestival().getEventEndDate().isBefore(now);
+        return isProgressPastFestivalEnd
+                ? StampTourViewStatus.FESTIVAL_ENDED
+                : StampTourViewStatus.from(stampTour.getStatus());
     }
 
     // 개별 투어 도장 현황 조회
@@ -258,7 +260,7 @@ public class StampService {
                 festival.getTitle(),
                 stampTour.getCompletedStampCount(),
                 stamps,
-                stampTour.getStatus()
+                resolveViewStatus(stampTour, applicationClock.instant())
         );
     }
 
