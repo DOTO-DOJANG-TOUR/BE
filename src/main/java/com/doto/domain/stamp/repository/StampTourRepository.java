@@ -32,6 +32,9 @@ public interface StampTourRepository extends JpaRepository<StampTour, Long> {
     // 신규 투어 생성 시 보상 코드가 다른 투어와 겹치지 않는지 확인
     boolean existsByRewardCode(String rewardCode);
 
+    // QR코드 스캔 시 보상 지급 전 미리보기 조회 (상태를 바꾸지 않으므로 잠금 불필요)
+    Optional<StampTour> findByRewardCode(String rewardCode);
+
     // QR코드 스캔으로 보상 처리할 때 동시 요청으로 중복 보상되지 않도록 잠금 조회
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT stampTour FROM StampTour stampTour WHERE stampTour.rewardCode = :rewardCode")

@@ -9,6 +9,7 @@ import com.doto.domain.member.exception.MemberErrorCode;
 import com.doto.domain.member.exception.MemberException;
 import com.doto.domain.member.repository.MemberRepository;
 import com.doto.domain.stamp.dto.StampTourDetailResponseDTO;
+import com.doto.domain.stamp.dto.StampTourRewardPreviewResponseDTO;
 import com.doto.domain.stamp.dto.StampTourRewardResponseDTO;
 import com.doto.domain.stamp.dto.StampTourSpotItemResponseDTO;
 import com.doto.domain.stamp.dto.StampTourViewStatus;
@@ -152,18 +153,25 @@ public class StampTourService {
 
 
 
-    // QR코드(관리자 스캔)로 스탬프 투어 보상 처리
+    // QR코드(관리자 스캔) 조회 - 보상 지급 전 화면에 누구의 투어인지 보여주기 위한 조회 전용, 상태를 바꾸지 않는다
+    public StampTourRewardPreviewResponseDTO previewStampTourReward(String rewardCode) {
+        StampTour stampTour = stampTourRepository.findByRewardCode(rewardCode)
+                .orElseThrow(() -> new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_FOUND));
+        validateRewardable(stampTour);
+
+        return new StampTourRewardPreviewResponseDTO(
+                stampTour.getMember().getNickname(),
+                stampTour.getRewardCode(),
+                stampTour.getFestival().getTitle()
+        );
+    }
+
+    // QR코드(관리자 스캔)로 스탬프 투어 보상 처리 - 화면에서 미리보기 확인 후 "확인하기"를 눌렀을 때 호출
     @Transactional
     public StampTourRewardResponseDTO rewardStampTourByRewardCode(String rewardCode) {
         StampTour stampTour = stampTourRepository.findByRewardCodeForUpdate(rewardCode)
                 .orElseThrow(() -> new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_FOUND));
-
-        if (stampTour.getStatus() == StampTourStatus.REWARDED) {
-            throw new StampTourException(StampTourErrorCode.STAMP_TOUR_ALREADY_REWARDED);
-        }
-        if (stampTour.getStatus() != StampTourStatus.COMPLETED) {
-            throw new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_COMPLETED);
-        }
+        validateRewardable(stampTour);
 
         stampTour.reward();
 
@@ -173,6 +181,15 @@ public class StampTourService {
                 stampTour.getFestival().getTitle(),
                 DateTimeUtils.toKoreanDateWithWeekday(applicationClock.instant(), applicationClock.getZone())
         );
+    }
+
+    private void validateRewardable(StampTour stampTour) {
+        if (stampTour.getStatus() == StampTourStatus.REWARDED) {
+            throw new StampTourException(StampTourErrorCode.STAMP_TOUR_ALREADY_REWARDED);
+        }
+        if (stampTour.getStatus() != StampTourStatus.COMPLETED) {
+            throw new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_COMPLETED);
+        }
     }
 
     private StampTourSpotItemResponseDTO toStampTourSpotItem(FestivalTourSpot festivalTourSpot) {
