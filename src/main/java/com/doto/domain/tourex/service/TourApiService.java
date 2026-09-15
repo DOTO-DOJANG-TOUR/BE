@@ -17,6 +17,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 public class TourApiService {
 
     private static final int TOUR_SPOT_SEARCH_RADIUS_METERS = 5_000;
+    private static final Pattern URL_PATTERN = Pattern.compile("https?://\\S+");
     private final TourApiClient tourApiClient;
 
     // 관광지의 경우 없으면 호출하는 방식, contentId로 판단
@@ -208,7 +211,17 @@ public class TourApiService {
     }
 
     private String getHomepageUrl(String homepage, String eventHomepage) {
-        return eventHomepage == null || eventHomepage.isBlank() ? homepage : eventHomepage;
+        String url = eventHomepage == null || eventHomepage.isBlank() ? homepage : eventHomepage;
+        return extractFirstUrl(url);
+    }
+
+    // 홈페이지 필드에 "공식 홈페이지 url 공식 인스타 url" 처럼 여러 개가 섞여오는 경우 첫 url만 저장
+    private String extractFirstUrl(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        Matcher matcher = URL_PATTERN.matcher(raw);
+        return matcher.find() ? matcher.group() : raw;
     }
 
     private BigDecimal toCoordinate(String coordinate) {
