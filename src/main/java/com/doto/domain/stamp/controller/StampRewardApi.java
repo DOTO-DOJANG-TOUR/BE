@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-// QR을 스캔한 방문객이 로그인 없이 바로 여는 보상 처리 화면에서 호출하는 API라 인증 없이 공개됨. SecurityConfig 참고
+// QR을 스캔한 방문객이 로그인 없이 바로 여는 보상 처리 화면에서 호출하는 API라 인증 없이 공개됨
 @Tag(name = "Stamp Reward", description = "QR코드 기반 스탬프 투어 보상 처리 API (인증 불필요)")
 @ApiErrorCodeExamples({StampTourErrorCode.class})
 public interface StampRewardApi {
