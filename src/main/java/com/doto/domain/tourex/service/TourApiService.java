@@ -17,6 +17,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 public class TourApiService {
 
     private static final int TOUR_SPOT_SEARCH_RADIUS_METERS = 5_000;
+    private static final Pattern URL_PATTERN = Pattern.compile("https?://\\S+");
     private final TourApiClient tourApiClient;
 
     // 관광지의 경우 없으면 호출하는 방식, contentId로 판단
@@ -48,23 +51,26 @@ public class TourApiService {
         );
     }
 
-    // 축제 상세 조회, festivalType은 searchFestival2(목록 조회) 결과에만 있어 호출부에서 넘겨받음
-    public FestivalApiResponseDTO getFestivalInfo(Long festivalContentId, String festivalType) {
-        TourApiResponseDTO.TourContentDTO festival = getContent(festivalContentId);
+    // 축제 상세 조회. title/addr1/tel/mapx/mapy/firstimage/lclsSystm3/festivalType 등은
+    // searchFestival2(목록 조회) 결과에 이미 있으므로 detailCommon2 응답으로 덮어쓰지 않고 목록 값을 그대로 쓴다.
+    // detailCommon2는 목록에 없는 overview/homepage를 보충하기 위해서만 호출한다.
+    public FestivalApiResponseDTO getFestivalInfo(TourApiResponseDTO.TourContentDTO festivalListItem) {
+        Long festivalContentId = festivalListItem.contentId();
+        TourApiResponseDTO.TourContentDTO festivalDetail = getContent(festivalContentId);
         FestivalIntroApiResponseDTO.FestivalIntroDTO intro = getFestivalIntro(festivalContentId);
         return FestivalApiResponseDTO.builder()
-                .contentId(festival.contentId())
-                .title(festival.title())
-                .imageUrl(getImageUrl(festival))
-                .address(festival.addr1())
-                .phone(festival.tel())
-                .mapX(festival.mapx())
-                .mapY(festival.mapy())
-                .overview(festival.overview())
-                .category(toCategoryLabel(festival.lclsSystem3()))
-                .festivalType(festivalType)
-                .legalDongRegionCode(festival.legalDongRegionCode())
-                .legalDongSigunguCode(festival.legalDongSigunguCode())
+                .contentId(festivalListItem.contentId())
+                .title(festivalListItem.title())
+                .imageUrl(getImageUrl(festivalListItem))
+                .address(festivalListItem.addr1())
+                .phone(festivalListItem.tel())
+                .mapX(festivalListItem.mapx())
+                .mapY(festivalListItem.mapy())
+                .overview(festivalDetail.overview())
+                .category(toCategoryLabel(festivalListItem.lclsSystem3()))
+                .festivalType(festivalListItem.festivalType())
+                .legalDongRegionCode(festivalListItem.legalDongRegionCode())
+                .legalDongSigunguCode(festivalListItem.legalDongSigunguCode())
                 .eventStartDate(intro.eventstartdate())
                 .eventEndDate(intro.eventenddate())
                 .operationHours(intro.playtime())
@@ -76,7 +82,7 @@ public class TourApiService {
                 .parkingInfo(intro.parking())
                 .parkingFee(intro.parkingfee())
                 .eventPlace(intro.eventplace())
-                .homepageUrl(getHomepageUrl(festival.homepage(), intro.eventhomepage()))
+                .homepageUrl(getHomepageUrl(festivalDetail.homepage(), intro.eventhomepage()))
                 .reservationInfo(intro.reservation())
                 .reservationUrl(intro.reservationurl())
                 .program(intro.program())
@@ -103,7 +109,7 @@ public class TourApiService {
 
     // 스케줄러 동기화 대상 축제 목록을 조회, 각 항목에 festivalType(festivaltype) 포함
     public List<TourApiResponseDTO.TourContentDTO> getFestivalsForSync(LocalDate eventStartDate) {
-        return getFestivalsForSync(eventStartDate, eventStartDate);
+        return getFestivalsForSync(eventStartDate, null);
     }
 
     // 축제 시작일 범위로 동기화 대상을 조회
@@ -205,7 +211,17 @@ public class TourApiService {
     }
 
     private String getHomepageUrl(String homepage, String eventHomepage) {
-        return eventHomepage == null || eventHomepage.isBlank() ? homepage : eventHomepage;
+        String url = eventHomepage == null || eventHomepage.isBlank() ? homepage : eventHomepage;
+        return extractFirstUrl(url);
+    }
+
+    // 홈페이지 필드에 "공식 홈페이지 url 공식 인스타 url" 처럼 여러 개가 섞여오는 경우 첫 url만 저장
+    private String extractFirstUrl(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        Matcher matcher = URL_PATTERN.matcher(raw);
+        return matcher.find() ? matcher.group() : raw;
     }
 
     private BigDecimal toCoordinate(String coordinate) {

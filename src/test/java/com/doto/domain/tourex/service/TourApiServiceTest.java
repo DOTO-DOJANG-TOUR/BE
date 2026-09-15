@@ -127,13 +127,15 @@ class TourApiServiceTest {
         @Test
         @DisplayName("TourAPI 콘텐츠와 소개 정보를 축제 응답으로 변환한다")
         void mapsFestivalInfo() {
+            TourApiResponseDTO.TourContentDTO listItem =
+                    festivalContent("041-730-2971,3", null, "EV010100", "문화관광축제");
             given(tourApiClient.getContentDetail(126516L))
-                    .willReturn(response(festivalContent("041-730-2971,3", "https://example.com", "EV010100")));
+                    .willReturn(response(festivalContent(null, "https://example.com", null, null)));
             given(tourApiClient.getFestivalIntro(126516L)).willReturn(festivalIntro(
                     "R석 35,000원", "없음", "무료", null, "18:00~22:00", "10:00~18:00"
             ));
 
-            FestivalApiResponseDTO result = tourApiService.getFestivalInfo(126516L, "문화관광축제");
+            FestivalApiResponseDTO result = tourApiService.getFestivalInfo(listItem);
 
             assertThat(result.title()).isEqualTo("강경 국가유산야행");
             assertThat(result.phone()).isEqualTo("041-730-2971,3");
@@ -148,13 +150,14 @@ class TourApiServiceTest {
         @Test
         @DisplayName("TourAPI가 빈 문자열이나 공백만 내려준 필드는 null로 저장된다")
         void blankFieldsAreNormalizedToNull() {
+            TourApiResponseDTO.TourContentDTO listItem = festivalContent("  ", null, "  ", "  ");
             given(tourApiClient.getContentDetail(126516L))
-                    .willReturn(response(festivalContent("  ", "", "  ")));
+                    .willReturn(response(festivalContent(null, "", null, null)));
             given(tourApiClient.getFestivalIntro(126516L)).willReturn(festivalIntro(
                     " ", "", "   ", "  ", " ", " "
             ));
 
-            FestivalApiResponseDTO result = tourApiService.getFestivalInfo(126516L, "  ");
+            FestivalApiResponseDTO result = tourApiService.getFestivalInfo(listItem);
 
             assertThat(result.phone()).isNull();
             assertThat(result.homepageUrl()).isNull();
@@ -169,25 +172,29 @@ class TourApiServiceTest {
         @Test
         @DisplayName("EV01 소분류 6개에 없는 lclsSystm3 코드는 기타로 저장된다")
         void unmappedCategoryCodeFallsBackToEtc() {
+            TourApiResponseDTO.TourContentDTO listItem =
+                    festivalContent("041-730-2971,3", null, "EV020100", "공연");
             given(tourApiClient.getContentDetail(126516L))
-                    .willReturn(response(festivalContent("041-730-2971,3", "https://example.com", "EV020100")));
+                    .willReturn(response(festivalContent(null, "https://example.com", null, null)));
             given(tourApiClient.getFestivalIntro(126516L)).willReturn(festivalIntro(
                     "행사기간 상시", "없음", "무료", null, "18:00~22:00", "10:00~18:00"
             ));
 
-            FestivalApiResponseDTO result = tourApiService.getFestivalInfo(126516L, "공연");
+            FestivalApiResponseDTO result = tourApiService.getFestivalInfo(listItem);
 
             assertThat(result.category()).isEqualTo("기타");
         }
     }
 
-    // tel, homepage, lclsSystem3 외 나머지 필드는 이 테스트들에서 의미가 없어 고정값을 사용한다
-    private TourApiResponseDTO.TourContentDTO festivalContent(String tel, String homepage, String lclsSystem3) {
+    // tel, homepage, lclsSystem3, festivalType 외 나머지 필드는 이 테스트들에서 의미가 없어 고정값을 사용한다
+    private TourApiResponseDTO.TourContentDTO festivalContent(
+            String tel, String homepage, String lclsSystem3, String festivalType
+    ) {
         return new TourApiResponseDTO.TourContentDTO(
                 126516L, 15, "강경 국가유산야행", homepage, "충청남도 논산시 강경읍 중앙리", null, tel,
                 "https://tong.visitkorea.or.kr/cms/resource/94/3519794_image2_1.jpg", null,
                 "127.02", "36.16", null, null, "44", "44230", "EV", "EV01", lclsSystem3,
-                "강경 국가유산 야행은 보존에 치중하던 기존 틀에서 벗어난다", null, null, null, null, null, null
+                "강경 국가유산 야행은 보존에 치중하던 기존 틀에서 벗어난다", null, null, null, null, null, festivalType
         );
     }
 

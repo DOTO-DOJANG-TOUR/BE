@@ -85,8 +85,7 @@ public class TourSyncAdminService {
     }
 
     private void syncFestival(TourApiResponseDTO.TourContentDTO festival) {
-        FestivalApiResponseDTO festivalDetail = tourApiService.getFestivalInfo(
-                festival.contentId(), festival.festivalType());
+        FestivalApiResponseDTO festivalDetail = tourApiService.getFestivalInfo(festival);
         festivalCommandService.saveFestival(festivalDetail);
 
         List<TourSpotItemDetailResponseDTO> tourSpots = tourApiService.getNearbyTourSpots(
