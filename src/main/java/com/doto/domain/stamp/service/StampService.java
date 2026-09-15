@@ -57,7 +57,6 @@ public class StampService {
     private static final Duration TOUR_SPOT_VISIT_DURATION = Duration.ofHours(7);
     private static final int QR_CODE_SIZE = 300;
     private static final String QR_CODE_IMAGE_DATA_URL_PREFIX = "data:image/png;base64,";
-    // 관리자용 보상 처리 화면(SecurityConfig의 CORS 허용 출처와 동일 호스트). 주소가 바뀌면 두 곳 다 갱신 필요
     private static final String REWARD_SCAN_URL_TEMPLATE = "https://doto-reward.netlify.app/?code=%s";
 
     private final MemberRepository memberRepository;
