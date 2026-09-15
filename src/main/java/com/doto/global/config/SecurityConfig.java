@@ -62,14 +62,25 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(ALLOWED_ORIGINS);
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+
+        // QR로 스캔한 방문객이 어떤 화면/출처에서 열든 호출 가능해야 하는 보상 처리 API는 모든 출처를 허용
+        // (인증 없이 여는 API라 자격 증명을 안 실어 보내므로 와일드카드 출처를 써도 안전)
+        CorsConfiguration rewardCorsConfiguration = new CorsConfiguration();
+        rewardCorsConfiguration.setAllowedOrigins(List.of("*"));
+        rewardCorsConfiguration.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+        rewardCorsConfiguration.setAllowedHeaders(List.of("*"));
+        rewardCorsConfiguration.setAllowCredentials(false);
+        source.registerCorsConfiguration("/api/v1/stamp-tours/reward", rewardCorsConfiguration);
+
+        // 나머지 API는 등록된 프론트엔드 출처만 허용
+        CorsConfiguration defaultCorsConfiguration = new CorsConfiguration();
+        defaultCorsConfiguration.setAllowedOrigins(ALLOWED_ORIGINS);
+        defaultCorsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        defaultCorsConfiguration.setAllowedHeaders(List.of("*"));
+        defaultCorsConfiguration.setAllowCredentials(true);
+        source.registerCorsConfiguration("/**", defaultCorsConfiguration);
+
         return source;
     }
 
