@@ -60,16 +60,28 @@ public class SecurityConfig {
         return http.build();
     }
 
+    }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(ALLOWED_ORIGINS);
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+
+        // 보상 API만 모든 출처 허용
+        CorsConfiguration rewardCorsConfiguration = new CorsConfiguration();
+        rewardCorsConfiguration.setAllowedOrigins(List.of("*"));
+        rewardCorsConfiguration.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+        rewardCorsConfiguration.setAllowedHeaders(List.of("*"));
+        rewardCorsConfiguration.setAllowCredentials(false);
+        source.registerCorsConfiguration("/api/v1/stamp-tours/reward", rewardCorsConfiguration);
+
+        // 나머지 API는 등록된 프론트엔드 출처만 허용
+        CorsConfiguration defaultCorsConfiguration = new CorsConfiguration();
+        defaultCorsConfiguration.setAllowedOrigins(ALLOWED_ORIGINS);
+        defaultCorsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        defaultCorsConfiguration.setAllowedHeaders(List.of("*"));
+        defaultCorsConfiguration.setAllowCredentials(true);
+        source.registerCorsConfiguration("/**", defaultCorsConfiguration);
+
         return source;
     }
 
