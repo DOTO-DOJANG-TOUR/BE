@@ -5,12 +5,10 @@ import com.doto.domain.stamp.dto.StampTourRewardRequestDTO;
 import com.doto.domain.stamp.dto.StampTourRewardResponseDTO;
 import com.doto.domain.stamp.exception.StampTourErrorCode;
 import com.doto.global.api.CommonResponse;
-import com.doto.global.config.SwaggerConfig;
 import com.doto.global.swagger.ApiErrorCodeExamples;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-// 백엔드 전용(관리자) API, SecurityConfig 참고
-@Tag(name = "Admin - Stamp Reward", description = "백엔드 전용 스탬프 투어 보상 처리 API")
+// QR을 스캔한 방문객이 로그인 없이 바로 여는 보상 처리 화면에서 호출하는 API라 인증 없이 공개됨. SecurityConfig 참고
+@Tag(name = "Admin - Stamp Reward", description = "스탬프 투어 보상 처리 API (인증 불필요)")
 @ApiErrorCodeExamples({StampTourErrorCode.class})
 public interface StampRewardAdminApi {
 
@@ -34,7 +32,6 @@ public interface StampRewardAdminApi {
                     """
     )
     @ApiResponse(responseCode = "200", description = "스탬프 투어 보상 미리보기 조회 성공")
-    @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     @GetMapping("/api/v1/admin/stamp-tours/reward")
     ResponseEntity<CommonResponse<StampTourRewardPreviewResponseDTO>> previewStampTourReward(
             @Parameter(description = "QR코드에 담긴 6자리 보상 코드", example = "048213")
@@ -51,7 +48,6 @@ public interface StampRewardAdminApi {
                     """
     )
     @ApiResponse(responseCode = "200", description = "스탬프 투어 보상 처리 성공")
-    @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     @PostMapping("/api/v1/admin/stamp-tours/reward")
     ResponseEntity<CommonResponse<StampTourRewardResponseDTO>> rewardStampTour(
             @RequestBody StampTourRewardRequestDTO request

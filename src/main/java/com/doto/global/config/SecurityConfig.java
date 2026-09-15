@@ -7,6 +7,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -48,6 +49,13 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
+                        ).permitAll()
+                        // QR로 스캔한 방문객이 로그인 없이 바로 여는 보상 처리 화면에서 호출하는 API라 인증 없이 허용
+                        .requestMatchers(
+                                HttpMethod.GET, "/api/v1/admin/stamp-tours/reward"
+                        ).permitAll()
+                        .requestMatchers(
+                                HttpMethod.POST, "/api/v1/admin/stamp-tours/reward"
                         ).permitAll()
                         .requestMatchers("/api/v1/admin/**").hasAuthority(Authority.ADMIN_ACCESS.name())
                         .anyRequest().authenticated())
