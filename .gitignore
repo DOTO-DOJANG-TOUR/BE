@@ -17,3 +17,6 @@ out/
 *.jks
 *.log
 !gradle/wrapper/gradle-wrapper.jar
+
+# Claude Code project instructions (local only, not shared via git)
+CLAUDE.md
