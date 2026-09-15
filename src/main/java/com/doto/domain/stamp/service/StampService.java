@@ -245,9 +245,9 @@ public class StampService {
         StampTour stampTour = stampTourRepository.findByMember_IdAndFestival_Id(memberId, festivalId)
                 .orElseThrow(() -> new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_FOUND));
         // 개별 도장 조회
-        List<MyStampResponseDTO.StampResponseDTO> stamps = stampRepository.findByStampTour_Id(stampTour.getId())
+        List<MyStampResponseDTO.StampItemResponseDTO> stamps = stampRepository.findByStampTour_Id(stampTour.getId())
                 .stream()
-                .map(stamp -> new MyStampResponseDTO.StampResponseDTO(
+                .map(stamp -> new MyStampResponseDTO.StampItemResponseDTO(
                         stamp.getTourSpot().getTitle(),
                         stamp.getCompletedAt()
                 ))
