@@ -103,7 +103,7 @@ public class TourApiService {
 
     // 스케줄러 동기화 대상 축제 목록을 조회, 각 항목에 festivalType(festivaltype) 포함
     public List<TourApiResponseDTO.TourContentDTO> getFestivalsForSync(LocalDate eventStartDate) {
-        return getFestivalsForSync(eventStartDate, eventStartDate);
+        return getFestivalsForSync(eventStartDate, null);
     }
 
     // 축제 시작일 범위로 동기화 대상을 조회
