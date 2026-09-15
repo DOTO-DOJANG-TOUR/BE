@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -286,7 +287,7 @@ public class StampService {
             );
             MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
             return QR_CODE_IMAGE_DATA_URL_PREFIX + Base64.getEncoder().encodeToString(outputStream.toByteArray());
-        } catch (WriterException | java.io.IOException exception) {
+        } catch (WriterException | IOException exception) {
             throw new IllegalStateException("Failed to generate tour QR code.", exception);
         }
     }
