@@ -57,6 +57,8 @@ public class StampService {
     private static final Duration TOUR_SPOT_VISIT_DURATION = Duration.ofHours(7);
     private static final int QR_CODE_SIZE = 300;
     private static final String QR_CODE_IMAGE_DATA_URL_PREFIX = "data:image/png;base64,";
+    // 관리자용 보상 처리 화면(SecurityConfig의 CORS 허용 출처와 동일 호스트). 주소가 바뀌면 두 곳 다 갱신 필요
+    private static final String REWARD_SCAN_URL_TEMPLATE = "https://doto-reward.netlify.app/?code=%s";
 
     private final MemberRepository memberRepository;
     private final StampTourRepository stampTourRepository;
@@ -270,15 +272,15 @@ public class StampService {
                 .orElseThrow(() -> new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_FOUND));
         return new TourQRCodeResponseDTO(
                 stampTour.getRewardCode(),
-                createQrCodeImageDataUrl(stampTour.getRewardCode())
+                createQrCodeImageDataUrl(REWARD_SCAN_URL_TEMPLATE.formatted(stampTour.getRewardCode()))
         );
     }
 
     // QR코드 생성
-    private String createQrCodeImageDataUrl(String rewardCode) {
+    private String createQrCodeImageDataUrl(String content) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             BitMatrix bitMatrix = new QRCodeWriter().encode(
-                    rewardCode,
+                    content,
                     BarcodeFormat.QR_CODE,
                     QR_CODE_SIZE,
                     QR_CODE_SIZE

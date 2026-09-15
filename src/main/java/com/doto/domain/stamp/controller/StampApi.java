@@ -125,8 +125,9 @@ public interface StampApi {
             summary = "투어 QR코드 조회",
             description = """
                     선택한 스탬프 투어의 QR코드를 조회합니다.
-                    - QR코드 이미지에는 6자리 보상 코드(rewardCode)가 그대로 인코딩되어 있습니다.
-                    - QR 스캔이 어려울 때 수기로 입력할 수 있도록 rewardCode를 별도 필드로도 함께 반환합니다.
+                    - QR코드 이미지에는 관리자 보상 처리 화면 URL(https://doto-reward.netlify.app/?code=보상코드)이 인코딩되어 있어,
+                      일반 카메라로 스캔하면 보상 코드가 담긴 채로 해당 화면으로 바로 이동합니다.
+                    - QR 스캔이 어려울 때 수기로 입력할 수 있도록 6자리 보상 코드(rewardCode)를 별도 필드로도 함께 반환합니다.
                     """
     )
     @ApiResponse(responseCode = "200", description = "투어 QR코드 조회 성공")

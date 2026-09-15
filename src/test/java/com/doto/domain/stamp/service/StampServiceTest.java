@@ -285,6 +285,33 @@ class StampServiceTest {
             assertThat(response.rewardCode()).isEqualTo(stampTour.getRewardCode());
             assertThat(response.rewardCode()).matches("^[0-9]{6}$");
         }
+
+        @Test
+        @DisplayName("QR코드에는 보상 코드가 쿼리 파라미터로 담긴 관리자 보상 처리 화면 URL이 인코딩된다")
+        void encodesRewardScanUrlIntoQrImage() throws com.google.zxing.NotFoundException, java.io.IOException {
+            StampTour stampTour = StampTourFixture.create(MemberFixture.create(1L), FestivalFixture.create());
+            given(stampTourRepository.findByMember_IdAndFestival_Id(1L, 100L)).willReturn(Optional.of(stampTour));
+
+            TourQRCodeResponseDTO response = stampService.getTourQRCode(1L, 100L);
+
+            assertThat(decodeQrContent(response.qrCodeImageUrl()))
+                    .isEqualTo("https://doto-reward.netlify.app/?code=" + stampTour.getRewardCode());
+        }
+    }
+
+    private String decodeQrContent(String qrCodeImageDataUrl)
+            throws com.google.zxing.NotFoundException, java.io.IOException {
+        String base64Image = qrCodeImageDataUrl.substring(qrCodeImageDataUrl.indexOf(',') + 1);
+        byte[] imageBytes = java.util.Base64.getDecoder().decode(base64Image);
+        java.awt.image.BufferedImage bufferedImage = javax.imageio.ImageIO.read(
+                new java.io.ByteArrayInputStream(imageBytes)
+        );
+        com.google.zxing.BinaryBitmap bitmap = new com.google.zxing.BinaryBitmap(
+                new com.google.zxing.common.HybridBinarizer(
+                        new com.google.zxing.client.j2se.BufferedImageLuminanceSource(bufferedImage)
+                )
+        );
+        return new com.google.zxing.MultiFormatReader().decode(bitmap).getText();
     }
 
     @Nested
