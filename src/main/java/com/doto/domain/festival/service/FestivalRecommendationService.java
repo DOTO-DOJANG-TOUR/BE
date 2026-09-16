@@ -35,8 +35,6 @@ public class FestivalRecommendationService {
     private static final int FIRST_PAGE_TIER = -1;
     // duration 첫 페이지 sentinel, 실제 축제 기간은 항상 0 이상이라 -1초면 항상 첫 분기로 통과
     private static final Duration FIRST_PAGE_DURATION = Duration.ofSeconds(-1);
-    // parking 값에 이 문구가 포함되면 parkingFee도 불가능으로 덮어씀
-    private static final String PARKING_UNAVAILABLE_KEYWORD = "불가능";
     // 검색어에 포함되면 상태 필터로 취급하는 키워드
     private static final Set<String> ONGOING_KEYWORDS = Set.of("진행", "오늘");
     private static final Set<String> UPCOMING_KEYWORDS = Set.of("예정", "내일");
@@ -197,11 +195,13 @@ public class FestivalRecommendationService {
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new FestivalException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
         Instant now = applicationClock.instant();
+        ZoneId zone = applicationClock.getZone();
         return new FestivalDetailResponseDTO(
                 festival.getImageUrl(),
                 festival.getTitle(),
                 toStatus(festival, now),
                 festival.getCategory(),
+                toEventPeriod(festival, zone),
                 festival.getAddress(),
                 festival.getPhone(),
                 festival.getHomepageUrl(),
@@ -209,8 +209,7 @@ public class FestivalRecommendationService {
                 festival.getProgram(),
                 festival.getOperationHours(),
                 festival.getRestDate(),
-                festival.getUseFee(),
-                resolveParkingFee(festival)
+                festival.getUseFee()
         );
     }
 
@@ -249,20 +248,17 @@ public class FestivalRecommendationService {
         );
     }
 
+    private String toEventPeriod(Festival festival, ZoneId zone) {
+        String start = DateTimeUtils.toDotDateString(festival.getEventStartDate(), zone);
+        String end = DateTimeUtils.toDotDateString(festival.getEventEndDate(), zone);
+        return start + " ~ " + end;
+    }
+
     private FestivalStatus toStatus(Festival festival, Instant now) {
         if (festival.getEventEndDate().isBefore(now)) {
             return FestivalStatus.ENDED;
         }
         return !festival.getEventStartDate().isAfter(now) ? FestivalStatus.ONGOING : FestivalStatus.UPCOMING;
-    }
-
-    // parking에 "불가능"이 포함되면 요금도 불가능으로 표시
-    private String resolveParkingFee(Festival festival) {
-        String parking = festival.getParking();
-        if (parking != null && parking.contains(PARKING_UNAVAILABLE_KEYWORD)) {
-            return PARKING_UNAVAILABLE_KEYWORD;
-        }
-        return festival.getParkingFee();
     }
 
 }
