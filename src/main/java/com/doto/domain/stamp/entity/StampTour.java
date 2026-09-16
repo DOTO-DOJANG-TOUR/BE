@@ -101,4 +101,12 @@ public class StampTour extends BaseTimeEntity {
     public void reward() {
         this.status = StampTourStatus.REWARDED;
     }
+
+    // 축제 종료 배치에서 호출 - 진행 중이던 투어만 종료 처리
+    public void endByFestivalClosure() {
+        if (status != StampTourStatus.PROGRESS) {
+            return;
+        }
+        this.status = StampTourStatus.ENDED;
+    }
 }

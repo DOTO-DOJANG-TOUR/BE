@@ -28,8 +28,10 @@ import com.doto.domain.tourspot.repository.FestivalTourSpotRepository;
 import com.doto.global.util.DateTimeUtils;
 import com.doto.global.util.DistanceUtils;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class StampTourService {
 
     private static final int MAX_REWARD_CODE_GENERATION_ATTEMPTS = 5;
+    // 축제 종료 배치 한 트랜잭션에서 처리할 최대 건수 (한 번에 findAll로 전부 불러오지 않기 위함)
+    private static final int BATCH_CHUNK_SIZE = 500;
 
     private final FestivalRepository festivalRepository;
     private final MemberRepository memberRepository;
@@ -104,10 +108,8 @@ public class StampTourService {
 
     // 스탬프 투어 상태 조회
     public StampTourViewStatus getStampTourStatus(Long memberId, Long festivalId) {
-        Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new FestivalException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
-        if (festival.getEventEndDate().isBefore(applicationClock.instant())) {
-            return StampTourViewStatus.FESTIVAL_ENDED;
+        if (!festivalRepository.existsById(festivalId)) {
+            throw new FestivalException(FestivalErrorCode.FESTIVAL_NOT_FOUND);
         }
 
         boolean isParticipatingInAnotherTour = festivalVisitRepository
@@ -191,6 +193,23 @@ public class StampTourService {
         if (stampTour.getStatus() != StampTourStatus.COMPLETED) {
             throw new StampTourException(StampTourErrorCode.STAMP_TOUR_NOT_COMPLETED);
         }
+    }
+
+    // 축제 종료 배치 - 한 청크만큼 진행 중 투어와 방문 기록을 함께 정리하고, 다음 청크가 남아있는지 반환
+    @Transactional
+    public boolean closeEndedFestivalToursChunk() {
+        Instant now = applicationClock.instant();
+        PageRequest pageRequest = PageRequest.of(0, BATCH_CHUNK_SIZE);
+
+        List<StampTour> stampTourChunk = stampTourRepository.findAllByStatusAndFestival_EventEndDateBefore(
+                StampTourStatus.PROGRESS, now, pageRequest);
+        stampTourChunk.forEach(StampTour::endByFestivalClosure);
+
+        List<FestivalVisit> festivalVisitChunk = festivalVisitRepository
+                .findAllByStatusAndFestival_EventEndDateBefore(FestivalVisitStatus.VISITING, now, pageRequest);
+        festivalVisitChunk.forEach(festivalVisit -> festivalVisit.end(now));
+
+        return stampTourChunk.size() == BATCH_CHUNK_SIZE || festivalVisitChunk.size() == BATCH_CHUNK_SIZE;
     }
 
     private StampTourSpotItemResponseDTO toStampTourSpotItem(FestivalTourSpot festivalTourSpot) {
