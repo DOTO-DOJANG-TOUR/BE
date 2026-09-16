@@ -13,6 +13,7 @@ public final class DateTimeUtils {
     private static final DateTimeFormatter API_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final DateTimeFormatter KOREAN_DATE_WITH_WEEKDAY_FORMAT =
             DateTimeFormatter.ofPattern("yyyy.MM.dd (E)", Locale.KOREA);
+    private static final DateTimeFormatter DOT_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
     private DateTimeUtils() {
     }
@@ -45,5 +46,10 @@ public final class DateTimeUtils {
     // 날짜 -> 지정한 타임존 기준 "yyyy.MM.dd (요일)" 문자열 (관리자 화면 표시용)
     public static String toKoreanDateWithWeekday(Instant instant, ZoneId zoneId) {
         return LocalDate.ofInstant(instant, zoneId).format(KOREAN_DATE_WITH_WEEKDAY_FORMAT);
+    }
+
+    // 날짜 -> 지정한 타임존 기준 "yyyy.MM.dd" 문자열
+    public static String toDotDateString(Instant instant, ZoneId zoneId) {
+        return LocalDate.ofInstant(instant, zoneId).format(DOT_DATE_FORMAT);
     }
 }
