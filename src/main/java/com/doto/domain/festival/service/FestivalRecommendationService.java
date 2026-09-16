@@ -3,6 +3,7 @@ package com.doto.domain.festival.service;
 import com.doto.domain.festival.dto.FestivalDetailResponseDTO;
 import com.doto.domain.festival.dto.FestivalEndDateCursor;
 import com.doto.domain.festival.dto.FestivalPageResponseDTO;
+import com.doto.domain.festival.dto.FestivalRegionCursor;
 import com.doto.domain.festival.dto.FestivalRegionPageResponseDTO;
 import com.doto.domain.festival.dto.FestivalRegionResponseDTO;
 import com.doto.domain.festival.dto.FestivalShortResponseDTO;
@@ -31,10 +32,9 @@ import org.springframework.stereotype.Service;
 public class FestivalRecommendationService {
 
     private static final Long FIRST_PAGE_ID = 0L;
+    private static final int FIRST_PAGE_TIER = -1;
     // duration 첫 페이지 sentinel, 실제 축제 기간은 항상 0 이상이라 -1초면 항상 첫 분기로 통과
     private static final Duration FIRST_PAGE_DURATION = Duration.ofSeconds(-1);
-    // parking 값에 이 문구가 포함되면 parkingFee도 불가능으로 덮어씀
-    private static final String PARKING_UNAVAILABLE_KEYWORD = "불가능";
     // 검색어에 포함되면 상태 필터로 취급하는 키워드
     private static final Set<String> ONGOING_KEYWORDS = Set.of("진행", "오늘");
     private static final Set<String> UPCOMING_KEYWORDS = Set.of("예정", "내일");
@@ -86,33 +86,52 @@ public class FestivalRecommendationService {
 
         boolean hasNext = festivals.size() > size;
         List<Festival> page = hasNext ? festivals.subList(0, size) : festivals;
-        String nextCursor = hasNext
-                ? (sort == FestivalSort.START_DATE ? toUpcomingCursor(page.get(page.size() - 1)) : toEndDateCursor(page.get(page.size() - 1)))
-                : null;
+        String nextCursor = hasNext ? toRegionCursor(page.get(page.size() - 1), sort, now).encode() : null;
         List<FestivalRegionResponseDTO> responses = page.stream()
                 .map(festival -> toRegionResponse(festival, now))
                 .toList();
         return new FestivalRegionPageResponseDTO(responses, nextCursor);
     }
 
+    private FestivalRegionCursor toRegionCursor(Festival festival, FestivalSort sort, Instant now) {
+        FestivalStatus status = toStatus(festival, now);
+        int tier = regionTier(status, sort);
+        Instant rankDate = status == FestivalStatus.UPCOMING ? festival.getEventStartDate() : festival.getEventEndDate();
+        return new FestivalRegionCursor(tier, rankDate, festival.getId());
+    }
+
+    private int regionTier(FestivalStatus status, FestivalSort sort) {
+        FestivalStatus firstPriority = sort == FestivalSort.START_DATE ? FestivalStatus.UPCOMING : FestivalStatus.ONGOING;
+        FestivalStatus secondPriority = sort == FestivalSort.START_DATE ? FestivalStatus.ONGOING : FestivalStatus.UPCOMING;
+        if (status == firstPriority) {
+            return 0;
+        }
+        return status == secondPriority ? 1 : 2;
+    }
+
     private List<Festival> findRegionFestivalsByEndDate(RegionGroup regionGroup, String cursor, int size, Instant now) {
-        FestivalEndDateCursor decoded = FestivalEndDateCursor.decode(cursor);
+        FestivalRegionCursor decoded = FestivalRegionCursor.decode(cursor);
         return festivalRepository.findByRegionGroupOrderByEndDate(
                 regionGroup.getRegions(),
                 now,
-                decoded != null ? decoded.eventEndDate() : Instant.EPOCH,
+                DateTimeUtils.oneYearBefore(now, applicationClock.getZone()),
+                DateTimeUtils.oneYearFrom(now, applicationClock.getZone()),
+                decoded != null ? decoded.tier() : FIRST_PAGE_TIER,
+                decoded != null ? decoded.rankDate() : Instant.EPOCH,
                 decoded != null ? decoded.id() : FIRST_PAGE_ID,
                 PageRequest.ofSize(size + 1)
         );
     }
 
     private List<Festival> findRegionFestivalsByStartDate(RegionGroup regionGroup, String cursor, int size, Instant now) {
-        FestivalUpcomingCursor decoded = FestivalUpcomingCursor.decode(cursor);
+        FestivalRegionCursor decoded = FestivalRegionCursor.decode(cursor);
         return festivalRepository.findByRegionGroupOrderByStartDate(
                 regionGroup.getRegions(),
                 now,
-                decoded != null ? decoded.eventStartDate() : Instant.EPOCH,
-                decoded != null ? decoded.duration() : FIRST_PAGE_DURATION,
+                DateTimeUtils.oneYearBefore(now, applicationClock.getZone()),
+                DateTimeUtils.oneYearFrom(now, applicationClock.getZone()),
+                decoded != null ? decoded.tier() : FIRST_PAGE_TIER,
+                decoded != null ? decoded.rankDate() : Instant.EPOCH,
                 decoded != null ? decoded.id() : FIRST_PAGE_ID,
                 PageRequest.ofSize(size + 1)
         );
@@ -176,11 +195,13 @@ public class FestivalRecommendationService {
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new FestivalException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
         Instant now = applicationClock.instant();
+        ZoneId zone = applicationClock.getZone();
         return new FestivalDetailResponseDTO(
                 festival.getImageUrl(),
                 festival.getTitle(),
-                toDetailStatus(festival, now),
+                toStatus(festival, now),
                 festival.getCategory(),
+                toEventPeriod(festival, zone),
                 festival.getAddress(),
                 festival.getPhone(),
                 festival.getHomepageUrl(),
@@ -188,8 +209,7 @@ public class FestivalRecommendationService {
                 festival.getProgram(),
                 festival.getOperationHours(),
                 festival.getRestDate(),
-                festival.getUseFee(),
-                resolveParkingFee(festival)
+                festival.getUseFee()
         );
     }
 
@@ -214,14 +234,12 @@ public class FestivalRecommendationService {
         );
     }
 
-    // 조회 조건상 종료임박순=진행중만, 개최임박순=개최전만 나오므로 eventStartDate 기준으로만 판단해도 충분
     private FestivalRegionResponseDTO toRegionResponse(Festival festival, Instant now) {
         ZoneId zone = applicationClock.getZone();
-        FestivalStatus status = !festival.getEventStartDate().isAfter(now) ? FestivalStatus.ONGOING : FestivalStatus.UPCOMING;
         return new FestivalRegionResponseDTO(
                 String.valueOf(festival.getId()),
                 festival.getImageUrl(),
-                status,
+                toStatus(festival, now),
                 festival.getTitle(),
                 GunguCodes.findName(festival.getLegalRegion(), festival.getLegalGungu()),
                 DateTimeUtils.toDateString(festival.getEventStartDate(), zone),
@@ -230,21 +248,17 @@ public class FestivalRecommendationService {
         );
     }
 
-    // 상세보기는 목록과 달리 이미 종료된 축제도 조회될 수 있어 종료 상태까지 판단
-    private FestivalStatus toDetailStatus(Festival festival, Instant now) {
+    private String toEventPeriod(Festival festival, ZoneId zone) {
+        String start = DateTimeUtils.toDotDateString(festival.getEventStartDate(), zone);
+        String end = DateTimeUtils.toDotDateString(festival.getEventEndDate(), zone);
+        return start + " ~ " + end;
+    }
+
+    private FestivalStatus toStatus(Festival festival, Instant now) {
         if (festival.getEventEndDate().isBefore(now)) {
             return FestivalStatus.ENDED;
         }
         return !festival.getEventStartDate().isAfter(now) ? FestivalStatus.ONGOING : FestivalStatus.UPCOMING;
-    }
-
-    // parking에 "불가능"이 포함되면 요금도 불가능으로 표시
-    private String resolveParkingFee(Festival festival) {
-        String parking = festival.getParking();
-        if (parking != null && parking.contains(PARKING_UNAVAILABLE_KEYWORD)) {
-            return PARKING_UNAVAILABLE_KEYWORD;
-        }
-        return festival.getParkingFee();
     }
 
 }

@@ -15,6 +15,9 @@ public record FestivalDetailResponseDTO(
         @Schema(description = "축제 카테고리(lclsSystm3 소분류 라벨)", example = "문화관광")
         String category,
 
+        @Schema(description = "축제기간", example = "2026.09.09 ~ 2026.10.18")
+        String eventPeriod,
+
         @Schema(description = "주소", example = "전남광주통합특별시 여수시 삼산면 삼호교길 50")
         String address,
 
@@ -37,9 +40,6 @@ public record FestivalDetailResponseDTO(
         String restDate,
 
         @Schema(description = "이용요금")
-        String useFee,
-
-        @Schema(description = "주차 요금, 주차 불가능이면 \"불가능\"")
-        String parkingFee
+        String useFee
 ) {
 }

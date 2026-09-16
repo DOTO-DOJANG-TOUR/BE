@@ -24,9 +24,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    // 프런트엔드에서 직접 호출을 허용할 출처 목록
+    // 프론트엔드에서 직접 호출을 허용할 출처 목록
     private static final List<String> ALLOWED_ORIGINS = List.of(
-            "https://doto-reward.netlify.app"
+        "https://doto-reward.netlify.app",
+        "https://doto-app.cloud",
+        "http://localhost:5173",
+        "http://localhost:8080"
     );
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -65,7 +68,6 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
         // QR로 스캔한 방문객이 어떤 화면/출처에서 열든 호출 가능해야 하는 보상 처리 API는 모든 출처를 허용
-        // (인증 없이 여는 API라 자격 증명을 안 실어 보내므로 와일드카드 출처를 써도 안전)
         CorsConfiguration rewardCorsConfiguration = new CorsConfiguration();
         rewardCorsConfiguration.setAllowedOrigins(List.of("*"));
         rewardCorsConfiguration.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
