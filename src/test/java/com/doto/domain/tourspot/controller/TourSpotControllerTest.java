@@ -59,7 +59,7 @@ class TourSpotControllerTest {
             given(tourSpotQueryService.getTourSpotDetail(10L, 100L))
                     .willReturn(new TourSpotDetailResponseDTO(
                             "100", "대천해수욕장", null, List.of(), "충남 보령시", "126.5", "36.3",
-                            TourSpotCategory.자연, "451", null, null
+                            TourSpotCategory.자연, "451", null, null, null
                     ));
 
             mockMvc.perform(get("/api/v1/festival/{festivalId}/tour-spots/{tourSpotId}", 10L, 100L))

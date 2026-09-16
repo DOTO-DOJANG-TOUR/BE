@@ -208,10 +208,9 @@ public class StampService {
     // 내 도장 현황 조회
     public MyStampTourResponseDTO getMyStampTours(Long memberId) {
         List<StampTour> stampTours = stampTourRepository.findAllByMember_Id(memberId);
-        Instant now = applicationClock.instant();
 
         List<MyStampTourResponseDTO.TourResponseDTO> tours = stampTours.stream()
-                .map(stampTour -> toTourResponse(stampTour, now))
+                .map(this::toTourResponse)
                 .toList();
         long rewardedTourCount = stampTours.stream()
                 .filter(stampTour -> stampTour.getStatus() == StampTourStatus.REWARDED)
@@ -220,7 +219,7 @@ public class StampService {
         return new MyStampTourResponseDTO((int) rewardedTourCount, tours);
     }
 
-    private MyStampTourResponseDTO.TourResponseDTO toTourResponse(StampTour stampTour, Instant now) {
+    private MyStampTourResponseDTO.TourResponseDTO toTourResponse(StampTour stampTour) {
         Festival festival = stampTour.getFestival();
         return new MyStampTourResponseDTO.TourResponseDTO(
                 String.valueOf(festival.getId()),
@@ -228,17 +227,8 @@ public class StampService {
                 festival.getImageUrl(),
                 stampTour.getCompletedStampCount(),
                 LocalDate.ofInstant(festival.getEventEndDate(), applicationClock.getZone()),
-                resolveViewStatus(stampTour, now)
+                StampTourViewStatus.from(stampTour.getStatus())
         );
-    }
-
-    // 진행 중인데 축제가 이미 끝났으면 FESTIVAL_ENDED로 매핑, DB 상태값은 건드리지 않고 조회 시점에만 계산
-    private StampTourViewStatus resolveViewStatus(StampTour stampTour, Instant now) {
-        boolean isProgressPastFestivalEnd = stampTour.getStatus() == StampTourStatus.PROGRESS
-                && stampTour.getFestival().getEventEndDate().isBefore(now);
-        return isProgressPastFestivalEnd
-                ? StampTourViewStatus.FESTIVAL_ENDED
-                : StampTourViewStatus.from(stampTour.getStatus());
     }
 
     // 개별 투어 도장 현황 조회
@@ -262,7 +252,7 @@ public class StampService {
                 festival.getTitle(),
                 stampTour.getCompletedStampCount(),
                 stamps,
-                resolveViewStatus(stampTour, applicationClock.instant())
+                StampTourViewStatus.from(stampTour.getStatus())
         );
     }
 

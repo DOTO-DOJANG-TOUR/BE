@@ -3,8 +3,10 @@ package com.doto.domain.stamp.repository;
 import com.doto.domain.stamp.entity.StampTour;
 import com.doto.domain.stamp.entity.enums.StampTourStatus;
 import jakarta.persistence.LockModeType;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -42,4 +44,7 @@ public interface StampTourRepository extends JpaRepository<StampTour, Long> {
 
     // 회원이 참여한 모든 스탬프 투어 조회 (내 도장 현황용) - 축제마다 하나씩 있어 여러 건일 수 있음
     List<StampTour> findAllByMember_Id(Long memberId);
+
+    // 축제 종료 배치용 - 축제가 이미 끝났는데 아직 진행 중인 투어를 페이지 단위로 조회
+    List<StampTour> findAllByStatusAndFestival_EventEndDateBefore(StampTourStatus status, Instant instant, Pageable pageable);
 }

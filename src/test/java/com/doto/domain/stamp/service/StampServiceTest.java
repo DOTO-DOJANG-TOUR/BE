@@ -319,12 +319,11 @@ class StampServiceTest {
     class GetMyStamp {
 
         @Test
-        @DisplayName("진행 중이고 축제가 아직 끝나지 않았으면 PROGRESS를 반환한다")
-        void returnsProgressWhenFestivalNotEnded() {
+        @DisplayName("진행 중이면 PROGRESS를 반환한다")
+        void returnsProgressWhenInProgress() {
             StampTour stampTour = StampTourFixture.create(MemberFixture.create(1L), FestivalFixture.create());
             given(stampTourRepository.findByMember_IdAndFestival_Id(1L, 100L)).willReturn(Optional.of(stampTour));
             given(stampRepository.findByStampTour_Id(stampTour.getId())).willReturn(java.util.List.of());
-            given(applicationClock.instant()).willReturn(Instant.parse("2026-08-19T00:00:00Z"));
 
             var response = stampService.getMyStamp(1L, 100L);
 
@@ -332,12 +331,12 @@ class StampServiceTest {
         }
 
         @Test
-        @DisplayName("진행 중인데 축제가 이미 끝났으면 FESTIVAL_ENDED를 반환한다")
-        void returnsFestivalEndedWhenProgressPastFestivalEnd() {
+        @DisplayName("축제 종료 배치로 ENDED 처리된 투어는 FESTIVAL_ENDED를 반환한다")
+        void returnsFestivalEndedWhenClosedByBatch() {
             StampTour stampTour = StampTourFixture.create(MemberFixture.create(1L), FestivalFixture.create());
+            stampTour.endByFestivalClosure();
             given(stampTourRepository.findByMember_IdAndFestival_Id(1L, 100L)).willReturn(Optional.of(stampTour));
             given(stampRepository.findByStampTour_Id(stampTour.getId())).willReturn(java.util.List.of());
-            given(applicationClock.instant()).willReturn(Instant.parse("2026-08-21T00:00:00Z"));
 
             var response = stampService.getMyStamp(1L, 100L);
 
@@ -345,7 +344,7 @@ class StampServiceTest {
         }
 
         @Test
-        @DisplayName("완료된 투어는 축제가 끝났어도 COMPLETED를 반환한다")
+        @DisplayName("완료된 투어는 축제 종료 배치와 무관하게 COMPLETED를 반환한다")
         void returnsCompletedRegardlessOfFestivalEnd() {
             StampTour stampTour = StampTourFixture.create(MemberFixture.create(1L), FestivalFixture.create());
             stampTour.completeStamp();
@@ -353,7 +352,6 @@ class StampServiceTest {
             stampTour.completeStamp();
             given(stampTourRepository.findByMember_IdAndFestival_Id(1L, 100L)).willReturn(Optional.of(stampTour));
             given(stampRepository.findByStampTour_Id(stampTour.getId())).willReturn(java.util.List.of());
-            given(applicationClock.instant()).willReturn(Instant.parse("2026-08-21T00:00:00Z"));
 
             var response = stampService.getMyStamp(1L, 100L);
 

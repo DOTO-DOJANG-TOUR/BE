@@ -36,6 +36,9 @@ public record TourSpotDetailResponseDTO(
         @Schema(description = "전화번호", example = "041-932-2023")
         String phone,
 
+        @Schema(description = "홈페이지 URL", example = "https://www.example.com")
+        String homepage,
+
         @Schema(description = "TourAPI 수정 일시", example = "20260830120000")
         String apiModifiedAt
 ) {

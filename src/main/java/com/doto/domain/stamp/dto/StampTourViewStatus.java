@@ -11,6 +11,12 @@ public enum StampTourViewStatus {
     REWARDED;
 
     public static StampTourViewStatus from(StampTourStatus status) {
-        return status == null ? NOT_STARTED : StampTourViewStatus.valueOf(status.name());
+        if (status == null) {
+            return NOT_STARTED;
+        }
+        if (status == StampTourStatus.ENDED) {
+            return FESTIVAL_ENDED;
+        }
+        return StampTourViewStatus.valueOf(status.name());
     }
 }
