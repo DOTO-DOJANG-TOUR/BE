@@ -52,6 +52,9 @@ public class TourSpot extends BaseTimeEntity {
     @Column(name = "api_modified_at", length = 14)
     private String apiModifiedAt;
 
+    @Column(name = "homepage", columnDefinition = "TEXT")
+    private String homepage;
+
     @JdbcTypeCode(SqlTypes.GEOGRAPHY)
     @Column(name = "location", columnDefinition = "geography(Point,4326)")
     private Point location;

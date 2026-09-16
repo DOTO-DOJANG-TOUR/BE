@@ -56,6 +56,7 @@ public class TourSpotQueryService {
                 TourSpotCategory.valueOf(tourSpot.getCategory()),
                 tourSpot.getLegalDongSigunguCode(),
                 tourSpot.getPhone(),
+                tourSpot.getHomepage(),
                 tourSpot.getApiModifiedAt()
         );
     }
