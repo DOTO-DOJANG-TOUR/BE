@@ -3,6 +3,7 @@ package com.doto.domain.tourspot.repository;
 import com.doto.domain.tourspot.entity.FestivalTourSpot;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,6 +37,11 @@ public interface FestivalTourSpotRepository extends JpaRepository<FestivalTourSp
     );
 
     boolean existsByFestival_IdAndTourSpot_Id(Long festivalId, Long tourSpotId);
+
+    @Query("SELECT fts FROM FestivalTourSpot fts JOIN FETCH fts.tourSpot "
+            + "WHERE fts.festival.id = :festivalId AND fts.tourSpot.id = :tourSpotId")
+    Optional<FestivalTourSpot> findWithTourSpotByFestivalIdAndTourSpotId(
+            @Param("festivalId") Long festivalId, @Param("tourSpotId") Long tourSpotId);
 
     // 축제 장소로부터 거리 계산
     @Query(value = """

@@ -9,11 +9,9 @@ import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.stamp.dto.StampTourSpotItemResponseDTO;
 import com.doto.domain.tourspot.entity.FestivalTourSpot;
 import com.doto.domain.tourspot.entity.TourSpot;
-import com.doto.domain.tourspot.entity.TourSpotImage;
 import com.doto.domain.tourspot.exception.TourException;
 import com.doto.domain.tourspot.repository.FestivalTourSpotRepository;
 import com.doto.domain.tourspot.repository.TourSpotImageRepository;
-import com.doto.domain.tourspot.repository.TourSpotRepository;
 import com.doto.fixture.FestivalFixture;
 import com.doto.fixture.TourSpotFixture;
 import java.math.BigDecimal;
@@ -34,9 +32,6 @@ class TourSpotQueryServiceTest {
 
     @Mock
     private FestivalTourSpotRepository festivalTourSpotRepository;
-
-    @Mock
-    private TourSpotRepository tourSpotRepository;
 
     @Mock
     private TourSpotImageRepository tourSpotImageRepository;
@@ -87,8 +82,8 @@ class TourSpotQueryServiceTest {
         void returnsTourSpotDetail() {
             TourSpot tourSpot = TourSpotFixture.create();
             ReflectionTestUtils.setField(tourSpot, "id", 2L);
-            given(festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(1L, 2L)).willReturn(true);
-            given(tourSpotRepository.findById(2L)).willReturn(Optional.of(tourSpot));
+            given(festivalTourSpotRepository.findWithTourSpotByFestivalIdAndTourSpotId(1L, 2L))
+                    .willReturn(Optional.of(festivalTourSpot(1L, 2L, tourSpot)));
 
             var result = tourSpotQueryService.getTourSpotDetail(1L, 2L);
 
@@ -102,13 +97,13 @@ class TourSpotQueryServiceTest {
         void returnsRepresentativeImageWithUpToThreeDetailImages() {
             TourSpot tourSpot = TourSpotFixture.create();
             ReflectionTestUtils.setField(tourSpot, "id", 2L);
-            given(festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(1L, 2L)).willReturn(true);
-            given(tourSpotRepository.findById(2L)).willReturn(Optional.of(tourSpot));
-            given(tourSpotImageRepository.findAllByTourSpot_IdOrderBySerialNumberAsc(2L)).willReturn(List.of(
-                    TourSpotImage.create(tourSpot, "https://doto.example.com/1.jpg", null, "정문", 1),
-                    TourSpotImage.create(tourSpot, "https://doto.example.com/2.jpg", null, "야경", 2),
-                    TourSpotImage.create(tourSpot, "https://doto.example.com/3.jpg", null, "내부", 3),
-                    TourSpotImage.create(tourSpot, "https://doto.example.com/4.jpg", null, "출구", 4)
+            given(festivalTourSpotRepository.findWithTourSpotByFestivalIdAndTourSpotId(1L, 2L))
+                    .willReturn(Optional.of(festivalTourSpot(1L, 2L, tourSpot)));
+            given(tourSpotImageRepository.findImageUrlsByTourSpotId(2L)).willReturn(List.of(
+                    "https://doto.example.com/1.jpg",
+                    "https://doto.example.com/2.jpg",
+                    "https://doto.example.com/3.jpg",
+                    "https://doto.example.com/4.jpg"
             ));
 
             var result = tourSpotQueryService.getTourSpotDetail(1L, 2L);
@@ -126,13 +121,13 @@ class TourSpotQueryServiceTest {
         void excludesDetailImageMatchingRepresentativeImage() {
             TourSpot tourSpot = TourSpotFixture.create();
             ReflectionTestUtils.setField(tourSpot, "id", 2L);
-            given(festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(1L, 2L)).willReturn(true);
-            given(tourSpotRepository.findById(2L)).willReturn(Optional.of(tourSpot));
-            given(tourSpotImageRepository.findAllByTourSpot_IdOrderBySerialNumberAsc(2L)).willReturn(List.of(
-                    TourSpotImage.create(tourSpot, tourSpot.getImageUrl(), null, "대표 이미지와 동일", 1),
-                    TourSpotImage.create(tourSpot, "https://doto.example.com/1.jpg", null, "정문", 2),
-                    TourSpotImage.create(tourSpot, "https://doto.example.com/2.jpg", null, "야경", 3),
-                    TourSpotImage.create(tourSpot, "https://doto.example.com/3.jpg", null, "내부", 4)
+            given(festivalTourSpotRepository.findWithTourSpotByFestivalIdAndTourSpotId(1L, 2L))
+                    .willReturn(Optional.of(festivalTourSpot(1L, 2L, tourSpot)));
+            given(tourSpotImageRepository.findImageUrlsByTourSpotId(2L)).willReturn(List.of(
+                    tourSpot.getImageUrl(),
+                    "https://doto.example.com/1.jpg",
+                    "https://doto.example.com/2.jpg",
+                    "https://doto.example.com/3.jpg"
             ));
 
             var result = tourSpotQueryService.getTourSpotDetail(1L, 2L);
@@ -151,14 +146,14 @@ class TourSpotQueryServiceTest {
             TourSpot tourSpot = TourSpotFixture.create();
             ReflectionTestUtils.setField(tourSpot, "id", 2L);
             ReflectionTestUtils.setField(tourSpot, "imageUrl", null);
-            given(festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(1L, 2L)).willReturn(true);
-            given(tourSpotRepository.findById(2L)).willReturn(Optional.of(tourSpot));
-            given(tourSpotImageRepository.findAllByTourSpot_IdOrderBySerialNumberAsc(2L)).willReturn(List.of(
-                    TourSpotImage.create(tourSpot, "https://doto.example.com/1.jpg", null, "정문", 1),
-                    TourSpotImage.create(tourSpot, "https://doto.example.com/2.jpg", null, "야경", 2),
-                    TourSpotImage.create(tourSpot, "https://doto.example.com/3.jpg", null, "내부", 3),
-                    TourSpotImage.create(tourSpot, "https://doto.example.com/4.jpg", null, "출구", 4),
-                    TourSpotImage.create(tourSpot, "https://doto.example.com/5.jpg", null, "야외", 5)
+            given(festivalTourSpotRepository.findWithTourSpotByFestivalIdAndTourSpotId(1L, 2L))
+                    .willReturn(Optional.of(festivalTourSpot(1L, 2L, tourSpot)));
+            given(tourSpotImageRepository.findImageUrlsByTourSpotId(2L)).willReturn(List.of(
+                    "https://doto.example.com/1.jpg",
+                    "https://doto.example.com/2.jpg",
+                    "https://doto.example.com/3.jpg",
+                    "https://doto.example.com/4.jpg",
+                    "https://doto.example.com/5.jpg"
             ));
 
             var result = tourSpotQueryService.getTourSpotDetail(1L, 2L);
@@ -174,7 +169,8 @@ class TourSpotQueryServiceTest {
         @Test
         @DisplayName("축제에 연결되지 않은 관광지는 찾을 수 없다고 처리한다")
         void throwsExceptionWhenTourSpotIsNotInFestival() {
-            given(festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(1L, 2L)).willReturn(false);
+            given(festivalTourSpotRepository.findWithTourSpotByFestivalIdAndTourSpotId(1L, 2L))
+                    .willReturn(Optional.empty());
 
             assertThatThrownBy(() -> tourSpotQueryService.getTourSpotDetail(1L, 2L))
                     .isInstanceOf(TourException.class);
@@ -187,5 +183,12 @@ class TourSpotQueryServiceTest {
         ReflectionTestUtils.setField(festival, "id", festivalId);
         ReflectionTestUtils.setField(tourSpot, "id", tourSpotId);
         return FestivalTourSpot.create(festival, tourSpot, distanceMeters);
+    }
+
+    private FestivalTourSpot festivalTourSpot(Long festivalId, Long tourSpotId, TourSpot tourSpot) {
+        Festival festival = FestivalFixture.create();
+        ReflectionTestUtils.setField(festival, "id", festivalId);
+        ReflectionTestUtils.setField(tourSpot, "id", tourSpotId);
+        return FestivalTourSpot.create(festival, tourSpot, BigDecimal.ZERO);
     }
 }
