@@ -11,6 +11,7 @@ import com.doto.domain.member.repository.MemberRepository;
 import com.doto.domain.stamp.entity.TourSpotVisit;
 import com.doto.domain.stamp.entity.Stamp;
 import com.doto.domain.stamp.entity.StampTour;
+import com.doto.domain.stamp.dto.MyStampTourResponseDTO;
 import com.doto.domain.stamp.dto.StampLocationRequestDTO;
 import com.doto.domain.stamp.dto.TourQRCodeResponseDTO;
 import com.doto.domain.stamp.entity.enums.StampStatus;
@@ -356,6 +357,61 @@ class StampServiceTest {
             var response = stampService.getMyStamp(1L, 100L);
 
             assertThat(response.status()).isEqualTo(com.doto.domain.stamp.dto.StampTourViewStatus.COMPLETED);
+        }
+    }
+
+    @Nested
+    @DisplayName("내 도장 현황 목록 조회")
+    class GetMyStampTours {
+
+        @Test
+        @DisplayName("투어중 -> 보상받기(마감임박순) -> 보상획득(최신획득순) -> 기간만료(최신만료순) 순으로 정렬한다")
+        void sortsByStatusPriorityThenTieBreak() {
+            given(applicationClock.getZone()).willReturn(java.time.ZoneId.of("Asia/Seoul"));
+
+            StampTour progress = stampTourWith("진행중 투어", StampTourStatus.PROGRESS,
+                    Instant.parse("2026-09-01T00:00:00Z"), Instant.parse("2026-08-01T00:00:00Z"));
+
+            StampTour completeSoon = stampTourWith("마감임박 투어", StampTourStatus.COMPLETED,
+                    Instant.parse("2026-09-10T00:00:00Z"), Instant.parse("2026-08-01T00:00:00Z"));
+            StampTour completeLater = stampTourWith("마감여유 투어", StampTourStatus.COMPLETED,
+                    Instant.parse("2026-09-20T00:00:00Z"), Instant.parse("2026-08-01T00:00:00Z"));
+
+            StampTour rewardedRecent = stampTourWith("최근 보상 투어", StampTourStatus.REWARDED,
+                    Instant.parse("2026-09-01T00:00:00Z"), Instant.parse("2026-08-20T00:00:00Z"));
+            StampTour rewardedOld = stampTourWith("이전 보상 투어", StampTourStatus.REWARDED,
+                    Instant.parse("2026-09-01T00:00:00Z"), Instant.parse("2026-08-10T00:00:00Z"));
+
+            StampTour endedRecent = stampTourWith("최근 만료 투어", StampTourStatus.ENDED,
+                    Instant.parse("2026-09-01T00:00:00Z"), Instant.parse("2026-08-25T00:00:00Z"));
+            StampTour endedOld = stampTourWith("이전 만료 투어", StampTourStatus.ENDED,
+                    Instant.parse("2026-09-01T00:00:00Z"), Instant.parse("2026-08-05T00:00:00Z"));
+
+            given(stampTourRepository.findAllByMember_Id(1L)).willReturn(java.util.List.of(
+                    endedOld, rewardedOld, completeLater, endedRecent, rewardedRecent, completeSoon, progress
+            ));
+
+            var response = stampService.getMyStampTours(1L);
+
+            assertThat(response.tours()).extracting(MyStampTourResponseDTO.TourResponseDTO::title)
+                    .containsExactly(
+                            "진행중 투어",
+                            "마감임박 투어", "마감여유 투어",
+                            "최근 보상 투어", "이전 보상 투어",
+                            "최근 만료 투어", "이전 만료 투어"
+                    );
+        }
+
+        // status: 정렬 1순위 기준 / eventEndDate: 보상받기 그룹의 마감 임박순 기준 / updatedAt: 보상획득·기간만료 그룹의 최신순 기준
+        private StampTour stampTourWith(String title, StampTourStatus status, Instant eventEndDate, Instant updatedAt) {
+            Festival festival = FestivalFixture.create();
+            ReflectionTestUtils.setField(festival, "title", title);
+            ReflectionTestUtils.setField(festival, "eventEndDate", eventEndDate);
+
+            StampTour stampTour = StampTourFixture.create(MemberFixture.create(1L), festival);
+            ReflectionTestUtils.setField(stampTour, "status", status);
+            ReflectionTestUtils.setField(stampTour, "updatedAt", updatedAt);
+            return stampTour;
         }
     }
 
