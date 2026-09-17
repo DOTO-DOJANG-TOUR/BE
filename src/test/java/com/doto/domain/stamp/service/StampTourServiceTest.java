@@ -79,7 +79,7 @@ class StampTourServiceTest {
             given(stampTourRepository.existsByMember_IdAndFestival_IdAndStatus(
                     memberId, festivalId, StampTourStatus.PROGRESS
             )).willReturn(false);
-            given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
+            given(memberRepository.getReferenceById(memberId)).willReturn(member);
             given(festivalVisitRepository.findByMember_IdAndStatus(memberId, FestivalVisitStatus.VISITING))
                     .willReturn(Optional.empty());
 
@@ -108,7 +108,7 @@ class StampTourServiceTest {
             given(stampTourRepository.existsByMember_IdAndFestival_IdAndStatus(
                     memberId, festivalId, StampTourStatus.PROGRESS
             )).willReturn(false);
-            given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
+            given(memberRepository.getReferenceById(memberId)).willReturn(member);
             given(festivalVisitRepository.findByMember_IdAndStatus(memberId, FestivalVisitStatus.VISITING))
                     .willReturn(Optional.empty());
             given(stampTourRepository.existsByRewardCode(org.mockito.ArgumentMatchers.anyString()))
@@ -153,7 +153,7 @@ class StampTourServiceTest {
             given(stampTourRepository.existsByMember_IdAndFestival_IdAndStatus(
                     memberId, festivalId, StampTourStatus.PROGRESS
             )).willReturn(false);
-            given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
+            given(memberRepository.getReferenceById(memberId)).willReturn(member);
             given(festivalVisitRepository.findByMember_IdAndStatus(memberId, FestivalVisitStatus.VISITING))
                     .willReturn(Optional.of(activeVisit));
 
@@ -215,12 +215,30 @@ class StampTourServiceTest {
         void throwsNotFoundWhenFestivalDoesNotExist() {
             Long memberId = 1L;
             Long festivalId = 10L;
-            given(festivalRepository.existsById(festivalId)).willReturn(false);
+            given(festivalRepository.findById(festivalId)).willReturn(Optional.empty());
 
             assertThatThrownBy(() -> stampTourService.getStampTourStatus(memberId, festivalId))
                     .isInstanceOf(FestivalException.class)
                     .satisfies(exception -> assertThat(((FestivalException) exception).getErrorCode())
                             .isEqualTo(FestivalErrorCode.FESTIVAL_NOT_FOUND));
+        }
+
+        @Test
+        @DisplayName("축제 종료일이 지났으면 스탬프 투어 상태 조회 없이 FESTIVAL_ENDED를 반환한다")
+        void returnsFestivalEndedWhenEventEndDatePassed() {
+            Long memberId = 1L;
+            Long festivalId = 10L;
+            Festival festival = festivalWithId(festivalId);
+            given(festivalRepository.findById(festivalId)).willReturn(Optional.of(festival));
+            given(applicationClock.instant()).willReturn(Instant.parse("2026-08-21T00:00:00Z"));
+
+            StampTourViewStatus result = stampTourService.getStampTourStatus(memberId, festivalId);
+
+            assertThat(result).isEqualTo(StampTourViewStatus.FESTIVAL_ENDED);
+            then(festivalVisitRepository).should(never())
+                    .findByMember_IdAndStatus(org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.any());
+            then(stampTourRepository).should(never())
+                    .findByMember_IdAndFestival_Id(org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.anyLong());
         }
 
         @Test
@@ -231,7 +249,8 @@ class StampTourServiceTest {
             Festival festival = festivalWithId(festivalId);
             StampTour stampTour = StampTourFixture.create(MemberFixture.create(memberId), festival);
             stampTour.endByFestivalClosure();
-            given(festivalRepository.existsById(festivalId)).willReturn(true);
+            given(festivalRepository.findById(festivalId)).willReturn(Optional.of(festival));
+            given(applicationClock.instant()).willReturn(Instant.parse("2026-08-16T00:00:00Z"));
             given(festivalVisitRepository.findByMember_IdAndStatus(memberId, FestivalVisitStatus.VISITING))
                     .willReturn(Optional.empty());
             given(stampTourRepository.findByMember_IdAndFestival_Id(memberId, festivalId))
@@ -248,8 +267,10 @@ class StampTourServiceTest {
             Long memberId = 1L;
             Long festivalId = 10L;
             Member member = MemberFixture.create(memberId);
+            Festival festival = festivalWithId(festivalId);
             FestivalVisit anotherFestivalVisit = FestivalVisitFixture.create(member, festivalWithId(20L));
-            given(festivalRepository.existsById(festivalId)).willReturn(true);
+            given(festivalRepository.findById(festivalId)).willReturn(Optional.of(festival));
+            given(applicationClock.instant()).willReturn(Instant.parse("2026-08-16T00:00:00Z"));
             given(festivalVisitRepository.findByMember_IdAndStatus(memberId, FestivalVisitStatus.VISITING))
                     .willReturn(Optional.of(anotherFestivalVisit));
 
