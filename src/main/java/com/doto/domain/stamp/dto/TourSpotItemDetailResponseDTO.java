@@ -38,6 +38,9 @@ public record TourSpotItemDetailResponseDTO(
         @Schema(description = "TourAPI 수정 일시", example = "20260830120000")
         String apiModifiedAt,
 
+        @Schema(description = "홈페이지 URL", example = "https://www.example.go.kr")
+        String homepage,
+
         @Schema(description = "관광지 이미지 갤러리")
         List<TourSpotImageDTO> images
 ) {

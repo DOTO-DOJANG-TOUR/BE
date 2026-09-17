@@ -31,6 +31,7 @@ public final class TourSpotFixture {
                 "11000",
                 "02-9876-5432",
                 "20260819090000",
+                "https://doto.example.com",
                 GEOMETRY_FACTORY.createPoint(new Coordinate(127.0280, 37.4980))
         );
     }
@@ -56,6 +57,7 @@ public final class TourSpotFixture {
                 "11000",
                 "02-9876-5432",
                 "20260819090000",
+                "https://doto.example.com",
                 images
         );
     }

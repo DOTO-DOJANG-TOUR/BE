@@ -26,7 +26,7 @@ class TourSpotTest {
 
             TourSpot tourSpot = TourSpot.create(
                     125405L, "도토 광장", "관광지", "https://doto.example.com/image.jpg", "서울시 강남구",
-                    "11", "11000", "02-1234-5678", "20260819090000", location
+                    "11", "11000", "02-1234-5678", "20260819090000", "https://doto.example.com", location
             );
 
             assertThat(tourSpot.getContentId()).isEqualTo(125405L);
@@ -34,7 +34,48 @@ class TourSpotTest {
             assertThat(tourSpot.getTitle()).isEqualTo("도토 광장");
             assertThat(tourSpot.getAddress()).isEqualTo("서울시 강남구");
             assertThat(tourSpot.getApiModifiedAt()).isEqualTo("20260819090000");
+            assertThat(tourSpot.getHomepage()).isEqualTo("https://doto.example.com");
             assertThat(tourSpot.getLocation()).isEqualTo(location);
+        }
+    }
+
+    @Nested
+    class 갱신 {
+
+        @Test
+        void homepage가_주어지면_갱신된다() {
+            TourSpot tourSpot = tourSpotWithHomepage("https://old.example.com");
+
+            tourSpot.update(
+                    "도토 광장", "관광지", "image.jpg", "서울시 강남구",
+                    "11", "11000", "02-1234-5678", "20260819090000",
+                    "https://new.example.com",
+                    GEOMETRY_FACTORY.createPoint(new Coordinate(127.0280, 37.4980))
+            );
+
+            assertThat(tourSpot.getHomepage()).isEqualTo("https://new.example.com");
+        }
+
+        @Test
+        void homepage가_없으면_기존_값을_유지한다() {
+            TourSpot tourSpot = tourSpotWithHomepage("https://old.example.com");
+
+            tourSpot.update(
+                    "도토 광장", "관광지", "image.jpg", "서울시 강남구",
+                    "11", "11000", "02-1234-5678", "20260819090000",
+                    null,
+                    GEOMETRY_FACTORY.createPoint(new Coordinate(127.0280, 37.4980))
+            );
+
+            assertThat(tourSpot.getHomepage()).isEqualTo("https://old.example.com");
+        }
+
+        private TourSpot tourSpotWithHomepage(String homepage) {
+            return TourSpot.create(
+                    125405L, "도토 광장", "관광지", "https://doto.example.com/image.jpg", "서울시 강남구",
+                    "11", "11000", "02-1234-5678", "20260819090000", homepage,
+                    GEOMETRY_FACTORY.createPoint(new Coordinate(127.0280, 37.4980))
+            );
         }
     }
 

@@ -79,6 +79,37 @@ class TourApiServiceTest {
         }
 
         @Test
+        @DisplayName("목록 조회에 없는 홈페이지는 관광지별 상세 조회로 보충하고 HTML에서 URL만 추출한다")
+        void fetchesHomepageFromDetailLookupAndExtractsUrl() {
+            given(tourApiClient.getNearbyTourSpots(new BigDecimal("126.97"), new BigDecimal("37.56"), 5_000))
+                    .willReturn(List.of(content("HS", "image.jpg", null)));
+            given(tourApiClient.getContentImages(126516L)).willReturn(List.of());
+            given(tourApiClient.getContentDetail(126516L)).willReturn(response(content(
+                    "HS", "image.jpg", null,
+                    "<a href=\"https://real.example.com\" target=\"_blank\">홈페이지</a>"
+            )));
+
+            var result = tourApiService.getNearbyTourSpots("126.97", "37.56");
+
+            assertThat(result).singleElement()
+                    .extracting("homepage")
+                    .isEqualTo("https://real.example.com");
+        }
+
+        @Test
+        @DisplayName("상세 조회가 실패해도 관광지 목록 조회는 계속 진행하고 homepage는 null로 채운다")
+        void continuesWhenHomepageLookupFails() {
+            given(tourApiClient.getNearbyTourSpots(new BigDecimal("126.97"), new BigDecimal("37.56"), 5_000))
+                    .willReturn(List.of(content("HS", "image.jpg", null)));
+            given(tourApiClient.getContentImages(126516L)).willReturn(List.of());
+            given(tourApiClient.getContentDetail(126516L)).willReturn(response());
+
+            var result = tourApiService.getNearbyTourSpots("126.97", "37.56");
+
+            assertThat(result).singleElement().extracting("homepage").isNull();
+        }
+
+        @Test
         @DisplayName("관광지별 이미지 갤러리를 함께 조회해 응답 DTO에 포함한다")
         void mapsTourSpotImages() {
             given(tourApiClient.getNearbyTourSpots(new BigDecimal("126.97"), new BigDecimal("37.56"), 5_000))
@@ -225,8 +256,14 @@ class TourApiServiceTest {
     }
 
     private TourApiResponseDTO.TourContentDTO content(String category, String firstImage, String secondImage) {
+        return content(category, firstImage, secondImage, "https://example.com");
+    }
+
+    private TourApiResponseDTO.TourContentDTO content(
+            String category, String firstImage, String secondImage, String homepage
+    ) {
         return new TourApiResponseDTO.TourContentDTO(
-                126516L, 12, "보신각터", "https://example.com", "서울 종로구", "", "02-1234-5678",
+                126516L, 12, "보신각터", homepage, "서울 종로구", "", "02-1234-5678",
                 firstImage, secondImage, "126.97", "37.56", "20260819090000", null,
                 "11", "110", category, null, null, "소개", null, null, null, null, null, null
         );

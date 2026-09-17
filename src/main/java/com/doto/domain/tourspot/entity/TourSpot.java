@@ -70,6 +70,7 @@ public class TourSpot extends BaseTimeEntity {
             String legalDongSigunguCode,
             String phone,
             String apiModifiedAt,
+            String homepage,
             Point location
     ) {
         this.contentId = contentId;
@@ -81,6 +82,7 @@ public class TourSpot extends BaseTimeEntity {
         this.legalDongSigunguCode = legalDongSigunguCode;
         this.phone = phone;
         this.apiModifiedAt = apiModifiedAt;
+        this.homepage = homepage;
         this.location = location;
     }
 
@@ -94,6 +96,7 @@ public class TourSpot extends BaseTimeEntity {
             String legalDongSigunguCode,
             String phone,
             String apiModifiedAt,
+            String homepage,
             Point location
     ) {
         return TourSpot.builder()
@@ -106,6 +109,7 @@ public class TourSpot extends BaseTimeEntity {
                 .legalDongSigunguCode(legalDongSigunguCode)
                 .phone(phone)
                 .apiModifiedAt(apiModifiedAt)
+                .homepage(homepage)
                 .location(location)
                 .build();
     }
@@ -119,6 +123,7 @@ public class TourSpot extends BaseTimeEntity {
             String legalDongSigunguCode,
             String phone,
             String apiModifiedAt,
+            String homepage,
             Point location
     ) {
         this.title = title;
@@ -129,6 +134,10 @@ public class TourSpot extends BaseTimeEntity {
         this.legalDongSigunguCode = legalDongSigunguCode;
         this.phone = phone;
         this.apiModifiedAt = apiModifiedAt;
+        // TourAPI가 homepage를 내려주지 않는 경우도 있어, 그 경우 기존에 수동으로 정리해둔 값을 지우지 않고 유지한다
+        if (homepage != null) {
+            this.homepage = homepage;
+        }
         this.location = location;
     }
 }

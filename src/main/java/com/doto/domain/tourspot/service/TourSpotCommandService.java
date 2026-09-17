@@ -68,6 +68,7 @@ public class TourSpotCommandService {
                                     dto.legalDongSigunguCode(),
                                     dto.phone(),
                                     dto.apiModifiedAt(),
+                                    dto.homepage(),
                                     toPoint(dto.mapX(), dto.mapY())
                             );
                             log.debug("관광지 갱신: contentId={}, title={}", dto.contentId(), dto.title());
@@ -85,6 +86,7 @@ public class TourSpotCommandService {
                                     dto.legalDongSigunguCode(),
                                     dto.phone(),
                                     dto.apiModifiedAt(),
+                                    dto.homepage(),
                                     toPoint(dto.mapX(), dto.mapY())
                             );
                         }))
