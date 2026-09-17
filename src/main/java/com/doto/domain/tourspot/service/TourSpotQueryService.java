@@ -5,12 +5,10 @@ import com.doto.domain.tourspot.dto.TourSpotDetailResponseDTO;
 import com.doto.domain.tourspot.entity.FestivalTourSpot;
 import com.doto.domain.tourspot.entity.TourSpot;
 import com.doto.domain.tourspot.entity.enums.TourSpotCategory;
-import com.doto.domain.tourspot.entity.TourSpotImage;
 import com.doto.domain.tourspot.exception.TourErrorCode;
 import com.doto.domain.tourspot.exception.TourException;
 import com.doto.domain.tourspot.repository.FestivalTourSpotRepository;
 import com.doto.domain.tourspot.repository.TourSpotImageRepository;
-import com.doto.domain.tourspot.repository.TourSpotRepository;
 import com.doto.global.util.DistanceUtils;
 import java.util.List;
 import java.util.stream.Stream;
@@ -27,7 +25,6 @@ public class TourSpotQueryService {
     private static final int IMAGE_LIST_SIZE = 4;
 
     private final FestivalTourSpotRepository festivalTourSpotRepository;
-    private final TourSpotRepository tourSpotRepository;
     private final TourSpotImageRepository tourSpotImageRepository;
 
     public List<TourSpot> getTourSpotsByFestivalId(Long festivalId) {
@@ -38,11 +35,9 @@ public class TourSpotQueryService {
     }
 
     public TourSpotDetailResponseDTO getTourSpotDetail(Long festivalId, Long tourSpotId) {
-        if (!festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(festivalId, tourSpotId)) {
-            throw new TourException(TourErrorCode.TOUR_SPOT_NOT_FOUND);
-        }
-
-        TourSpot tourSpot = tourSpotRepository.findById(tourSpotId)
+        TourSpot tourSpot = festivalTourSpotRepository
+                .findWithTourSpotByFestivalIdAndTourSpotId(festivalId, tourSpotId)
+                .map(FestivalTourSpot::getTourSpot)
                 .orElseThrow(() -> new TourException(TourErrorCode.TOUR_SPOT_NOT_FOUND));
         List<String> imageList = buildImageList(tourSpot);
         return new TourSpotDetailResponseDTO(
@@ -67,13 +62,13 @@ public class TourSpotQueryService {
         String representativeImageUrl = tourSpot.getImageUrl();
         int detailImageLimit = representativeImageUrl == null ? IMAGE_LIST_SIZE : IMAGE_LIST_SIZE - 1;
 
-        Stream<TourSpotImage> detailImages = tourSpotImageRepository
-                .findAllByTourSpot_IdOrderBySerialNumberAsc(tourSpot.getId())
+        Stream<String> detailImageUrls = tourSpotImageRepository
+                .findImageUrlsByTourSpotId(tourSpot.getId())
                 .stream();
         if (representativeImageUrl != null) {
-            detailImages = detailImages.filter(image -> !representativeImageUrl.equals(image.getImageUrl()));
+            detailImageUrls = detailImageUrls.filter(url -> !representativeImageUrl.equals(url));
         }
-        Stream<String> detailImageUrls = detailImages.map(TourSpotImage::getImageUrl).limit(detailImageLimit);
+        detailImageUrls = detailImageUrls.limit(detailImageLimit);
 
         if (representativeImageUrl == null) {
             return detailImageUrls.toList();

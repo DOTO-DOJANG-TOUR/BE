@@ -5,8 +5,6 @@ import com.doto.domain.festival.exception.FestivalErrorCode;
 import com.doto.domain.festival.exception.FestivalException;
 import com.doto.domain.festival.repository.FestivalRepository;
 import com.doto.domain.member.entity.Member;
-import com.doto.domain.member.exception.MemberErrorCode;
-import com.doto.domain.member.exception.MemberException;
 import com.doto.domain.member.repository.MemberRepository;
 import com.doto.domain.stamp.dto.StampTourDetailResponseDTO;
 import com.doto.domain.stamp.dto.StampTourRewardPreviewResponseDTO;
@@ -41,8 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class StampTourService {
 
     private static final int MAX_REWARD_CODE_GENERATION_ATTEMPTS = 5;
-    // 축제 종료 배치 한 트랜잭션에서 처리할 최대 건수 (한 번에 findAll로 전부 불러오지 않기 위함)
-    private static final int BATCH_CHUNK_SIZE = 500;
+    private static final int BATCH_CHUNK_SIZE = 500; // 축제 종료 배치 사이즈
 
     private final FestivalRepository festivalRepository;
     private final MemberRepository memberRepository;
@@ -62,9 +59,7 @@ public class StampTourService {
         if (hasActiveStampTour) {
             throw new StampTourException(StampTourErrorCode.ACTIVE_STAMP_TOUR_EXISTS);
         }
-
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+        Member member = memberRepository.getReferenceById(memberId);
 
         if (festivalVisitRepository.findByMember_IdAndStatus(memberId, FestivalVisitStatus.VISITING).isPresent()) {
             throw new StampTourException(StampTourErrorCode.ACTIVE_FESTIVAL_VISIT_EXISTS);
@@ -108,8 +103,11 @@ public class StampTourService {
 
     // 스탬프 투어 상태 조회
     public StampTourViewStatus getStampTourStatus(Long memberId, Long festivalId) {
-        if (!festivalRepository.existsById(festivalId)) {
-            throw new FestivalException(FestivalErrorCode.FESTIVAL_NOT_FOUND);
+        Festival festival = festivalRepository.findById(festivalId)
+                .orElseThrow(() -> new FestivalException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
+
+        if (festival.getEventEndDate().isBefore(applicationClock.instant())) {
+            return StampTourViewStatus.FESTIVAL_ENDED;
         }
 
         boolean isParticipatingInAnotherTour = festivalVisitRepository

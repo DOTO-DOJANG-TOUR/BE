@@ -48,7 +48,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +61,28 @@ public class StampService {
     private static final int QR_CODE_SIZE = 300;
     private static final String QR_CODE_IMAGE_DATA_URL_PREFIX = "data:image/png;base64,";
     private static final String REWARD_SCAN_URL_TEMPLATE = "https://doto-reward.netlify.app/?code=%s";
+
+    // 내 도장 현황 정렬 우선순위: 투어 중 -> 보상 받기(마감 임박순) -> 보상 획득(최신 획득순) -> 기간 만료(최신 만료순)
+    private static final Map<StampTourStatus, Integer> MY_STAMP_TOUR_STATUS_ORDER = Map.of(
+            StampTourStatus.PROGRESS, 0,
+            StampTourStatus.COMPLETED, 1,
+            StampTourStatus.REWARDED, 2,
+            StampTourStatus.ENDED, 3
+    );
+
+    private static final Comparator<StampTour> MY_STAMP_TOUR_COMPARATOR =
+            Comparator.<StampTour>comparingInt(stampTour -> MY_STAMP_TOUR_STATUS_ORDER.get(stampTour.getStatus()))
+                    .thenComparingLong(StampService::myStampTourTieBreakKey);
+
+    private static long myStampTourTieBreakKey(StampTour stampTour) {
+        return switch (stampTour.getStatus()) {
+            // 마감 임박순
+            case COMPLETED -> stampTour.getFestival().getEventEndDate().toEpochMilli();
+            // 최신 획득순 / 최신 만료순: 상태가 바뀐 시점(updatedAt)이 최근인 순
+            case REWARDED, ENDED -> -stampTour.getUpdatedAt().toEpochMilli();
+            default -> 0L;
+        };
+    }
 
     private final MemberRepository memberRepository;
     private final StampTourRepository stampTourRepository;
@@ -210,6 +234,7 @@ public class StampService {
         List<StampTour> stampTours = stampTourRepository.findAllByMember_Id(memberId);
 
         List<MyStampTourResponseDTO.TourResponseDTO> tours = stampTours.stream()
+                .sorted(MY_STAMP_TOUR_COMPARATOR)
                 .map(this::toTourResponse)
                 .toList();
         long rewardedTourCount = stampTours.stream()

@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 @Slf4j
 @Service
@@ -29,7 +30,10 @@ import org.springframework.stereotype.Service;
 public class TourApiService {
 
     private static final int TOUR_SPOT_SEARCH_RADIUS_METERS = 5_000;
-    private static final Pattern URL_PATTERN = Pattern.compile("https?://\\S+");
+    // TourAPI의 homepage 필드는 <a href="..." target="_blank">표시텍스트</a> 형태의 HTML로 내려오는 경우가 많아
+    // href 속성값을 우선 추출하고, 태그가 없는 순수 URL 텍스트만 오는 경우를 대비해 bare URL로 폴백한다.
+    private static final Pattern HREF_PATTERN = Pattern.compile("href\\s*=\\s*[\"']([^\"'\\s]+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern BARE_URL_PATTERN = Pattern.compile("https?://[^\\s\"'<>]+");
     private final TourApiClient tourApiClient;
 
     // 관광지의 경우 없으면 호출하는 방식, contentId로 판단
@@ -47,7 +51,7 @@ public class TourApiService {
                 tour.legalDongRegionCode(),
                 tour.legalDongSigunguCode(),
                 tour.tel(),
-                tour.homepage()
+                extractHomepageUrl(tour.homepage())
         );
     }
 
@@ -148,8 +152,20 @@ public class TourApiService {
                 tourSpot.legalDongSigunguCode(),
                 tourSpot.tel(),
                 tourSpot.modifiedtime(),
+                fetchHomepageUrl(tourSpot.contentId()),
                 getTourSpotImages(tourSpot.contentId())
         );
+    }
+
+    // locationBasedList2(목록 조회) 응답에는 homepage가 내려오지 않아, detailCommon2를 관광지별로 추가 호출해서 보충한다.
+    // 상세 조회 실패가 관광지 동기화 전체를 막지 않도록 실패 시 null로 처리
+    private String fetchHomepageUrl(Long contentId) {
+        try {
+            return extractHomepageUrl(getContent(contentId).homepage());
+        } catch (TourApiException exception) {
+            log.warn("관광지 홈페이지 조회 실패: contentId={}", contentId, exception);
+            return null;
+        }
     }
 
     // 이미지 갤러리 조회 실패가 관광지 동기화 전체를 막지 않도록 실패 시 빈 목록으로 처리
@@ -212,16 +228,21 @@ public class TourApiService {
 
     private String getHomepageUrl(String homepage, String eventHomepage) {
         String url = eventHomepage == null || eventHomepage.isBlank() ? homepage : eventHomepage;
-        return extractFirstUrl(url);
+        return extractHomepageUrl(url);
     }
 
-    // 홈페이지 필드에 "공식 홈페이지 url 공식 인스타 url" 처럼 여러 개가 섞여오는 경우 첫 url만 저장
-    private String extractFirstUrl(String raw) {
-        if (raw == null) {
+    // homepage 필드에 <a href="..."> HTML이나 "url1 url2"처럼 여러 값이 섞여오는 경우 실제 URL 하나만 추출
+    private String extractHomepageUrl(String raw) {
+        if (raw == null || raw.isBlank()) {
             return null;
         }
-        Matcher matcher = URL_PATTERN.matcher(raw);
-        return matcher.find() ? matcher.group() : raw;
+        String unescaped = HtmlUtils.htmlUnescape(raw);
+        Matcher hrefMatcher = HREF_PATTERN.matcher(unescaped);
+        if (hrefMatcher.find()) {
+            return hrefMatcher.group(1);
+        }
+        Matcher bareUrlMatcher = BARE_URL_PATTERN.matcher(unescaped);
+        return bareUrlMatcher.find() ? bareUrlMatcher.group() : null;
     }
 
     private BigDecimal toCoordinate(String coordinate) {
