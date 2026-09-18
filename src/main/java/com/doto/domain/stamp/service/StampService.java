@@ -13,7 +13,6 @@ import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.stamp.dto.CurrentVisitTourSpotResponseDTO;
 import com.doto.domain.stamp.dto.MyStampResponseDTO;
 import com.doto.domain.stamp.dto.MyStampTourResponseDTO;
-import com.doto.domain.stamp.dto.StampLocationRequestDTO;
 import com.doto.domain.stamp.dto.StampResponseDTO;
 import com.doto.domain.stamp.dto.StampTourViewStatus;
 import com.doto.domain.stamp.dto.TourQRCodeResponseDTO;
@@ -153,12 +152,12 @@ public class StampService {
 
 
     // 관광지 도장 완료 처리
+    // 관광지 반경 300m 이내 여부는 프론트에서 판정 후 호출하므로 서버는 위치 정보를 받지 않는다 (원스토어 위치정보 정책 대응)
     @Transactional
     public StampResponseDTO completeStamp(
             Long memberId,
             Long festivalId,
-            Long tourSpotId,
-            StampLocationRequestDTO locationRequest
+            Long tourSpotId
     ) {
         StampTour stampTour = stampTourRepository.findByMemberIdAndFestivalIdAndStatusForUpdate(
                         memberId,
@@ -175,15 +174,6 @@ public class StampService {
                 .orElseGet(() -> Stamp.create(stampTour, findTourSpot(tourSpotId)));
         if (stamp.getStatus() == StampStatus.COMPLETED) {
             throw new StampException(StampErrorCode.STAMP_ALREADY_COMPLETED);
-        }
-
-        // 300m 이내인지 확인
-        if (!tourSpotRepository.existsWithin300Meters(
-                tourSpotId,
-                locationRequest.mapX(),
-                locationRequest.mapY()
-        )) {
-            throw new StampException(StampErrorCode.TOUR_SPOT_OUT_OF_RANGE);
         }
 
         // 활성 방문 완료처리

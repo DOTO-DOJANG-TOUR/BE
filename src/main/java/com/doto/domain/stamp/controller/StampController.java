@@ -3,14 +3,12 @@ package com.doto.domain.stamp.controller;
 import com.doto.domain.stamp.dto.CurrentVisitTourSpotResponseDTO;
 import com.doto.domain.stamp.dto.MyStampResponseDTO;
 import com.doto.domain.stamp.dto.MyStampTourResponseDTO;
-import com.doto.domain.stamp.dto.StampLocationRequestDTO;
 import com.doto.domain.stamp.dto.StampResponseDTO;
 import com.doto.domain.stamp.dto.TourQRCodeResponseDTO;
 import com.doto.domain.stamp.service.StampService;
 import com.doto.global.api.CommonResponse;
 import com.doto.global.api.CommonSuccessCode;
 import com.doto.global.security.CustomMemberDetails;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,14 +46,12 @@ public class StampController implements StampApi {
     public ResponseEntity<CommonResponse<StampResponseDTO>> completeStamp(
             CustomMemberDetails memberDetails,
             Long festivalId,
-            Long tourSpotId,
-            @Valid StampLocationRequestDTO request
+            Long tourSpotId
     ) {
         return ResponseEntity.ok(CommonResponse.success(stampService.completeStamp(
                 memberDetails.getMemberId(),
                 festivalId,
-                tourSpotId,
-                request
+                tourSpotId
         )));
     }
 

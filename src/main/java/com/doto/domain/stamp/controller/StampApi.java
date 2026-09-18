@@ -3,7 +3,6 @@ package com.doto.domain.stamp.controller;
 import com.doto.domain.stamp.dto.CurrentVisitTourSpotResponseDTO;
 import com.doto.domain.stamp.dto.MyStampResponseDTO;
 import com.doto.domain.stamp.dto.MyStampTourResponseDTO;
-import com.doto.domain.stamp.dto.StampLocationRequestDTO;
 import com.doto.domain.stamp.dto.StampResponseDTO;
 import com.doto.domain.stamp.dto.TourQRCodeResponseDTO;
 import com.doto.domain.stamp.exception.StampErrorCode;
@@ -25,7 +24,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "Stamp", description = "스탬프 API")
 public interface StampApi {
@@ -65,7 +63,7 @@ public interface StampApi {
     @Operation(
             summary = "관광지 스탬프 획득",
             description = """
-                    현재 사용자 위치가 관광지 반경 300m 이내일 때 스탬프를 획득합니다.
+                    관광지 반경 300m 이내 여부는 프론트에서 판정하며, 이 API는 요청 본문 없이 호출합니다.
                     - 한 스탬프 투어에서는 최대 3개의 스탬프만 획득할 수 있습니다.
                     - 같은 관광지의 스탬프는 한 번만 완료할 수 있습니다.
                     """
@@ -77,8 +75,7 @@ public interface StampApi {
     ResponseEntity<CommonResponse<StampResponseDTO>> completeStamp(
             @CurrentMember CustomMemberDetails memberDetails,
             @Parameter(description = "축제 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long festivalId,
-            @Parameter(description = "관광지 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long tourSpotId,
-            @RequestBody StampLocationRequestDTO request
+            @Parameter(description = "관광지 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long tourSpotId
     );
 
     @Operation(
