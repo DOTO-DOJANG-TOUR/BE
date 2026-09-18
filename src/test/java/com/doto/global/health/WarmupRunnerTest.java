@@ -1,6 +1,5 @@
 package com.doto.global.health;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
@@ -11,7 +10,6 @@ import com.doto.domain.stamp.entity.enums.FestivalVisitStatus;
 import com.doto.domain.stamp.entity.enums.StampTourStatus;
 import com.doto.domain.stamp.repository.FestivalVisitRepository;
 import com.doto.domain.stamp.repository.StampTourRepository;
-import com.doto.domain.tourspot.repository.TourSpotRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,15 +28,13 @@ class WarmupRunnerTest {
     private StampTourRepository stampTourRepository;
     @Mock
     private FestivalVisitRepository festivalVisitRepository;
-    @Mock
-    private TourSpotRepository tourSpotRepository;
 
     @Test
     @DisplayName("워밍업 쿼리를 모두 실행하고 헬스 인디케이터를 완료 처리한다")
     void warmsUpAndMarksHealthy() {
         WarmupRunner warmupRunner = new WarmupRunner(
                 warmupHealthIndicator, festivalRepository, stampTourRepository,
-                festivalVisitRepository, tourSpotRepository
+                festivalVisitRepository
         );
 
         warmupRunner.warmUp();
@@ -48,7 +44,6 @@ class WarmupRunnerTest {
                 .existsByMember_IdAndFestival_IdAndStatus(-1L, -1L, StampTourStatus.PROGRESS);
         then(festivalVisitRepository).should().findByMember_IdAndStatus(-1L, FestivalVisitStatus.VISITING);
         then(stampTourRepository).should().existsByRewardCode("000000");
-        then(tourSpotRepository).should().existsWithin300Meters(any(), any(), any());
         then(warmupHealthIndicator).should().markWarmedUp();
     }
 
@@ -58,7 +53,7 @@ class WarmupRunnerTest {
         given(festivalRepository.findById(anyLong())).willThrow(new RuntimeException("db down"));
         WarmupRunner warmupRunner = new WarmupRunner(
                 warmupHealthIndicator, festivalRepository, stampTourRepository,
-                festivalVisitRepository, tourSpotRepository
+                festivalVisitRepository
         );
 
         warmupRunner.warmUp();
