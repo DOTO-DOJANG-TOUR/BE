@@ -12,7 +12,6 @@ import com.doto.domain.stamp.entity.TourSpotVisit;
 import com.doto.domain.stamp.entity.Stamp;
 import com.doto.domain.stamp.entity.StampTour;
 import com.doto.domain.stamp.dto.MyStampTourResponseDTO;
-import com.doto.domain.stamp.dto.StampLocationRequestDTO;
 import com.doto.domain.stamp.dto.TourQRCodeResponseDTO;
 import com.doto.domain.stamp.entity.enums.StampStatus;
 import com.doto.domain.stamp.entity.enums.TourSpotVisitStatus;
@@ -33,7 +32,6 @@ import com.doto.domain.tourspot.repository.TourSpotRepository;
 import com.doto.fixture.MemberFixture;
 import com.doto.fixture.FestivalFixture;
 import com.doto.fixture.StampTourFixture;
-import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -220,7 +218,7 @@ class StampServiceTest {
                     org.mockito.ArgumentMatchers.any(Instant.class)
             )).willReturn(Optional.empty());
 
-            assertThatThrownBy(() -> stampService.completeStamp(1L, 100L, 10L, locationRequest()))
+            assertThatThrownBy(() -> stampService.completeStamp(1L, 100L, 10L))
                     .isInstanceOf(TourSpotVisitException.class)
                     .satisfies(exception -> assertThat(((TourSpotVisitException) exception).getErrorCode())
                             .isEqualTo(TourSpotVisitErrorCode.ACTIVE_VISIT_NOT_FOUND));
@@ -243,7 +241,7 @@ class StampServiceTest {
                     org.mockito.ArgumentMatchers.any(Instant.class)
             )).willReturn(Optional.of(expiredVisit));
 
-            assertThatThrownBy(() -> stampService.completeStamp(1L, 100L, 10L, locationRequest()))
+            assertThatThrownBy(() -> stampService.completeStamp(1L, 100L, 10L))
                     .isInstanceOf(TourSpotVisitException.class);
 
             then(stamp).should(org.mockito.Mockito.never()).complete();
@@ -263,7 +261,7 @@ class StampServiceTest {
                     org.mockito.ArgumentMatchers.any(Instant.class)
             )).willReturn(Optional.of(activeVisit));
 
-            stampService.completeStamp(1L, 100L, 10L, locationRequest());
+            stampService.completeStamp(1L, 100L, 10L);
 
             assertThat(activeVisit.getStatus()).isEqualTo(TourSpotVisitStatus.ENDED);
             then(stamp).should().complete();
@@ -425,14 +423,7 @@ class StampServiceTest {
         given(festivalTourSpotRepository.existsByFestival_IdAndTourSpot_Id(100L, 10L)).willReturn(true);
         given(stampRepository.findByStampTour_IdAndTourSpot_Id(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq(10L)))
                 .willReturn(Optional.of(stamp));
-        given(tourSpotRepository.existsWithin300Meters(
-                org.mockito.ArgumentMatchers.eq(10L), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()
-        )).willReturn(true);
         return stamp;
-    }
-
-    private StampLocationRequestDTO locationRequest() {
-        return new StampLocationRequestDTO(BigDecimal.valueOf(126.5), BigDecimal.valueOf(36.3));
     }
 
     private com.doto.domain.stamp.entity.StampTour stampTourWithFestival(Festival festival) {
