@@ -4,6 +4,7 @@ import com.doto.domain.stamp.dto.StampTourSpotItemResponseDTO;
 import com.doto.domain.tourspot.dto.TourSpotDetailResponseDTO;
 import com.doto.domain.tourspot.service.TourSpotQueryService;
 import com.doto.global.api.CommonResponse;
+import com.doto.global.security.CustomMemberDetails;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,8 +25,10 @@ public class TourSpotController implements TourSpotApi {
 
     @Override
     public ResponseEntity<CommonResponse<TourSpotDetailResponseDTO>> getTourSpotDetail(
-            Long festivalId, Long tourSpotId
+            CustomMemberDetails memberDetails, Long festivalId, Long tourSpotId
     ) {
-        return ResponseEntity.ok(CommonResponse.success(tourSpotQueryService.getTourSpotDetail(festivalId, tourSpotId)));
+        return ResponseEntity.ok(CommonResponse.success(
+                tourSpotQueryService.getTourSpotDetail(memberDetails.getMemberId(), festivalId, tourSpotId)
+        ));
     }
 }

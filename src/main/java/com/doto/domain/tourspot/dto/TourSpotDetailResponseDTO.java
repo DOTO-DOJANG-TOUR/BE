@@ -40,6 +40,9 @@ public record TourSpotDetailResponseDTO(
         String homepage,
 
         @Schema(description = "TourAPI 수정 일시", example = "20260830120000")
-        String apiModifiedAt
+        String apiModifiedAt,
+
+        @Schema(description = "관광지 방문(도장 획득) 여부", example = "true")
+        Boolean isVisited
 ) {
 }
