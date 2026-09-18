@@ -1,6 +1,7 @@
 package com.doto.domain.tourspot.service;
 
 import com.doto.domain.stamp.dto.StampTourSpotItemResponseDTO;
+import com.doto.domain.stamp.repository.StampRepository;
 import com.doto.domain.tourspot.dto.TourSpotDetailResponseDTO;
 import com.doto.domain.tourspot.entity.FestivalTourSpot;
 import com.doto.domain.tourspot.entity.TourSpot;
@@ -26,6 +27,7 @@ public class TourSpotQueryService {
 
     private final FestivalTourSpotRepository festivalTourSpotRepository;
     private final TourSpotImageRepository tourSpotImageRepository;
+    private final StampRepository stampRepository;
 
     public List<TourSpot> getTourSpotsByFestivalId(Long festivalId) {
         return festivalTourSpotRepository.findAllWithTourSpotByFestivalId(festivalId)
@@ -34,12 +36,15 @@ public class TourSpotQueryService {
                 .toList();
     }
 
-    public TourSpotDetailResponseDTO getTourSpotDetail(Long festivalId, Long tourSpotId) {
+    public TourSpotDetailResponseDTO getTourSpotDetail(Long memberId, Long festivalId, Long tourSpotId) {
         TourSpot tourSpot = festivalTourSpotRepository
                 .findWithTourSpotByFestivalIdAndTourSpotId(festivalId, tourSpotId)
                 .map(FestivalTourSpot::getTourSpot)
                 .orElseThrow(() -> new TourException(TourErrorCode.TOUR_SPOT_NOT_FOUND));
         List<String> imageList = buildImageList(tourSpot);
+        boolean isVisited = stampRepository.existsByStampTour_Member_IdAndStampTour_Festival_IdAndTourSpot_Id(
+                memberId, festivalId, tourSpotId
+        );
         return new TourSpotDetailResponseDTO(
                 String.valueOf(tourSpot.getId()),
                 tourSpot.getTitle(),
@@ -52,7 +57,8 @@ public class TourSpotQueryService {
                 tourSpot.getLegalDongSigunguCode(),
                 tourSpot.getPhone(),
                 tourSpot.getHomepage(),
-                tourSpot.getApiModifiedAt()
+                tourSpot.getApiModifiedAt(),
+                isVisited
         );
     }
 

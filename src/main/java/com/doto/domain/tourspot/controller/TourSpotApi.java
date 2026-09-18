@@ -5,6 +5,8 @@ import com.doto.domain.tourspot.dto.TourSpotDetailResponseDTO;
 import com.doto.domain.tourspot.exception.TourErrorCode;
 import com.doto.global.api.CommonResponse;
 import com.doto.global.config.SwaggerConfig;
+import com.doto.global.security.CurrentMember;
+import com.doto.global.security.CustomMemberDetails;
 import com.doto.global.swagger.ApiErrorCodeExamples;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -44,6 +46,7 @@ public interface TourSpotApi {
     @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     @GetMapping("/api/v1/festival/{festivalId}/tour-spots/{tourSpotId}")
     ResponseEntity<CommonResponse<TourSpotDetailResponseDTO>> getTourSpotDetail(
+            @CurrentMember CustomMemberDetails memberDetails,
             @Parameter(description = "축제 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long festivalId,
             @Parameter(description = "관광지 ID", schema = @Schema(type = "string", example = "1234567890123456789")) @PathVariable Long tourSpotId
     );

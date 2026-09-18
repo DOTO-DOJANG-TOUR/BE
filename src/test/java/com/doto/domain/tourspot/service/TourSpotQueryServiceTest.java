@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.then;
 
 import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.stamp.dto.StampTourSpotItemResponseDTO;
+import com.doto.domain.stamp.repository.StampRepository;
 import com.doto.domain.tourspot.entity.FestivalTourSpot;
 import com.doto.domain.tourspot.entity.TourSpot;
 import com.doto.domain.tourspot.exception.TourException;
@@ -35,6 +36,9 @@ class TourSpotQueryServiceTest {
 
     @Mock
     private TourSpotImageRepository tourSpotImageRepository;
+
+    @Mock
+    private StampRepository stampRepository;
 
     @InjectMocks
     private TourSpotQueryService tourSpotQueryService;
@@ -84,12 +88,30 @@ class TourSpotQueryServiceTest {
             ReflectionTestUtils.setField(tourSpot, "id", 2L);
             given(festivalTourSpotRepository.findWithTourSpotByFestivalIdAndTourSpotId(1L, 2L))
                     .willReturn(Optional.of(festivalTourSpot(1L, 2L, tourSpot)));
+            given(stampRepository.existsByStampTour_Member_IdAndStampTour_Festival_IdAndTourSpot_Id(100L, 1L, 2L))
+                    .willReturn(true);
 
-            var result = tourSpotQueryService.getTourSpotDetail(1L, 2L);
+            var result = tourSpotQueryService.getTourSpotDetail(100L, 1L, 2L);
 
             assertThat(result.tourSpotId()).isEqualTo("2");
             assertThat(result.title()).isEqualTo("도토 광장");
             assertThat(result.imageList()).containsExactly(tourSpot.getImageUrl());
+            assertThat(result.isVisited()).isTrue();
+        }
+
+        @Test
+        @DisplayName("도장을 획득하지 않았으면 isVisited는 false를 반환한다")
+        void returnsFalseWhenNotVisited() {
+            TourSpot tourSpot = TourSpotFixture.create();
+            ReflectionTestUtils.setField(tourSpot, "id", 2L);
+            given(festivalTourSpotRepository.findWithTourSpotByFestivalIdAndTourSpotId(1L, 2L))
+                    .willReturn(Optional.of(festivalTourSpot(1L, 2L, tourSpot)));
+            given(stampRepository.existsByStampTour_Member_IdAndStampTour_Festival_IdAndTourSpot_Id(100L, 1L, 2L))
+                    .willReturn(false);
+
+            var result = tourSpotQueryService.getTourSpotDetail(100L, 1L, 2L);
+
+            assertThat(result.isVisited()).isFalse();
         }
 
         @Test
@@ -106,7 +128,7 @@ class TourSpotQueryServiceTest {
                     "https://doto.example.com/4.jpg"
             ));
 
-            var result = tourSpotQueryService.getTourSpotDetail(1L, 2L);
+            var result = tourSpotQueryService.getTourSpotDetail(100L, 1L, 2L);
 
             assertThat(result.imageList()).containsExactly(
                     tourSpot.getImageUrl(),
@@ -130,7 +152,7 @@ class TourSpotQueryServiceTest {
                     "https://doto.example.com/3.jpg"
             ));
 
-            var result = tourSpotQueryService.getTourSpotDetail(1L, 2L);
+            var result = tourSpotQueryService.getTourSpotDetail(100L, 1L, 2L);
 
             assertThat(result.imageList()).containsExactly(
                     tourSpot.getImageUrl(),
@@ -156,7 +178,7 @@ class TourSpotQueryServiceTest {
                     "https://doto.example.com/5.jpg"
             ));
 
-            var result = tourSpotQueryService.getTourSpotDetail(1L, 2L);
+            var result = tourSpotQueryService.getTourSpotDetail(100L, 1L, 2L);
 
             assertThat(result.imageList()).containsExactly(
                     "https://doto.example.com/1.jpg",
@@ -172,7 +194,7 @@ class TourSpotQueryServiceTest {
             given(festivalTourSpotRepository.findWithTourSpotByFestivalIdAndTourSpotId(1L, 2L))
                     .willReturn(Optional.empty());
 
-            assertThatThrownBy(() -> tourSpotQueryService.getTourSpotDetail(1L, 2L))
+            assertThatThrownBy(() -> tourSpotQueryService.getTourSpotDetail(100L, 1L, 2L))
                     .isInstanceOf(TourException.class);
         }
     }

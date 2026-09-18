@@ -6,17 +6,24 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.doto.domain.member.entity.Member;
 import com.doto.domain.stamp.dto.StampTourSpotItemResponseDTO;
 import com.doto.domain.tourspot.dto.TourSpotDetailResponseDTO;
 import com.doto.domain.tourspot.entity.enums.TourSpotCategory;
 import com.doto.domain.tourspot.service.TourSpotQueryService;
+import com.doto.fixture.MemberFixture;
+import com.doto.global.security.CurrentMemberArgumentResolver;
+import com.doto.global.security.CustomMemberDetails;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -30,7 +37,22 @@ class TourSpotControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new TourSpotController(tourSpotQueryService)).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(new TourSpotController(tourSpotQueryService))
+                .setCustomArgumentResolvers(new CurrentMemberArgumentResolver())
+                .build();
+    }
+
+    @AfterEach
+    void clearContext() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private void authenticateAs(Long memberId) {
+        Member member = MemberFixture.create(memberId);
+        CustomMemberDetails principal = new CustomMemberDetails(member);
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities())
+        );
     }
 
     @Nested
@@ -56,17 +78,19 @@ class TourSpotControllerTest {
 
         @Test
         void 상세_정보를_반환한다() throws Exception {
-            given(tourSpotQueryService.getTourSpotDetail(10L, 100L))
+            authenticateAs(1L);
+            given(tourSpotQueryService.getTourSpotDetail(1L, 10L, 100L))
                     .willReturn(new TourSpotDetailResponseDTO(
                             "100", "대천해수욕장", null, List.of(), "충남 보령시", "126.5", "36.3",
-                            TourSpotCategory.자연, "451", null, null, null
+                            TourSpotCategory.자연, "451", null, null, null, true
                     ));
 
             mockMvc.perform(get("/api/v1/festival/{festivalId}/tour-spots/{tourSpotId}", 10L, 100L))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.result.tourSpotId").value("100"));
+                    .andExpect(jsonPath("$.result.tourSpotId").value("100"))
+                    .andExpect(jsonPath("$.result.isVisited").value(true));
 
-            then(tourSpotQueryService).should().getTourSpotDetail(10L, 100L);
+            then(tourSpotQueryService).should().getTourSpotDetail(1L, 10L, 100L);
         }
     }
 }
