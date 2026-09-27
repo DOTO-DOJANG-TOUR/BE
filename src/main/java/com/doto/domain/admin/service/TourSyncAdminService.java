@@ -34,8 +34,11 @@ public class TourSyncAdminService {
             throw new IllegalArgumentException("축제 종료일은 시작일보다 빠를 수 없습니다.");
         }
 
-        List<TourApiResponseDTO.TourContentDTO> festivals = tourApiService.getFestivalsForSync(startDate, endDate);
-        log.info("[관리자] 축제 동기화 시작: 대상기간={}~{}, 대상 {}건", startDate, endDate, festivals.size());
+        List<TourApiResponseDTO.TourContentDTO> allFestivals = tourApiService.getFestivalsForSync(startDate, endDate);
+        FestivalCommandService.SyncCandidates candidates = festivalCommandService.splitByExistence(allFestivals);
+        List<TourApiResponseDTO.TourContentDTO> festivals = candidates.inSyncOrder();
+        log.info("[관리자] 축제 동기화 시작: 대상기간={}~{}, 신규 {}건, 기존 {}건",
+                startDate, endDate, candidates.newFestivals().size(), candidates.existingFestivals().size());
 
         List<List<TourApiResponseDTO.TourContentDTO>> batches = partition(festivals, BATCH_SIZE);
         List<TourSyncResultDTO.BatchResultDTO> batchResults = new ArrayList<>();
