@@ -4,6 +4,7 @@ import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.festival.entity.enums.Region;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -15,6 +16,9 @@ import org.springframework.data.repository.query.Param;
 public interface FestivalRepository extends JpaRepository<Festival, Long> {
 
     Optional<Festival> findByContentId(Long contentId);
+
+    @Query("SELECT f.contentId FROM Festival f WHERE f.contentId IN :contentIds")
+    Set<Long> findExistingContentIds(@Param("contentIds") Collection<Long> contentIds);
 
     // 오늘의 축제: eventEndDate-오늘 크기순 = eventEndDate 오름차순과 동일해서 eventEndDate 그대로 정렬/커서에 사용
     @Query("SELECT f FROM Festival f "

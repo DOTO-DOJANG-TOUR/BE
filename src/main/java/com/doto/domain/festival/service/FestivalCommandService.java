@@ -4,12 +4,18 @@ import com.doto.domain.festival.entity.Festival;
 import com.doto.domain.festival.entity.enums.Region;
 import com.doto.domain.festival.repository.FestivalRepository;
 import com.doto.domain.tourex.dto.FestivalApiResponseDTO;
+import com.doto.domain.tourex.dto.TourApiResponseDTO;
 import com.doto.domain.tourex.exception.TourApiErrorCode;
 import com.doto.domain.tourex.exception.TourApiException;
 import com.doto.global.util.DateTimeUtils;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -26,6 +32,30 @@ public class FestivalCommandService {
 
     private final FestivalRepository festivalRepository;
     private final Clock applicationClock;
+
+    public record SyncCandidates(
+            List<TourApiResponseDTO.TourContentDTO> newFestivals,
+            List<TourApiResponseDTO.TourContentDTO> existingFestivals
+    ) {
+        public List<TourApiResponseDTO.TourContentDTO> inSyncOrder() {
+            List<TourApiResponseDTO.TourContentDTO> ordered = new ArrayList<>(newFestivals);
+            ordered.addAll(existingFestivals);
+            return ordered;
+        }
+    }
+
+    public SyncCandidates splitByExistence(List<TourApiResponseDTO.TourContentDTO> candidates) {
+        if (candidates.isEmpty()) {
+            return new SyncCandidates(List.of(), List.of());
+        }
+        List<Long> contentIds = candidates.stream()
+                .map(TourApiResponseDTO.TourContentDTO::contentId)
+                .toList();
+        Set<Long> existingContentIds = festivalRepository.findExistingContentIds(contentIds);
+        Map<Boolean, List<TourApiResponseDTO.TourContentDTO>> partitioned = candidates.stream()
+                .collect(Collectors.partitioningBy(festival -> existingContentIds.contains(festival.contentId())));
+        return new SyncCandidates(partitioned.get(false), partitioned.get(true));
+    }
 
     // 축제를 contentId 기준으로 upsert
     @Transactional

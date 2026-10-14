@@ -29,9 +29,12 @@ public class TourApiSyncScheduler {
     // 매일 새벽에 축제와 주변 관광지 동기화
     @Scheduled(cron = "0 0 1 * * *")
     public void synchronizeTourData() {
-        List<TourApiResponseDTO.TourContentDTO> festivals =
+        List<TourApiResponseDTO.TourContentDTO> allFestivals =
                 tourApiService.getFestivalsForSync(LocalDate.now(applicationClock));
-        log.info("축제 동기화 시작: 대상 {}건", festivals.size());
+        FestivalCommandService.SyncCandidates candidates = festivalCommandService.splitByExistence(allFestivals);
+        List<TourApiResponseDTO.TourContentDTO> festivals = candidates.inSyncOrder();
+        log.info("축제 동기화 시작: 신규 {}건, 기존 {}건",
+                candidates.newFestivals().size(), candidates.existingFestivals().size());
 
         int successCount = 0;
         for (TourApiResponseDTO.TourContentDTO festival : festivals) {
